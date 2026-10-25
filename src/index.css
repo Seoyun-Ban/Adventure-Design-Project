@@ -4026,6 +4026,11 @@ button {
   height: 176px;
   margin-top: 14px;
 }
+.onboarding-preview .character-avatar {
+  width: fit-content;
+  height: 172px;
+  margin-top: 12px;
+}
 .onboarding-panel {
   flex: 1;
   display: flex;

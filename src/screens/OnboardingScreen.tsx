@@ -2,11 +2,20 @@ import { useRef, useState, type ChangeEvent } from 'react'
 import { Icon } from '../components/Icon'
 import { ActionButton } from '../components/ActionButton'
 import { Avatar } from '../components/Avatar'
+import { CharacterAvatar } from '../components/CharacterAvatar'
 import { skinTones } from '../data/avatar'
 import type { AvatarLook, Difficulty, Equipped } from '../types'
 
 // 처음 이용할 때 한 번 거치는 설정 화면
 // 1) 닉네임·아바타 외형  2) 얼굴 등록  3) 기본 학습 단계
+
+/**
+ * 체형·머리·피부색 선택을 보여줄지.
+ * 지금 그림 캐릭터는 성별별 한 종류뿐이라 꺼 둔다 (선택해도 그림에 반영되지 않으므로).
+ * 체형·머리 모양별 그림이 생기면 true로 바꾸고, CharacterAvatar가 그 선택을 쓰도록 고치면 된다.
+ * true로 바꾸면 지금은 미리보기가 선택이 반영되는 SVG 캐릭터로 나온다.
+ */
+const SHOW_DETAILED_LOOK = false
 export function OnboardingScreen({
   initial,
   equipped,
@@ -60,7 +69,15 @@ export function OnboardingScreen({
       </header>
 
       <div className="onboarding-preview">
-        <Avatar look={look} equipped={step === 0 ? {} : equipped} />
+        {SHOW_DETAILED_LOOK ? (
+          <Avatar look={look} equipped={step === 0 ? {} : equipped} />
+        ) : (
+          <CharacterAvatar
+            gender={look.gender}
+            equipped={step === 0 ? {} : equipped}
+            label="내 아바타 미리보기"
+          />
+        )}
       </div>
 
       {step === 0 && (
@@ -80,33 +97,37 @@ export function OnboardingScreen({
             value={look.gender}
             onChange={(gender) => setLook({ ...look, gender })}
           />
-          <OptionRow
-            label="체형"
-            options={['마름', '보통', '튼튼'] as const}
-            value={look.body}
-            onChange={(body) => setLook({ ...look, body })}
-          />
-          <OptionRow
-            label="머리"
-            options={['짧은 머리', '긴 머리', '상투·쪽머리'] as const}
-            value={look.hair}
-            onChange={(hair) => setLook({ ...look, hair })}
-          />
-          <div className="option-row">
-            <span>피부색</span>
-            <div className="skin-options">
-              {skinTones.map((tone) => (
-                <button
-                  type="button"
-                  key={tone}
-                  className={look.skin === tone ? 'active' : ''}
-                  style={{ background: tone }}
-                  onClick={() => setLook({ ...look, skin: tone })}
-                  aria-label={`피부색 ${tone}`}
-                />
-              ))}
-            </div>
-          </div>
+          {SHOW_DETAILED_LOOK && (
+            <>
+              <OptionRow
+                label="체형"
+                options={['마름', '보통', '튼튼'] as const}
+                value={look.body}
+                onChange={(body) => setLook({ ...look, body })}
+              />
+              <OptionRow
+                label="머리"
+                options={['짧은 머리', '긴 머리', '상투·쪽머리'] as const}
+                value={look.hair}
+                onChange={(hair) => setLook({ ...look, hair })}
+              />
+              <div className="option-row">
+                <span>피부색</span>
+                <div className="skin-options">
+                  {skinTones.map((tone) => (
+                    <button
+                      type="button"
+                      key={tone}
+                      className={look.skin === tone ? 'active' : ''}
+                      style={{ background: tone }}
+                      onClick={() => setLook({ ...look, skin: tone })}
+                      aria-label={`피부색 ${tone}`}
+                    />
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
         </section>
       )}
 
