@@ -1,12 +1,11 @@
 import { Icon } from './Icon'
-import { Avatar } from './Avatar'
-import type { AvatarLook, Equipped, IconName, SubPage } from '../types'
+import { CharacterAvatar } from './CharacterAvatar'
+import type { AvatarLook, IconName, SubPage } from '../types'
 
 export function SideMenu({
   open,
   nickname,
   look,
-  equipped,
   footprintCount,
   onClose,
   onNavigate,
@@ -14,7 +13,6 @@ export function SideMenu({
   open: boolean
   nickname: string
   look: AvatarLook
-  equipped: Equipped
   footprintCount: number
   onClose: () => void
   onNavigate: (page: SubPage) => void
@@ -39,7 +37,7 @@ export function SideMenu({
         </div>
         <div className="traveler-card">
           <div className="avatar-small">
-            <Avatar look={look} equipped={equipped} />
+            <CharacterAvatar gender={look.gender} label={`${nickname}의 아바타`} />
           </div>
           <div>
             <strong>{nickname}</strong>

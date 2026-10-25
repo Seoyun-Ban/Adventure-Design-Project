@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Icon } from '../components/Icon'
-import { Avatar } from '../components/Avatar'
+import { CharacterAvatar } from '../components/CharacterAvatar'
 import { ItemDetailModal } from '../components/ItemDetailModal'
 import { historyItems, battleFriends, findItem, totalPower } from '../data/avatar'
 import { BattleScreen } from './BattleScreen'
@@ -115,7 +115,12 @@ export function AvatarScreen({
       </header>
       <div className="avatar-stage">
         <div className="sun-disc" />
-        <Avatar className="stage-avatar" look={look} equipped={equipped} label={`${nickname}의 아바타`} />
+        <CharacterAvatar
+          className="stage-avatar"
+          gender={look.gender}
+          equipped={equipped}
+          label={`${nickname}의 아바타`}
+        />
         <span className="avatar-shadow" />
         <div className="avatar-power">
           <span>총 전투력</span>

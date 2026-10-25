@@ -1,16 +1,15 @@
 import { useState } from 'react'
 import { Icon } from '../components/Icon'
-import { Avatar } from '../components/Avatar'
+import { CharacterAvatar } from '../components/CharacterAvatar'
 import { SubpageHeader } from '../components/SubpageHeader'
 import { badges, type BadgeStats } from '../data/badges'
 import { findPlace } from '../data/places'
-import type { AvatarLook, Equipped, Place } from '../types'
+import type { AvatarLook, Place } from '../types'
 
 // 내 정보 탭: 요약 통계, 이번 주 탐험, 획득한 배지, 관심 장소
 export function ProfileScreen({
   nickname,
   look,
-  equipped,
   loggedIn,
   stats,
   weeklyCount,
@@ -21,7 +20,6 @@ export function ProfileScreen({
 }: {
   nickname: string
   look: AvatarLook
-  equipped: Equipped
   loggedIn: boolean
   stats: BadgeStats
   /** 최근 7일 동안 학습한 장소 수 */
@@ -119,7 +117,7 @@ export function ProfileScreen({
     <section className="content-screen tab-screen">
       <header className="profile-head">
         <div className="profile-avatar">
-          <Avatar look={look} equipped={equipped} />
+          <CharacterAvatar gender={look.gender} label={`${nickname}의 아바타`} />
         </div>
         <div>
           <p>{loggedIn ? '반가워요!' : '둘러보는 중이에요'}</p>

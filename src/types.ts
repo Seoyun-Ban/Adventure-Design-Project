@@ -135,4 +135,9 @@ export type HistoryItem = {
   rarity: string
   description: string
   stats: { 공격: number; 방어: number; 지혜: number }
+  /**
+   * 그림 캐릭터 위에 겹쳐 그릴 옷·장비 그림 (투명 PNG, 내 캐릭터 그림과 같은 크기·위치로 그린 것).
+   * 비어 있으면 캐릭터 주변에 작은 원형 배지로 보여준다.
+   */
+  art?: string
 }

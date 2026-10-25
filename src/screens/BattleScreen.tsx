@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Icon } from '../components/Icon'
-import { Avatar } from '../components/Avatar'
+import { CharacterAvatar } from '../components/CharacterAvatar'
 import { totalPower } from '../data/avatar'
 import { randomBattleQuestion } from '../lib/quizGenerator'
 import { withJosa } from '../lib/korean'
@@ -161,16 +161,21 @@ export function BattleScreen({
           <small>
             HP {enemyHp}/{MAX_HP}
           </small>
-          <Avatar
+          <CharacterAvatar
             className="fighter-avatar enemy-avatar"
-            look={opponent.look}
+            gender={opponent.look.gender}
             equipped={opponent.equipped}
             label={`${opponent.name}의 아바타`}
           />
         </div>
         <div className="versus">VS</div>
         <div className={`fighter player ${hit === 'me' ? 'hit' : ''} ${shield ? 'shielded' : ''}`}>
-          <Avatar className="fighter-avatar" look={me.look} equipped={me.equipped} label="나의 아바타" />
+          <CharacterAvatar
+            className="fighter-avatar"
+            gender={me.look.gender}
+            equipped={me.equipped}
+            label="나의 아바타"
+          />
           <div className="fighter-name">
             <span>{me.nickname}</span>
             <strong>전투력 {myPower.toLocaleString()}</strong>

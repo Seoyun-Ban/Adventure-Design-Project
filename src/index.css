@@ -3834,8 +3834,72 @@ button {
   height: 126px;
   margin: 0 auto;
 }
-.fighter.enemy .fighter-avatar {
-  transform: scaleX(-1);
+
+/* 그림 캐릭터 아바타 (CharacterAvatar). 높이를 정하면 너비는 그림 비율대로 정해진다. */
+.character-avatar {
+  position: relative;
+  display: block;
+}
+.character-base,
+.character-layer {
+  display: block;
+  height: 100%;
+  width: auto;
+  user-select: none;
+}
+.character-layer {
+  position: absolute;
+  inset: 0;
+}
+/* 착용 아이템 배지: 그림 크기 대비 % 자리에 가운데를 맞춘다 */
+.item-badge {
+  position: absolute;
+  z-index: 1;
+  width: 26px;
+  height: 26px;
+  border: 2px solid white;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: white;
+  background: var(--green);
+  box-shadow: 0 3px 8px rgba(20, 40, 30, 0.28);
+  font-family: 'Gowun Batang', serif;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  transform: translate(-50%, -50%);
+}
+.stage-avatar.character-avatar {
+  width: fit-content;
+  height: 206px;
+}
+.stage-avatar .item-badge {
+  width: 32px;
+  height: 32px;
+  font-size: 16px;
+}
+.fighter .fighter-avatar.character-avatar {
+  width: fit-content;
+  height: 126px;
+}
+.fighter .item-badge {
+  width: 22px;
+  height: 22px;
+  font-size: 11px;
+}
+/* 동그란 프로필 칸: 얼굴이 가운데 오도록 그림을 위쪽에 맞춘다 */
+.avatar-small .character-avatar,
+.profile-avatar .character-avatar {
+  align-self: start;
+}
+.avatar-small .character-avatar {
+  height: 96px;
+  margin-top: -2px;
+}
+.profile-avatar .character-avatar {
+  height: 128px;
+  margin-top: -5px;
 }
 
 .equip-slots {
@@ -4781,21 +4845,6 @@ button.settings-row {
   }
   80% {
     transform: translateX(3px);
-  }
-}
-.fighter.enemy.hit .fighter-avatar {
-  animation-name: hit-shake-flip;
-}
-@keyframes hit-shake-flip {
-  0%,
-  100% {
-    transform: scaleX(-1);
-  }
-  30% {
-    transform: scaleX(-1) translateX(6px);
-  }
-  60% {
-    transform: scaleX(-1) translateX(-6px);
   }
 }
 

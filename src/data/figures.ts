@@ -160,16 +160,3 @@ export const figures: Record<string, HistoricalFigure> = {
 
 /** 사용자 아바타 목소리 */
 export const myVoice = { pitch: 1.35, rate: 1.0 }
-
-/**
- * 영상 장면 속 내 캐릭터 그림 (성별별)
- * face: 등록한 얼굴 사진을 겹칠 동그라미의 가운데 위치(x, y)와 지름(size). 그림 너비·높이 대비 %.
- * 그림을 바꾸면 이 값도 새 그림의 얼굴 위치에 맞게 고쳐야 한다.
- */
-export const myCharacters: Record<
-  AvatarLook['gender'],
-  { image: string; face: { x: number; y: number; size: number } }
-> = {
-  남: { image: '/images/characters/me-boy.png', face: { x: 50, y: 28, size: 43 } },
-  여: { image: '/images/characters/me-girl.png', face: { x: 50, y: 24, size: 42 } },
-}

@@ -1,4 +1,28 @@
-import type { AvatarLook, Equipped, HistoryItem } from '../types'
+import type { AvatarLook, Equipped, HistoryItem, ItemCategory } from '../types'
+
+type Point = { x: number; y: number }
+
+/**
+ * 내 캐릭터 그림 (성별별). 위치 값은 모두 그림 너비·높이 대비 %.
+ * - face: 학습 영상 장면에서 등록한 얼굴 사진을 겹칠 동그라미의 가운데(x, y)와 지름(size)
+ * - slots: 착용한 아이템 배지를 띄울 자리 (장비: 머리 근처, 무기: 손 근처, 의복: 몸 옆)
+ * 그림을 바꾸면 이 값도 새 그림에 맞게 고쳐야 한다.
+ */
+export const myCharacters: Record<
+  AvatarLook['gender'],
+  { image: string; face: Point & { size: number }; slots: Record<ItemCategory, Point> }
+> = {
+  남: {
+    image: '/images/characters/me-boy.png',
+    face: { x: 50, y: 28, size: 43 },
+    slots: { 장비: { x: 88, y: 9 }, 무기: { x: 94, y: 62 }, 의복: { x: 6, y: 47 } },
+  },
+  여: {
+    image: '/images/characters/me-girl.png',
+    face: { x: 50, y: 24, size: 42 },
+    slots: { 장비: { x: 88, y: 7 }, 무기: { x: 94, y: 58 }, 의복: { x: 6, y: 44 } },
+  },
+}
 
 // 아바타 아이템: 연결된 장소(placeId)의 학습을 완료하면 획득한다
 // 카테고리별로 착용 부위가 정해져 있다 — 장비: 머리, 무기: 손, 의복: 몸
