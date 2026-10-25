@@ -51,7 +51,7 @@ git push
 | 정조 | `jeongjo.png` | ✅ |
 | 이순신 | `yisunsin.png` | ✅ |
 | 김대성 | `kimdaeseong.png` | ✅ |
-| 독립군 청년 | `independence.png` | ✅ |
+| 김구 | `kimgu.png` | ✅ |
 | 유관순 | `yugwansun.png` | ✅ |
 | 내 캐릭터 (남/여) | `me-boy.png`, `me-girl.png` | ✅ |
 
@@ -71,9 +71,7 @@ git push
 기획서 항목별 현황은 `docs/REQUIREMENTS.md` 참고.
 
 ### 꼭 필요한 것
-- [ ] 학습 글·퀴즈 내용 검토 (사실 확인, 초등학생 눈높이) — `src/data/contents.ts`, `src/data/quizBank.ts`, `src/data/facts.ts` (담당: ) — 새로 추가한 **아우내 장터**도 꼭 확인
-- [ ] 독립군 청년 그림(`independence.png`)의 태극기 괘 배치 확인 — 틀렸다면 다시 만들기 (담당: )
-- [ ] 영상 장면 대사 검토 (인물 말투, 사실 확인) — `src/data/figures.ts` (담당: )
+- [ ] 학습 글·퀴즈 내용 검토 (사실 확인, 초등학생 눈높이) — `src/data/contents.ts`, `src/data/quizBank.ts`, `src/data/facts.ts` (담당: ) — 새로 추가한 **아우내 장터**도 꼭 확인- [ ] 영상 장면 대사 검토 (인물 말투, 사실 확인) — `src/data/figures.ts` (담당: )
 - [ ] (선택) Vercel에 `ANTHROPIC_API_KEY` 설정해서 AI 퀴즈 켜기 (담당: )
 - [ ] 배포해서 데모 링크 만들기 (Vercel 또는 GitHub Pages) → README에 링크 추가 (담당: )
 - [ ] README에 스크린샷, 팀원 이름/역할 채우기 (담당: )

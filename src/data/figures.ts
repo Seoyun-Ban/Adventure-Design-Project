@@ -5,7 +5,7 @@ import type { AvatarLook, Equipped } from '../types'
 // - voice: 음성 읽기(TTS)의 높낮이·빠르기. 인물 분위기에 맞게 조절한다.
 // - image: 캐릭터 그림 경로. 파일이 아직 없으면 look·equipped로 그린 SVG 캐릭터가 대신 나온다.
 //   그림을 추가하는 법은 docs/TEAM_GUIDE.md 참고 (art/characters에 넣고 npm run images).
-// 독립기념관의 안내인은 특정 실존 인물이 아닌 가상의 독립군 청년이다.
+// 대사에는 인물이 살아 있던 때의 일만 직접 겪은 것처럼 말하게 한다.
 
 export type DialogueLine = { speaker: 'figure' | 'me'; text: string }
 
@@ -63,22 +63,25 @@ export const figures: Record<string, HistoricalFigure> = {
       },
     ],
   },
+  // 김구는 1949년에 세상을 떠났으므로, 1987년에 문을 연 기념관 이야기는 내 캐릭터가 전하고
+  // 김구는 직접 본 것처럼 말하지 않는다.
   independence: {
-    name: '독립군 청년',
-    title: '독립운동 이야기 안내인 (가상 인물)',
-    image: '/images/characters/independence.png',
-    look: { gender: '남', body: '마름', hair: '짧은 머리', skin: '#e3b48c' },
-    equipped: { 장비: 'liberation-cap', 의복: 'khaki-uniform' },
-    voice: { pitch: 1.0, rate: 0.98 },
+    name: '김구',
+    title: '대한민국 임시정부를 이끈 독립운동가',
+    image: '/images/characters/kimgu.png',
+    look: { gender: '남', body: '보통', hair: '짧은 머리', skin: '#e3b48c' },
+    equipped: {},
+    beard: 'mustache',
+    voice: { pitch: 0.7, rate: 0.86 },
     mood: 'memorial',
     dialogue: [
-      { speaker: 'figure', text: '어서 와요. 나는 나라를 되찾기 위해 싸운 독립군 청년이에요.' },
+      { speaker: 'figure', text: '반갑소. 나는 중국에서 대한민국 임시정부를 이끌며 독립운동을 한 김구요.' },
       {
-        speaker: 'figure',
-        text: '우리의 이야기를 잊지 않도록, 많은 국민이 정성을 모아 이 기념관을 지었어요.',
+        speaker: 'me',
+        text: '여기는 독립기념관이에요. 나라를 되찾으려 애쓴 분들을 기억하려고 국민들이 성금을 모아 지었대요.',
       },
-      { speaker: 'me', text: '국민들이 직접 돈을 모았다고요?' },
-      { speaker: 'figure', text: '맞아요. 그렇게 1987년 광복절에 이곳이 문을 열었답니다.' },
+      { speaker: 'figure', text: '그렇구려. 국민들이 마음을 모아 세운 곳이라니 참 고맙소.' },
+      { speaker: 'me', text: '1987년 광복절에 문을 열었어요. 오래오래 기억할게요!' },
     ],
   },
   aunae: {

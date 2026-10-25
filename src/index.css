@@ -4307,11 +4307,13 @@ button.settings-row {
   font-size: 10px;
   font-weight: 800;
 }
+/* 위쪽은 말풍선, 아래 양옆은 인물 이름표가 있어서 두 캐릭터 사이(아래 가운데)에 둔다 */
 .scene-controls {
   position: absolute;
   z-index: 5;
-  right: 10px;
+  left: 50%;
   bottom: 10px;
+  transform: translateX(-50%);
   display: flex;
   gap: 6px;
 }

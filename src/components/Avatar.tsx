@@ -18,7 +18,6 @@ const outfits: Record<string, Outfit> = {
   // 역사 인물 전용 의상
   'royal-robe': { main: '#c8312b', shade: '#a12520', trim: '#e2b04a', belt: '#e2b04a', long: true },
   'silla-noble': { main: '#7b5aa6', shade: '#614587', trim: '#e2b04a', belt: '#e2b04a', long: true },
-  'khaki-uniform': { main: '#7c7650', shade: '#625d3d', trim: '#4f4b30', belt: '#5a3a26' },
 }
 
 export function Avatar({
@@ -312,15 +311,6 @@ function OutfitDetail({
         stroke={outfit.trim}
         strokeWidth="5"
       />
-    )
-  }
-  if (outfitId === 'khaki-uniform') {
-    return (
-      <>
-        <rect x="64" y="122" width="11" height="9" rx="2" fill={outfit.shade} />
-        <rect x="85" y="122" width="11" height="9" rx="2" fill={outfit.shade} />
-        <circle cx="80" cy="140" r="2" fill="#e2b04a" />
-      </>
     )
   }
   return null
