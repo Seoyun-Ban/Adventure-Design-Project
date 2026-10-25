@@ -7,7 +7,6 @@ export function SideMenu({
   nickname,
   look,
   equipped,
-  faceImage,
   footprintCount,
   onClose,
   onNavigate,
@@ -16,7 +15,6 @@ export function SideMenu({
   nickname: string
   look: AvatarLook
   equipped: Equipped
-  faceImage?: string
   footprintCount: number
   onClose: () => void
   onNavigate: (page: SubPage) => void
@@ -41,7 +39,7 @@ export function SideMenu({
         </div>
         <div className="traveler-card">
           <div className="avatar-small">
-            <Avatar look={look} equipped={equipped} faceImage={faceImage} />
+            <Avatar look={look} equipped={equipped} />
           </div>
           <div>
             <strong>{nickname}</strong>

@@ -13,7 +13,6 @@ export function AvatarScreen({
   nickname,
   look,
   equipped,
-  faceImage,
   completedIds,
   onEquip,
   onBattleEnd,
@@ -21,7 +20,6 @@ export function AvatarScreen({
   nickname: string
   look: AvatarLook
   equipped: Equipped
-  faceImage?: string
   completedIds: string[]
   onEquip: (category: ItemCategory, itemId?: string) => void
   onBattleEnd: (won: boolean) => void
@@ -91,7 +89,6 @@ export function AvatarScreen({
           nickname,
           look,
           equipped,
-          faceImage,
           level: 1 + completedIds.length,
           completedCount: completedIds.length,
         }}
@@ -122,7 +119,6 @@ export function AvatarScreen({
           className="stage-avatar"
           look={look}
           equipped={equipped}
-          faceImage={faceImage}
           label={`${nickname}의 아바타`}
         />
         <span className="avatar-shadow" />

@@ -37,11 +37,11 @@ export function HomeScreen({
   const [menuOpen, setMenuOpen] = useState(false)
   const [page, setPage] = useState<SubPage>('main')
   const back = () => setPage('main')
+  // 등록한 얼굴 사진은 학습 영상 장면에서만 쓰고, 홈 화면들의 아바타는 기본 얼굴로 보여준다.
   const avatar = {
     nickname: progress.nickname,
     look: progress.look,
     equipped: progress.equipped,
-    faceImage: progress.faceImage,
   }
 
   if (page === 'archive') {

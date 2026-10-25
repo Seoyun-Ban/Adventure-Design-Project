@@ -14,7 +14,6 @@ type Fighter = {
   nickname: string
   look: AvatarLook
   equipped: Equipped
-  faceImage?: string
   level: number
   completedCount: number
 }
@@ -174,7 +173,6 @@ export function BattleScreen({
             className="fighter-avatar"
             look={me.look}
             equipped={me.equipped}
-            faceImage={me.faceImage}
             label="나의 아바타"
           />
           <div className="fighter-name">

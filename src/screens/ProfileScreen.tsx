@@ -11,7 +11,6 @@ export function ProfileScreen({
   nickname,
   look,
   equipped,
-  faceImage,
   loggedIn,
   stats,
   weeklyCount,
@@ -23,7 +22,6 @@ export function ProfileScreen({
   nickname: string
   look: AvatarLook
   equipped: Equipped
-  faceImage?: string
   loggedIn: boolean
   stats: BadgeStats
   /** 최근 7일 동안 학습한 장소 수 */
@@ -121,7 +119,7 @@ export function ProfileScreen({
     <section className="content-screen tab-screen">
       <header className="profile-head">
         <div className="profile-avatar">
-          <Avatar look={look} equipped={equipped} faceImage={faceImage} />
+          <Avatar look={look} equipped={equipped} />
         </div>
         <div>
           <p>{loggedIn ? '반가워요!' : '둘러보는 중이에요'}</p>

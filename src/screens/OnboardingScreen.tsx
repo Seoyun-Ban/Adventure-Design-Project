@@ -31,7 +31,7 @@ export function OnboardingScreen({
   const titles = ['나만의 탐험가 만들기', '얼굴 등록하기', '학습 단계 고르기']
   const subtitles = [
     '역사 여행을 함께할 아바타의 모습을 골라주세요.',
-    '찍은 얼굴은 만화풍으로 바뀌어 학습 장면 속 내 캐릭터에 들어가요.',
+    '찍은 얼굴은 학습 영상 속 역사 현장에 함께 등장해요.',
     '나중에 설정이나 학습 화면에서 언제든 바꿀 수 있어요.',
   ]
 
@@ -60,11 +60,7 @@ export function OnboardingScreen({
       </header>
 
       <div className="onboarding-preview">
-        <Avatar
-          look={look}
-          equipped={step === 0 ? {} : equipped}
-          faceImage={step >= 1 ? faceImage : undefined}
-        />
+        <Avatar look={look} equipped={step === 0 ? {} : equipped} />
       </div>
 
       {step === 0 && (
