@@ -40,6 +40,29 @@ git push
 | 아바타 아이템 | `src/data/avatar.ts` |
 | 색상 | `src/index.css` 맨 위 `:root` 변수 |
 
+### 캐릭터 그림 추가하기
+
+학습 영상 장면의 역사 인물 그림은 아래 이름으로 넣으면 자동으로 SVG 캐릭터 대신 그림이 나옵니다. (`src/data/figures.ts`의 `image`)
+
+| 인물 | 파일 이름 | 상태 |
+| --- | --- | --- |
+| 세종 | `sejong.png` | ✅ |
+| 태조 이성계 | `taejo.png` | ⬜ |
+| 정조 | `jeongjo.png` | ⬜ |
+| 이순신 | `yisunsin.png` | ⬜ |
+| 김대성 | `kimdaeseong.png` | ⬜ |
+| 독립군 청년 | `independence.png` | ⬜ |
+| 내 캐릭터 (남/여) | `me-boy.png`, `me-girl.png` | ✅ |
+
+1. 배경이 **투명한** PNG로 만든다 (전신, 정면, 기존 그림과 비슷한 비율)
+2. 원본을 `art/characters/` 폴더에 넣는다
+3. 터미널에서 `npm run images` → 여백을 자르고 용량을 줄인 그림이 `public/images/characters/`에 생긴다 (약 1MB → 100KB)
+4. `npm run dev`로 확인 후 커밋 (원본과 줄인 그림 둘 다)
+
+내 캐릭터 그림을 바꾸면 얼굴 사진이 겹치는 위치(`figures.ts`의 `myCharacters` → `face`)도 새 그림에 맞게 고쳐야 합니다.
+
+### 사진
+
 사진은 `public/images/` 폴더에 넣고 `'/images/파일이름.jpg'` 처럼 경로를 적으면 됩니다. **출처와 라이선스를 꼭 확인**하고 README에 출처를 적어주세요.
 
 ## 4. 할 일 목록 (담당자 이름 적고 시작)

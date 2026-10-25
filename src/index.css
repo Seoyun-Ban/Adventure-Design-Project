@@ -4197,6 +4197,44 @@ button.settings-row {
 .scene-actor.speaking {
   transform: translateY(-4px) scale(1.04);
 }
+/* 캐릭터 그림(PNG). 얼굴 사진은 그림 크기 대비 % 위치에 동그랗게 겹친다. */
+.actor-art {
+  position: relative;
+  height: 148px;
+}
+.actor-art > img:first-child {
+  display: block;
+  height: 100%;
+  width: auto;
+  filter: drop-shadow(0 6px 8px rgba(20, 30, 20, 0.25));
+}
+.actor-face {
+  position: absolute;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  object-fit: cover;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 0 2px #f3d6bb;
+}
+/* 말하는 동안 살짝 위아래로 움직인다. translate를 써서 기존 transform(좌우 반전)과 겹치지 않게 한다. */
+.scene-actor.talking .actor-art,
+.scene-actor.talking .avatar-svg {
+  animation: actor-bob 0.3s ease-in-out infinite alternate;
+}
+@keyframes actor-bob {
+  from {
+    translate: 0 0;
+  }
+  to {
+    translate: 0 -4px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scene-actor.talking .actor-art,
+  .scene-actor.talking .avatar-svg {
+    animation: none;
+  }
+}
 .actor-name {
   margin-top: -6px;
   padding: 2px 8px;

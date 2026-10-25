@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "format": "prettier --write src"
+    "format": "prettier --write src",
+    "images": "node scripts/optimize-images.mjs"
   },
   "dependencies": {
     "@svg-maps/south-korea": "^2.0.0",
@@ -23,6 +24,7 @@
     "@types/three": "0.170.0",
     "@vitejs/plugin-react": "^6.0.0",
     "prettier": "^3.3.3",
+    "sharp": "^0.35.5",
     "tailwindcss": "^4.0.0",
     "typescript": "^5.7.0",
     "vite": "^8.0.5"

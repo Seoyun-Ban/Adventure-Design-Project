@@ -115,12 +115,7 @@ export function AvatarScreen({
       </header>
       <div className="avatar-stage">
         <div className="sun-disc" />
-        <Avatar
-          className="stage-avatar"
-          look={look}
-          equipped={equipped}
-          label={`${nickname}의 아바타`}
-        />
+        <Avatar className="stage-avatar" look={look} equipped={equipped} label={`${nickname}의 아바타`} />
         <span className="avatar-shadow" />
         <div className="avatar-power">
           <span>총 전투력</span>

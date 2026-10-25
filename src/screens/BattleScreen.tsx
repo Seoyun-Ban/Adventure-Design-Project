@@ -169,12 +169,7 @@ export function BattleScreen({
         </div>
         <div className="versus">VS</div>
         <div className={`fighter player ${hit === 'me' ? 'hit' : ''} ${shield ? 'shielded' : ''}`}>
-          <Avatar
-            className="fighter-avatar"
-            look={me.look}
-            equipped={me.equipped}
-            label="나의 아바타"
-          />
+          <Avatar className="fighter-avatar" look={me.look} equipped={me.equipped} label="나의 아바타" />
           <div className="fighter-name">
             <span>{me.nickname}</span>
             <strong>전투력 {myPower.toLocaleString()}</strong>

@@ -3,6 +3,8 @@ import type { AvatarLook, Equipped } from '../types'
 // 학습 화면 2D 장면에 등장하는 역사 인물과 대사
 // - speaker: 'figure'(역사 인물) / 'me'(사용자 아바타)
 // - voice: 음성 읽기(TTS)의 높낮이·빠르기. 인물 분위기에 맞게 조절한다.
+// - image: 캐릭터 그림 경로. 파일이 아직 없으면 look·equipped로 그린 SVG 캐릭터가 대신 나온다.
+//   그림을 추가하는 법은 docs/TEAM_GUIDE.md 참고 (art/characters에 넣고 npm run images).
 // 독립기념관의 안내인은 특정 실존 인물이 아닌 가상의 독립군 청년이다.
 
 export type DialogueLine = { speaker: 'figure' | 'me'; text: string }
@@ -10,6 +12,7 @@ export type DialogueLine = { speaker: 'figure' | 'me'; text: string }
 export type HistoricalFigure = {
   name: string
   title: string
+  image?: string
   look: AvatarLook
   equipped: Equipped
   beard?: 'mustache' | 'beard'
@@ -25,6 +28,7 @@ export const figures: Record<string, HistoricalFigure> = {
   gyeongbokgung: {
     name: '태조 이성계',
     title: '조선을 세운 임금',
+    image: '/images/characters/taejo.png',
     look: king,
     equipped: { 장비: 'ikseongwan', 의복: 'royal-robe' },
     beard: 'beard',
@@ -43,6 +47,7 @@ export const figures: Record<string, HistoricalFigure> = {
   suwon: {
     name: '정조',
     title: '조선의 스물두 번째 임금',
+    image: '/images/characters/jeongjo.png',
     look: { ...king, body: '보통' },
     equipped: { 장비: 'ikseongwan', 의복: 'royal-robe', 무기: 'jeongjo-bow' },
     beard: 'mustache',
@@ -61,6 +66,7 @@ export const figures: Record<string, HistoricalFigure> = {
   independence: {
     name: '독립군 청년',
     title: '독립운동 이야기 안내인 (가상 인물)',
+    image: '/images/characters/independence.png',
     look: { gender: '남', body: '마름', hair: '짧은 머리', skin: '#e3b48c' },
     equipped: { 장비: 'liberation-cap', 의복: 'khaki-uniform' },
     voice: { pitch: 1.0, rate: 0.98 },
@@ -78,6 +84,7 @@ export const figures: Record<string, HistoricalFigure> = {
   bulguksa: {
     name: '김대성',
     title: '불국사를 지은 신라의 재상',
+    image: '/images/characters/kimdaeseong.png',
     look: { gender: '남', body: '보통', hair: '상투·쪽머리', skin: '#e8b890' },
     equipped: { 의복: 'silla-noble' },
     beard: 'mustache',
@@ -93,6 +100,7 @@ export const figures: Record<string, HistoricalFigure> = {
   hansando: {
     name: '이순신',
     title: '조선 수군을 이끈 장군',
+    image: '/images/characters/yisunsin.png',
     look: { gender: '남', body: '튼튼', hair: '상투·쪽머리', skin: '#dcaa80' },
     equipped: { 장비: 'helmet', 의복: 'armor', 무기: 'hwarang-sword' },
     beard: 'beard',
@@ -108,6 +116,7 @@ export const figures: Record<string, HistoricalFigure> = {
   hunminjeongeum: {
     name: '세종',
     title: '훈민정음을 만든 임금',
+    image: '/images/characters/sejong.png',
     look: king,
     equipped: { 장비: 'ikseongwan', 의복: 'royal-robe', 무기: 'brush' },
     beard: 'beard',
@@ -127,3 +136,16 @@ export const figures: Record<string, HistoricalFigure> = {
 
 /** 사용자 아바타 목소리 */
 export const myVoice = { pitch: 1.35, rate: 1.0 }
+
+/**
+ * 영상 장면 속 내 캐릭터 그림 (성별별)
+ * face: 등록한 얼굴 사진을 겹칠 동그라미의 가운데 위치(x, y)와 지름(size). 그림 너비·높이 대비 %.
+ * 그림을 바꾸면 이 값도 새 그림의 얼굴 위치에 맞게 고쳐야 한다.
+ */
+export const myCharacters: Record<
+  AvatarLook['gender'],
+  { image: string; face: { x: number; y: number; size: number } }
+> = {
+  남: { image: '/images/characters/me-boy.png', face: { x: 50, y: 28, size: 43 } },
+  여: { image: '/images/characters/me-girl.png', face: { x: 50, y: 24, size: 42 } },
+}
