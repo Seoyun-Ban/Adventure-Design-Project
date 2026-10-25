@@ -5,6 +5,7 @@ import { Place3D } from './Place3D'
 import { figures, myCharacters, myVoice } from '../data/figures'
 import { Bgm } from '../lib/bgm'
 import { canSpeak, speak, stopSpeaking } from '../lib/speech'
+import { withJosa } from '../lib/korean'
 import type { AvatarLook, Equipped } from '../types'
 
 // 학습 중간에 나오는 영상 장면
@@ -152,7 +153,7 @@ export function HistoryScene({
             <span>
               <Icon name={index >= 0 ? 'refresh' : 'play'} size={30} />
             </span>
-            <small>{index >= 0 ? '다시 보기' : `${figure.name}와 만나기`}</small>
+            <small>{index >= 0 ? '다시 보기' : `${withJosa(figure.name, '과')} 만나기`}</small>
           </button>
         )}
         <div className="scene-controls">

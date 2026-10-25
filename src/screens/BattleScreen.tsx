@@ -3,6 +3,7 @@ import { Icon } from '../components/Icon'
 import { Avatar } from '../components/Avatar'
 import { totalPower } from '../data/avatar'
 import { randomBattleQuestion } from '../lib/quizGenerator'
+import { withJosa } from '../lib/korean'
 import type { AvatarLook, Equipped, QuizItem } from '../types'
 
 // 친구와 역사 지식 대결 (턴제)
@@ -108,7 +109,7 @@ export function BattleScreen({
             : `${opponent.name}의 공격! ${damage}의 피해를 받았어요.`,
         )
       } else {
-        setLog(`${opponent.name}이(가) 문제를 틀려 공격하지 못했어요.`)
+        setLog(`${withJosa(opponent.name, '이')} 문제를 틀려 공격하지 못했어요.`)
       }
       setShield(false)
       later(() => {

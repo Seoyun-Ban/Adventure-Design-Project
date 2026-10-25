@@ -1,5 +1,6 @@
 import { getContent } from '../data/contents'
 import { facts, type Fact } from '../data/facts'
+import { josa } from './korean'
 import type { Difficulty, QuizItem } from '../types'
 
 // 퀴즈 만들기
@@ -18,25 +19,13 @@ const shuffle = <T>(list: T[]) => {
   return copy
 }
 
-/** 받침이 있는지 (숫자로 끝나면 읽는 소리 기준) */
-function hasBatchim(word: string) {
-  const last = word.trim().slice(-1)
-  const code = last.charCodeAt(0) - 0xac00
-  if (code >= 0 && code <= 11171) return code % 28 !== 0
-  return '0136781'.includes(last)
-}
-function isRieul(word: string) {
-  const code = word.trim().slice(-1).charCodeAt(0) - 0xac00
-  return code >= 0 && code % 28 === 8
-}
 function fill(statement: string, word: string) {
-  const b = hasBatchim(word)
   return statement
     .replace('{answer}', word)
-    .replace('{이}', b ? '이' : '가')
-    .replace('{을}', b ? '을' : '를')
-    .replace('{과}', b ? '과' : '와')
-    .replace('{으로}', b && !isRieul(word) ? '으로' : '로')
+    .replace('{이}', josa(word, '이'))
+    .replace('{을}', josa(word, '을'))
+    .replace('{과}', josa(word, '과'))
+    .replace('{으로}', josa(word, '으로'))
 }
 
 /** 보기를 섞고 정답 위치를 다시 계산 */
