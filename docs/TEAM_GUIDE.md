@@ -47,11 +47,11 @@ git push
 | 인물 | 파일 이름 | 상태 |
 | --- | --- | --- |
 | 세종 | `sejong.png` | ✅ |
-| 태조 이성계 | `taejo.png` | ⬜ |
-| 정조 | `jeongjo.png` | ⬜ |
-| 이순신 | `yisunsin.png` | ⬜ |
-| 김대성 | `kimdaeseong.png` | ⬜ |
-| 독립군 청년 | `independence.png` | ⬜ |
+| 태조 이성계 | `taejo.png` | ✅ |
+| 정조 | `jeongjo.png` | ✅ |
+| 이순신 | `yisunsin.png` | ✅ |
+| 김대성 | `kimdaeseong.png` | ✅ |
+| 독립군 청년 | `independence.png` | ✅ |
 | 내 캐릭터 (남/여) | `me-boy.png`, `me-girl.png` | ✅ |
 
 1. 배경이 **투명한** PNG로 만든다 (전신, 정면, 기존 그림과 비슷한 비율)
