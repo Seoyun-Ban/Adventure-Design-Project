@@ -57,10 +57,10 @@ export const storyBooks: StoryBookData[] = [
     subtitle: '자유를 향해 걸었던 사람들',
     cover: '#8f3b30',
     emblem: '光',
-    tags: ['독립운동', '근현대사', '천안', '대한민국'],
+    tags: ['독립운동', '근현대사', '천안', '대한민국', '3·1 운동', '유관순', '아우내'],
     chapters: [
       { title: '기억의 문을 열다', location: '천안 · 독립기념관', placeId: 'independence' },
-      soon('만세 소리가 울린 거리', '천안 · 아우내 장터'),
+      { title: '만세 소리가 울린 거리', location: '천안 병천 · 아우내 장터', placeId: 'aunae' },
       soon('임시정부의 발자취', '서울 · 경교장'),
       soon('감옥에서도 꺾이지 않은 뜻', '서울 · 서대문형무소'),
     ],

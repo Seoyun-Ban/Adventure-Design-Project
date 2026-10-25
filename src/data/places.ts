@@ -35,6 +35,17 @@ export const places: Place[] = [
     summary: '우리의 자유를 지킨 사람들,\n가까이에서 이야기를 만나보세요.',
   },
   {
+    // 지금의 병천시장 (충남 천안시 동남구 병천면)
+    id: 'aunae',
+    name: '아우내 장터',
+    region: '천안 병천',
+    status: 'available',
+    kind: 'site',
+    top: '37%',
+    left: '39%',
+    summary: '태극기를 들고 외친 만세,\n유관순의 이야기를 만나보세요.',
+  },
+  {
     id: 'bulguksa',
     name: '불국사',
     region: '경주',

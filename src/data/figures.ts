@@ -81,6 +81,27 @@ export const figures: Record<string, HistoricalFigure> = {
       { speaker: 'figure', text: '맞아요. 그렇게 1987년 광복절에 이곳이 문을 열었답니다.' },
     ],
   },
+  aunae: {
+    name: '유관순',
+    title: '아우내 장터 만세 운동을 이끈 이화학당 학생',
+    image: '/images/characters/yugwansun.png',
+    look: { gender: '여', body: '마름', hair: '긴 머리', skin: '#f2c9a0' },
+    equipped: { 무기: 'manse-flag' },
+    voice: { pitch: 1.2, rate: 0.98 },
+    mood: 'memorial',
+    dialogue: [
+      { speaker: 'figure', text: '반가워요. 나는 이화학당 학생 유관순이에요.' },
+      {
+        speaker: 'figure',
+        text: '1919년 3월 1일, 서울에서 만세 운동에 함께했어요. 학교가 문을 닫자 독립선언서를 가지고 고향 병천으로 내려왔지요.',
+      },
+      { speaker: 'me', text: '그래서 이 장터에 사람들이 모인 거예요?' },
+      {
+        speaker: 'figure',
+        text: '맞아요. 4월 1일 장날, 3천여 명이 모였어요. 나는 미리 준비한 태극기를 나누어 주고 맨 앞에서 대한 독립 만세를 외쳤답니다!',
+      },
+    ],
+  },
   bulguksa: {
     name: '김대성',
     title: '불국사를 지은 신라의 재상',

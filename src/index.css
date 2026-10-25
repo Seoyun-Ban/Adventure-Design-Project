@@ -1031,6 +1031,9 @@ button {
 .place-thumb.independence {
   background: linear-gradient(145deg, #d8ded0, #abbba3);
 }
+.place-thumb.aunae {
+  background: linear-gradient(145deg, #e6d8bb, #c3ab82);
+}
 .place-thumb.bulguksa {
   background: linear-gradient(145deg, #ddcfae, #b5a778);
 }

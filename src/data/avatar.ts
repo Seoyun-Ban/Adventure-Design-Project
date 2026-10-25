@@ -71,6 +71,17 @@ export const historyItems: HistoryItem[] = [
     description: '스물여덟 글자를 세상에 남긴 붓. 지혜가 가장 큰 무기!',
     stats: { 공격: 30, 방어: 30, 지혜: 99 },
   },
+  {
+    id: 'manse-flag',
+    name: '만세 태극기',
+    shortName: '만세 태극기',
+    category: '무기',
+    symbol: '旗',
+    placeId: 'aunae',
+    rarity: '전설',
+    description: '유관순이 아우내 장터에서 사람들에게 나누어 준 태극기를 떠올리게 하는 깃발.',
+    stats: { 공격: 42, 방어: 64, 지혜: 90 },
+  },
   // 의복 (몸)
   {
     id: 'official-robe',

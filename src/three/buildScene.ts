@@ -3,7 +3,7 @@ import * as THREE from 'three'
 // 장소별 3D 배경을 코드로 만드는 함수 모음 (로우폴리 스타일)
 // 외부 모델 파일 없이 기본 도형을 조합해서 만들기 때문에 인터넷 연결 없이도 보인다.
 
-export type SceneKind = 'palace' | 'fortress' | 'memorial' | 'temple' | 'sea' | 'hall'
+export type SceneKind = 'palace' | 'fortress' | 'memorial' | 'market' | 'temple' | 'sea' | 'hall'
 
 export type SceneTheme = {
   kind: SceneKind
@@ -35,6 +35,13 @@ export const sceneThemes: Record<string, SceneTheme> = {
     skyBottom: '#eef0ea',
     ground: '#bfc4b4',
     orbit: { radius: 30, height: 10, target: [0, 4, 0] },
+  },
+  aunae: {
+    kind: 'market',
+    skyTop: '#8fb8d8',
+    skyBottom: '#f4e6c8',
+    ground: '#cbb48c',
+    orbit: { radius: 24, height: 8, target: [0, 2, 0] },
   },
   bulguksa: {
     kind: 'temple',
@@ -286,6 +293,54 @@ export function buildScene(scene: THREE.Scene, theme: SceneTheme): (time: number
       })
     }
     for (let i = 0; i < 6; i += 1) scene.add(tree(-16 + i * 6.4, -14, 1.2, '#5b8a54'))
+  }
+
+  if (theme.kind === 'market') {
+    // 장날의 장터 거리: 가운데 길 양옆으로 집과 천막 가게, 흔들리는 흰 깃발
+    scene.add(mountains('#8fa57a'))
+    const road = box(6, 0.1, 40, '#bfa77d')
+    road.position.y = 0.05
+    scene.add(road)
+    for (const side of [-1, 1]) {
+      for (let i = 0; i < 3; i += 1) {
+        const house = hanok(4, 3, 2)
+        house.position.set(side * 10, 0, -10 + i * 7)
+        house.rotation.y = side * (Math.PI / 2)
+        scene.add(house)
+      }
+      for (let i = 0; i < 4; i += 1) {
+        const stall = new THREE.Group()
+        const table = box(2.4, 1, 1.4, '#8a6240')
+        table.position.y = 0.5
+        const goods = box(2, 0.4, 1, ['#d9a441', '#9cbf5f', '#c8553d', '#e8d9b5'][i])
+        goods.position.y = 1.2
+        const awning = box(3, 0.15, 2.2, i % 2 ? '#efe6d2' : '#d8cdb3')
+        awning.position.y = 2.6
+        awning.rotation.z = side * 0.18
+        stall.add(table, goods, awning)
+        for (const x of [-1.3, 1.3]) {
+          const post = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 2.6, 6), mat('#6b4a2f'))
+          post.position.set(x, 1.3, 0.9)
+          stall.add(post)
+        }
+        stall.position.set(side * 5, 0, -9 + i * 5.5)
+        stall.rotation.y = side * (Math.PI / 2)
+        scene.add(stall)
+      }
+    }
+    for (let i = 0; i < 6; i += 1) {
+      const x = -6 + (i % 2) * 12
+      const z = -8 + Math.floor(i / 2) * 7
+      const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 4, 6), mat('#7a5a3a'))
+      pole.position.set(x, 2, z)
+      const flag = box(1.2, 0.8, 0.04, '#fbfaf5')
+      flag.position.set(x + 0.6, 3.5, z)
+      scene.add(pole, flag)
+      animated.push((t) => {
+        flag.rotation.y = Math.sin(t * 2.2 + i) * 0.3
+      })
+    }
+    for (let i = 0; i < 4; i += 1) scene.add(tree(-18 + i * 12, -16, 1.1))
   }
 
   if (theme.kind === 'temple') {
