@@ -1,0 +1,78 @@
+import type { Place } from '../types'
+
+// 지도에 표시되는 역사 장소 목록
+// 새 장소를 추가하려면: 1) 여기에 장소 추가 2) data/contents.ts에 학습 콘텐츠 추가
+// top/left는 지도 영역 기준 퍼센트 위치
+export const places: Place[] = [
+  {
+    id: 'gyeongbokgung',
+    name: '경복궁',
+    region: '서울',
+    status: 'available',
+    kind: 'site',
+    top: '22%',
+    left: '24%',
+    summary: '조선 왕조의 첫 궁궐,\n왕의 하루를 따라가 볼까요?',
+  },
+  {
+    id: 'suwon',
+    name: '수원화성',
+    region: '수원',
+    status: 'available',
+    kind: 'site',
+    top: '29%',
+    left: '27%',
+    summary: '정조의 꿈이 담긴 성곽,\n과학적인 비밀을 만나보세요.',
+  },
+  {
+    id: 'independence',
+    name: '독립기념관',
+    region: '천안',
+    status: 'available',
+    kind: 'site',
+    top: '40%',
+    left: '33%',
+    summary: '우리의 자유를 지킨 사람들,\n가까이에서 이야기를 만나보세요.',
+  },
+  {
+    id: 'bulguksa',
+    name: '불국사',
+    region: '경주',
+    status: 'available',
+    kind: 'site',
+    top: '57%',
+    left: '68%',
+    summary: '돌과 나무로 만든 이상 세계,\n신라의 아름다움을 발견해요.',
+  },
+  {
+    id: 'hansando',
+    name: '한산도',
+    region: '통영',
+    status: 'locked',
+    kind: 'site',
+    top: '70%',
+    left: '50%',
+    summary: '아직 안개에 가려진 이야기예요.\n한산도에 도착하면 해금됩니다.',
+  },
+  {
+    // 위치가 분명하지 않은 사건: 어디서나 학습 가능, 학습한 곳에 발자국이 남는다
+    id: 'hunminjeongeum',
+    name: '훈민정음 반포',
+    region: '어디서나',
+    status: 'available',
+    kind: 'event',
+    top: '0%',
+    left: '0%',
+    summary: '백성을 위해 만든 스물여덟 글자,\n지금 있는 곳에서 만나보세요.',
+  },
+]
+
+/** 사용자의 현재 위치 (프로토타입에서는 고정값. TODO: 실제 GPS 연동) */
+export const CURRENT_LOCATION = { top: '24%', left: '26%' }
+
+/** 근처 장소 알림 반경 (기획서 기준 500m, 논의 필요) */
+export const NEARBY_RADIUS_M = 500
+
+export function findPlace(id: string) {
+  return places.find((place) => place.id === id)
+}
