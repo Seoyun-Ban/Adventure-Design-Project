@@ -33,6 +33,7 @@ export type IconName =
   | 'bell'
   | 'camera'
   | 'heart'
+  | 'edit'
 
 /**
  * 지도에 표시되는 역사 장소

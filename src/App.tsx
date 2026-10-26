@@ -188,6 +188,7 @@ export default function App() {
             setScreen('login')
           }}
           onEditAvatar={() => setScreen('onboarding')}
+          onNotice={showToast}
         />
       )}
       {screen === 'learn' && (

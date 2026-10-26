@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { BottomTabs } from '../components/BottomTabs'
 import { SideMenu } from '../components/SideMenu'
+import { NicknameSheet } from '../components/NicknameSheet'
 import { MapScreen } from './MapScreen'
 import { StoryBookScreen } from './StoryBookScreen'
 import { AvatarScreen } from './AvatarScreen'
@@ -22,6 +23,7 @@ export function HomeScreen({
   onLogin,
   onLogout,
   onEditAvatar,
+  onNotice,
 }: {
   store: ReturnType<typeof useProgress>
   onLearn: (place: Place) => void
@@ -30,6 +32,8 @@ export function HomeScreen({
   onLogin: () => void
   onLogout: () => void
   onEditAvatar: () => void
+  /** 화면 아래 안내 메시지 (토스트) */
+  onNotice: (message: string) => void
 }) {
   const { progress, completedIds, quizDoneIds, update, equip, resetProgress, toggleFavorite, recordBattle } =
     store
@@ -43,6 +47,20 @@ export function HomeScreen({
     look: progress.look,
     equipped: progress.equipped,
   }
+  // 닉네임 바꾸기 창: 내 정보 탭과 설정 화면에서 함께 쓴다
+  const [nicknameOpen, setNicknameOpen] = useState(false)
+  const openNickname = () => setNicknameOpen(true)
+  const nicknameSheet = nicknameOpen && (
+    <NicknameSheet
+      current={progress.nickname}
+      onClose={() => setNicknameOpen(false)}
+      onSave={(nickname) => {
+        update({ nickname })
+        setNicknameOpen(false)
+        onNotice('닉네임을 바꿨어요')
+      }}
+    />
+  )
 
   if (page === 'archive') {
     return (
@@ -64,10 +82,12 @@ export function HomeScreen({
           onPushChange={(pushEnabled) => update({ pushEnabled })}
           onReset={resetProgress}
           onEditAvatar={onEditAvatar}
+          onEditNickname={openNickname}
           onBack={back}
           onLogin={onLogin}
           onLogout={onLogout}
         />
+        {nicknameSheet}
       </main>
     )
   }
@@ -125,6 +145,7 @@ export function HomeScreen({
           completedIds={completedIds}
           onToggleFavorite={toggleFavorite}
           onOpenPlace={onLearn}
+          onEditNickname={openNickname}
         />
       )}
       <BottomTabs active={tab} onChange={setTab} />
@@ -135,6 +156,7 @@ export function HomeScreen({
         onClose={() => setMenuOpen(false)}
         onNavigate={setPage}
       />
+      {nicknameSheet}
     </main>
   )
 }

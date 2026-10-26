@@ -13,6 +13,7 @@ export function SettingsScreen({
   onPushChange,
   onReset,
   onEditAvatar,
+  onEditNickname,
   onBack,
   onLogin,
   onLogout,
@@ -26,6 +27,7 @@ export function SettingsScreen({
   onPushChange: (enabled: boolean) => void
   onReset: () => void
   onEditAvatar: () => void
+  onEditNickname: () => void
   onBack: () => void
   onLogin: () => void
   onLogout: () => void
@@ -106,6 +108,16 @@ export function SettingsScreen({
             {loggedIn ? email || '간편 로그인 계정' : '로그인하면 지금까지의 기록이 계정에 저장돼요.'}
           </span>
         </div>
+        <button type="button" className="account-nickname" onClick={onEditNickname}>
+          <span className="settings-icon">
+            <Icon name="edit" size={18} />
+          </span>
+          <span>
+            <strong>닉네임 바꾸기</strong>
+            <small>지금 닉네임: {nickname}</small>
+          </span>
+          <Icon name="chevron" size={18} />
+        </button>
       </div>
       <ActionButton variant={loggedIn ? 'ghost' : 'primary'} onClick={loggedIn ? onLogout : onLogin}>
         {loggedIn ? '로그아웃' : '로그인'}

@@ -473,6 +473,74 @@ button {
 .auth-done .auth-note {
   margin: -6px 0 16px;
 }
+/* 아래에서 올라오는 작은 창 (바텀시트) — 닉네임 바꾸기 */
+.sheet-layer {
+  position: fixed;
+  z-index: 130;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(25, 35, 28, 0.5);
+  animation: scene-fade 0.2s ease;
+}
+.bottom-sheet {
+  width: 100%;
+  max-width: 393px;
+  padding: 10px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+  border-radius: 24px 24px 0 0;
+  background: var(--cream);
+  box-shadow: 0 -10px 30px rgba(25, 35, 28, 0.2);
+  animation: sheet-up 0.25s ease;
+}
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sheet-layer,
+  .bottom-sheet {
+    animation: none;
+  }
+}
+.sheet-grip {
+  display: block;
+  width: 40px;
+  height: 4px;
+  margin: 0 auto 6px;
+  border-radius: 4px;
+  background: #d6d0c2;
+}
+.sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.sheet-head h2 {
+  margin: 0;
+  font-family: 'Gowun Batang', serif;
+  color: var(--green);
+  font-size: 19px;
+}
+.field > .field-label-row {
+  display: flex;
+  justify-content: space-between;
+}
+.field-label-row em {
+  font-style: normal;
+  color: var(--ink-soft);
+}
+.field-label-row em.over {
+  color: var(--danger);
+}
+.bottom-sheet .action-button {
+  margin-top: 6px;
+}
 .auth-guardian-wait {
   margin-bottom: 14px;
   text-align: left;
@@ -2786,6 +2854,30 @@ button {
   font-size: 9px;
   font-weight: 700;
 }
+.profile-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.profile-name h2 {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.nickname-edit {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--green-2);
+  background: var(--green-3);
+  cursor: pointer;
+}
 .profile-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -3205,6 +3297,41 @@ button {
   margin-top: 4px;
   color: var(--ink-soft);
   font-size: 8px;
+}
+/* 계정 칸 안의 '닉네임 바꾸기' 줄 (계정 칸 글자 스타일을 덮어쓴다) */
+.account-card .account-nickname {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 34px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+  padding: 11px 0 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+  color: var(--ink-soft);
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+.account-card .account-nickname .settings-icon {
+  width: 34px;
+  height: 34px;
+  margin: 0;
+  color: var(--green-2);
+}
+.account-card .account-nickname span {
+  margin: 0;
+}
+.account-card .account-nickname strong {
+  color: var(--ink);
+  font-size: 11px;
+}
+.account-card .account-nickname small {
+  display: block;
+  margin-top: 3px;
+  color: var(--ink-soft);
+  font-size: 9px;
 }
 .settings-screen > .action-button.ghost {
   color: var(--danger);

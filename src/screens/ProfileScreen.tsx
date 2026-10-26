@@ -17,6 +17,7 @@ export function ProfileScreen({
   completedIds,
   onToggleFavorite,
   onOpenPlace,
+  onEditNickname,
 }: {
   nickname: string
   look: AvatarLook
@@ -28,6 +29,7 @@ export function ProfileScreen({
   completedIds: string[]
   onToggleFavorite: (placeId: string) => void
   onOpenPlace: (place: Place) => void
+  onEditNickname: () => void
 }) {
   const [view, setView] = useState<'main' | 'badges' | 'favorites'>('main')
   const earned = badges.filter((badge) => badge.earned(stats))
@@ -121,7 +123,17 @@ export function ProfileScreen({
         </div>
         <div>
           <p>{loggedIn ? '반가워요!' : '둘러보는 중이에요'}</p>
-          <h2>{nickname}</h2>
+          <div className="profile-name">
+            <h2>{nickname}</h2>
+            <button
+              className="nickname-edit"
+              type="button"
+              onClick={onEditNickname}
+              aria-label="닉네임 바꾸기"
+            >
+              <Icon name="edit" size={16} />
+            </button>
+          </div>
           <span>역사 탐험가 · Lv. {1 + stats.footprints}</span>
         </div>
       </header>
