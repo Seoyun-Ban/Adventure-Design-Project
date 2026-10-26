@@ -2,6 +2,9 @@ import { useState } from 'react'
 import { Icon } from '../components/Icon'
 import { CharacterAvatar } from '../components/CharacterAvatar'
 import { SubpageHeader } from '../components/SubpageHeader'
+import { BattleRecordCard } from '../components/BattleRecordCard'
+import { levelFor } from '../data/avatar'
+import type { BattleRecord } from '../hooks/useProgress'
 import { badges, type BadgeStats } from '../data/badges'
 import { findPlace } from '../data/places'
 import type { AvatarLook, Place } from '../types'
@@ -18,6 +21,7 @@ export function ProfileScreen({
   onToggleFavorite,
   onOpenPlace,
   onEditNickname,
+  battle,
 }: {
   nickname: string
   look: AvatarLook
@@ -30,6 +34,7 @@ export function ProfileScreen({
   onToggleFavorite: (placeId: string) => void
   onOpenPlace: (place: Place) => void
   onEditNickname: () => void
+  battle: BattleRecord
 }) {
   const [view, setView] = useState<'main' | 'badges' | 'favorites'>('main')
   const earned = badges.filter((badge) => badge.earned(stats))
@@ -134,7 +139,7 @@ export function ProfileScreen({
               <Icon name="edit" size={16} />
             </button>
           </div>
-          <span>역사 탐험가 · Lv. {1 + stats.footprints}</span>
+          <span>역사 탐험가 · Lv. {levelFor(stats.footprints)}</span>
         </div>
       </header>
       <div className="profile-stats">
@@ -171,6 +176,8 @@ export function ProfileScreen({
           <i style={{ width: `${(Math.min(weeklyCount, weeklyGoal) / weeklyGoal) * 100}%` }} />
         </div>
       </div>
+      <h3 className="section-title">대결 기록</h3>
+      <BattleRecordCard battle={battle} />
       <div className="profile-menu">
         <button type="button" onClick={() => setView('badges')}>
           <span className="profile-menu-icon">

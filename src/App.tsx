@@ -203,6 +203,7 @@ export default function App() {
             faceImage: progress.faceImage,
           }}
           favorite={progress.favorites.includes(selectedPlace.id)}
+          completed={completedIds.includes(selectedPlace.id)}
           onToggleFavorite={() => toggleFavorite(selectedPlace.id)}
           onBack={() => setScreen('home')}
           onComplete={(difficulty) => {

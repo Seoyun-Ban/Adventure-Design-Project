@@ -2,8 +2,11 @@ import { useState } from 'react'
 import { Icon } from '../components/Icon'
 import { CharacterAvatar } from '../components/CharacterAvatar'
 import { ItemDetailModal } from '../components/ItemDetailModal'
-import { historyItems, battleFriends, findItem, totalPower } from '../data/avatar'
+import { PowerInfoSheet } from '../components/PowerInfoSheet'
+import { BattleRecordCard } from '../components/BattleRecordCard'
+import { historyItems, battleFriends, findItem, levelFor, powerOf } from '../data/avatar'
 import { BattleScreen } from './BattleScreen'
+import type { BattleRecord } from '../hooks/useProgress'
 import type { AvatarLook, Equipped, HistoryItem, ItemCategory } from '../types'
 
 const SLOT_LABEL: Record<ItemCategory, string> = { 장비: '머리', 무기: '손', 의복: '몸' }
@@ -14,6 +17,7 @@ export function AvatarScreen({
   look,
   equipped,
   completedIds,
+  battle,
   onEquip,
   onBattleEnd,
 }: {
@@ -21,19 +25,26 @@ export function AvatarScreen({
   look: AvatarLook
   equipped: Equipped
   completedIds: string[]
+  battle: BattleRecord
   onEquip: (category: ItemCategory, itemId?: string) => void
-  onBattleEnd: (won: boolean) => void
+  onBattleEnd: (opponent: string, won: boolean) => void
 }) {
   const isOwned = (item: HistoryItem) => completedIds.includes(item.placeId)
   const ownedCount = historyItems.filter(isOwned).length
+  const level = levelFor(completedIds.length)
+  const power = powerOf(equipped, level)
   const [category, setCategory] = useState<ItemCategory>('장비')
   const [selectedItem, setSelectedItem] = useState<HistoryItem | null>(null)
   const [view, setView] = useState<'inventory' | 'friends' | 'battle'>('inventory')
   const [opponent, setOpponent] = useState(battleFriends[0])
+  const [powerInfo, setPowerInfo] = useState(false)
+  /** '다시 도전'을 누를 때마다 바꿔서 대결 화면을 처음부터 다시 시작한다 */
+  const [battleRound, setBattleRound] = useState(0)
   const filteredItems = historyItems.filter((item) => item.category === category)
 
   function startBattle(friend: (typeof battleFriends)[number]) {
     setOpponent(friend)
+    setBattleRound((round) => round + 1)
     setView('battle')
   }
 
@@ -62,6 +73,9 @@ export function AvatarScreen({
             <span>문제를 맞혀 상대의 체력을 먼저 0으로 만드세요.</span>
           </div>
         </div>
+        <h3 className="section-title">내 대결 기록</h3>
+        <BattleRecordCard battle={battle} />
+        <h3 className="section-title">대결 상대</h3>
         <div className="friend-list">
           {battleFriends.map((friend) => (
             <button type="button" key={friend.id} onClick={() => startBattle(friend)}>
@@ -70,8 +84,7 @@ export function AvatarScreen({
                 <small>{friend.title}</small>
                 <strong>{friend.name}</strong>
                 <i>
-                  Lv. {friend.level} · 전투력{' '}
-                  {(totalPower(friend.equipped) + friend.level * 60).toLocaleString()}
+                  Lv. {friend.level} · 전투력 {powerOf(friend.equipped, friend.level).total.toLocaleString()}
                 </i>
               </span>
               <span className="challenge-label">대결</span>
@@ -85,18 +98,12 @@ export function AvatarScreen({
   if (view === 'battle') {
     return (
       <BattleScreen
-        me={{
-          nickname,
-          look,
-          equipped,
-          level: 1 + completedIds.length,
-          completedCount: completedIds.length,
-        }}
+        key={battleRound}
+        me={{ nickname, look, equipped, level }}
         opponent={opponent}
-        onExit={(won) => {
-          if (won !== undefined) onBattleEnd(won)
-          setView('friends')
-        }}
+        onFinish={(won) => onBattleEnd(opponent.name, won)}
+        onRetry={() => setBattleRound((round) => round + 1)}
+        onExit={() => setView('friends')}
       />
     )
   }
@@ -123,11 +130,21 @@ export function AvatarScreen({
         />
         <span className="avatar-shadow" />
         <div className="avatar-power">
-          <span>총 전투력</span>
-          <strong>{totalPower(equipped).toLocaleString()}</strong>
+          <span>
+            총 전투력
+            <button
+              type="button"
+              className="power-info-button"
+              onClick={() => setPowerInfo(true)}
+              aria-label="전투력 올리는 방법 보기"
+            >
+              i
+            </button>
+          </span>
+          <strong>{power.total.toLocaleString()}</strong>
         </div>
         <div className="level-banner">
-          {nickname} · Lv. {1 + completedIds.length}
+          {nickname} · Lv. {level}
         </div>
       </div>
       <div className="equip-slots">
@@ -208,6 +225,7 @@ export function AvatarScreen({
           onClose={() => setSelectedItem(null)}
         />
       )}
+      {powerInfo && <PowerInfoSheet level={level} power={power} onClose={() => setPowerInfo(false)} />}
     </section>
   )
 }

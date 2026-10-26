@@ -245,10 +245,32 @@ export function findItem(id?: string) {
   return historyItems.find((item) => item.id === id)
 }
 
-/** 착용한 아이템 능력치 합계 */
-export function totalPower(equipped: Equipped) {
+/** 이 장소를 학습하면 얻는 아이템 */
+export function itemsForPlace(placeId: string) {
+  return historyItems.filter((item) => item.placeId === placeId)
+}
+
+// ---------- 레벨과 전투력 (모든 화면이 이 함수들만 쓴다) ----------
+
+/** 레벨 1당 더해지는 전투력 */
+export const LEVEL_POWER = 60
+
+/** 레벨 = 1 + 학습을 마친 장소 수 */
+export function levelFor(completedCount: number) {
+  return 1 + completedCount
+}
+
+/** 착용한 아이템 능력치(공격+방어+지혜) 합계 */
+export function itemPower(equipped: Equipped) {
   return Object.values(equipped).reduce((sum, id) => {
     const item = findItem(id)
     return item ? sum + item.stats.공격 + item.stats.방어 + item.stats.지혜 : sum
-  }, 100)
+  }, 0)
+}
+
+/** 전투력 = 아이템 능력치 합 + 레벨(학습량) 보너스. 계산 내역도 함께 돌려준다 */
+export function powerOf(equipped: Equipped, level: number) {
+  const items = itemPower(equipped)
+  const levelBonus = level * LEVEL_POWER
+  return { items, level: levelBonus, total: items + levelBonus }
 }

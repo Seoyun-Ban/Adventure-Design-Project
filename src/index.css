@@ -488,6 +488,8 @@ button {
   width: 100%;
   max-width: 393px;
   padding: 10px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+  max-height: 85svh;
+  overflow-y: auto;
   border-radius: 24px 24px 0 0;
   background: var(--cream);
   box-shadow: 0 -10px 30px rgba(25, 35, 28, 0.2);
@@ -2261,6 +2263,227 @@ button {
   margin-top: 2px;
   font-size: 13px;
 }
+.avatar-power > span {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+/* 총 전투력 옆 ⓘ 버튼 (작게 보이지만 누르는 영역은 넉넉하게) */
+.power-info-button {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  border: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: white;
+  background: var(--green-2);
+  font:
+    italic 800 10px Georgia,
+    serif;
+  cursor: pointer;
+}
+.power-info-button::after {
+  content: '';
+  position: absolute;
+  inset: -12px;
+}
+
+/* 전투력 올리는 방법 (바텀시트 안) */
+.power-steps {
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+.power-steps li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: white;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+.power-steps li > span {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--green);
+  background: var(--green-3);
+}
+.power-steps b {
+  color: var(--green);
+}
+.power-breakdown {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #f1ece0;
+}
+.power-breakdown > strong {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--green);
+  font-size: 12px;
+}
+.power-breakdown div {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  font-size: 12px;
+}
+.power-breakdown div.total {
+  margin-top: 4px;
+  padding-top: 8px;
+  border-top: 1px dashed rgba(55, 66, 55, 0.25);
+  color: var(--green);
+  font-weight: 800;
+  font-size: 13px;
+}
+
+/* 대결 기록 (아바타 탭 경쟁 화면, 내 정보) */
+.competition-intro + .section-title {
+  margin-top: 22px;
+}
+.battle-record {
+  margin-bottom: 22px;
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(255, 252, 245, 0.85);
+  box-shadow: 0 6px 18px rgba(49, 56, 43, 0.07);
+}
+.battle-record-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  text-align: center;
+}
+.battle-record-stats div {
+  padding: 8px 0;
+  border-radius: 12px;
+  background: var(--green-3);
+}
+.battle-record-stats strong {
+  display: block;
+  color: var(--green);
+  font-size: 18px;
+}
+.battle-record-stats span {
+  color: var(--ink-soft);
+  font-size: 10px;
+}
+.battle-record-list {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.battle-record-list li {
+  display: grid;
+  grid-template-columns: 26px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 2px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+}
+.battle-record-list .result {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: white;
+  font-size: 11px;
+  font-weight: 800;
+}
+.battle-record-list .result.win {
+  background: var(--green-2);
+}
+.battle-record-list .result.lose {
+  background: #a9a596;
+}
+.battle-record-list time {
+  color: var(--ink-soft);
+  font-size: 11px;
+}
+.battle-record-empty {
+  margin: 10px 0 0;
+  color: var(--ink-soft);
+  font-size: 11.5px;
+  text-align: center;
+}
+
+/* 장소에서 얻는 아이템 (지도 장소 카드, 학습 화면) */
+.place-items {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  margin-top: 6px;
+  font-size: 10px;
+}
+.place-items-label {
+  color: var(--ink-soft);
+  font-weight: 700;
+}
+.place-items-label::after {
+  content: ':';
+}
+.place-items-names {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.place-item-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px 2px 3px;
+  border-radius: 99px;
+  color: var(--green);
+  background: var(--green-3);
+  font-weight: 800;
+}
+.place-item-chip b {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: white;
+  background: var(--green-2);
+  font-family: 'Gowun Batang', serif;
+  font-size: 9px;
+}
+.place-items-done {
+  padding: 2px 7px;
+  border-radius: 99px;
+  color: white;
+  background: #c48a2c;
+  font-weight: 800;
+}
+.place-items.owned .place-item-chip {
+  opacity: 0.75;
+}
+.learn-items {
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(255, 252, 245, 0.9);
+  font-size: 11.5px;
+}
+.learn-items .place-item-chip b {
+  width: 18px;
+  height: 18px;
+  font-size: 10px;
+}
 .inventory-heading {
   display: flex;
   align-items: center;
@@ -2786,35 +3009,162 @@ button {
   font-size: 8px;
   font-weight: 800;
 }
-.battle-feedback {
+/* 대결이 끝난 뒤: 다시 도전 / 친구 목록으로 */
+.battle-over-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
   margin-top: 11px;
-  padding: 11px;
+}
+.battle-over-actions button {
+  height: 44px;
+  border: 1px solid rgba(23, 78, 58, 0.25);
   border-radius: 12px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  background: var(--green-3);
+  justify-content: center;
+  gap: 5px;
+  color: var(--green);
+  background: white;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
 }
-.battle-feedback.finished {
-  background: #efe1c6;
-}
-.battle-feedback strong {
-  font-size: 8px;
-  line-height: 1.45;
-}
-.battle-feedback button {
-  flex: 0 0 auto;
-  border: 0;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  padding: 7px 8px;
+.battle-over-actions button.retry {
+  border-color: transparent;
   color: white;
   background: var(--green);
-  font-size: 8px;
-  font-weight: 750;
-  cursor: pointer;
+}
+
+/* 승패 모션 */
+.battle-result-banner {
+  position: absolute;
+  z-index: 6;
+  top: 50%;
+  left: 50%;
+  margin: 0;
+  padding: 10px 18px;
+  border-radius: 16px;
+  white-space: nowrap;
+  transform: translate(-50%, -50%);
+  font-family: 'Gowun Batang', serif;
+  font-weight: 800;
+  box-shadow: 0 10px 24px rgba(23, 40, 30, 0.2);
+  animation: banner-pop 0.45s ease-out both;
+}
+.battle-result-banner.win {
+  color: #7a4b00;
+  background: linear-gradient(135deg, #fff2c2, #ffd76a);
+  font-size: 28px;
+}
+.battle-result-banner.lose {
+  color: var(--green);
+  background: rgba(255, 252, 244, 0.95);
+  font-size: 16px;
+}
+@keyframes banner-pop {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+/* 이긴 쪽은 폴짝폴짝 (이기면 나, 지면 상대) */
+.battle-arena.result-win .fighter.player .fighter-avatar,
+.battle-arena.result-lose .fighter.enemy .fighter-avatar {
+  transform-origin: center bottom;
+  animation: fighter-jump 0.6s ease-in-out 3;
+}
+@keyframes fighter-jump {
+  0%,
+  100% {
+    transform: translateY(0) scale(1, 1);
+  }
+  15% {
+    transform: translateY(0) scale(1.06, 0.92);
+  }
+  45% {
+    transform: translateY(-26px) scale(0.97, 1.04);
+  }
+  80% {
+    transform: translateY(0) scale(1.04, 0.95);
+  }
+}
+/* 지면 내 캐릭터가 살짝 주저앉는다 */
+.battle-arena.result-lose .fighter.player .fighter-avatar {
+  transform-origin: center bottom;
+  animation: fighter-slump 0.7s ease-out forwards;
+}
+@keyframes fighter-slump {
+  to {
+    transform: translateY(6px) scale(1.03, 0.88);
+    filter: saturate(0.7);
+  }
+}
+/* 꽃가루 */
+.confetti {
+  position: absolute;
+  z-index: 5;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.confetti i {
+  position: absolute;
+  top: -14px;
+  left: calc(3% + var(--i) * 5.4%);
+  width: 7px;
+  height: 11px;
+  border-radius: 2px;
+  background: #e2b04a;
+  animation: confetti-fall 1.9s linear calc(var(--i) * 0.08s) 2 both;
+}
+.confetti i:nth-child(4n + 1) {
+  background: #d0566a;
+}
+.confetti i:nth-child(4n + 2) {
+  background: #2f8a9a;
+}
+.confetti i:nth-child(4n + 3) {
+  width: 9px;
+  height: 7px;
+  border-radius: 50%;
+  background: #62a06f;
+}
+@keyframes confetti-fall {
+  from {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 1;
+  }
+  to {
+    transform: translate(18px, 320px) rotate(540deg);
+    opacity: 0.9;
+  }
+}
+/* 움직임 줄이기를 켠 기기: 꽃가루는 숨기고, 점프·주저앉기는 아주 작게 */
+@media (prefers-reduced-motion: reduce) {
+  .confetti {
+    display: none;
+  }
+  .battle-result-banner {
+    animation: none;
+  }
+  .battle-arena.result-win .fighter.player .fighter-avatar,
+  .battle-arena.result-lose .fighter.enemy .fighter-avatar {
+    animation: fighter-nod 0.8s ease-in-out 1;
+  }
+  .battle-arena.result-lose .fighter.player .fighter-avatar {
+    animation: none;
+    transform: translateY(3px);
+  }
+}
+@keyframes fighter-nod {
+  50% {
+    transform: translateY(-4px);
+  }
 }
 .profile-head {
   display: grid;

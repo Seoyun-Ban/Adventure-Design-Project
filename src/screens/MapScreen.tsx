@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Icon } from '../components/Icon'
 import { KoreaMap } from '../components/KoreaMap'
+import { PlaceItems } from '../components/PlaceItems'
 import { places } from '../data/places'
 import { placeContents } from '../data/contents'
 import type { LearningRecord, Place } from '../types'
@@ -132,6 +133,7 @@ export function MapScreen({
               </div>
               <strong>{selected.name}</strong>
               <p>{selected.summary}</p>
+              <PlaceItems placeId={selected.id} owned={selectedDone} />
             </div>
             {selected.status !== 'locked' && (
               <span className="card-arrow">

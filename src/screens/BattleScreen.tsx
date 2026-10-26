@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { Icon } from '../components/Icon'
 import { CharacterAvatar } from '../components/CharacterAvatar'
-import { totalPower } from '../data/avatar'
+import { powerOf } from '../data/avatar'
 import { randomBattleQuestion } from '../lib/quizGenerator'
 import { withJosa } from '../lib/korean'
 import type { AvatarLook, Equipped, QuizItem } from '../types'
@@ -9,38 +9,38 @@ import type { AvatarLook, Equipped, QuizItem } from '../types'
 // 친구와 역사 지식 대결 (턴제)
 // 1) 내 차례: 무작위 문제를 맞히면 '공격' 또는 '방어'를 고른다. 틀리면 아무것도 못 한다.
 // 2) 상대 차례: 상대가 공격한다. 공격력은 상대의 의상(아이템)과 레벨(학습량)로 정해진다.
-// 3) 먼저 체력이 0이 되는 쪽이 진다.
+// 3) 먼저 체력이 0이 되는 쪽이 진다. 끝나면 승패 모션을 보여주고 결과를 한 번만 기록한다.
 
-type Fighter = {
-  nickname: string
-  look: AvatarLook
-  equipped: Equipped
-  level: number
-  completedCount: number
-}
+type Fighter = { nickname: string; look: AvatarLook; equipped: Equipped; level: number }
 type Opponent = { name: string; level: number; look: AvatarLook; equipped: Equipped }
-type Phase = 'question' | 'choose' | 'enemy' | 'over'
+/** resolve: 내 공격·방어 결과를 보여주는 중 (버튼을 숨겨 두 번 누르지 못하게 한다) */
+type Phase = 'question' | 'choose' | 'resolve' | 'enemy' | 'over'
 
 const MAX_HP = 100
+/** 마지막 공격 흔들림이 끝난 뒤 승패 모션을 시작할 때까지 (ms) */
+const RESULT_DELAY = 500
+/** 꽃가루 조각 수 */
+const CONFETTI = 18
 
-/** 전투력 = 착용 아이템 능력치 합 + 학습량(레벨) 보너스 */
-function power(equipped: Equipped, level: number) {
-  return totalPower(equipped) + level * 60
-}
 const attackDamage = (p: number) => Math.round(12 + p / 45 + Math.random() * 6)
 
 export function BattleScreen({
   me,
   opponent,
+  onFinish,
+  onRetry,
   onExit,
 }: {
   me: Fighter
   opponent: Opponent
-  /** won: 대결이 끝났으면 승패, 중간에 나가면 undefined */
-  onExit: (won?: boolean) => void
+  /** 대결이 끝났을 때 한 번 불린다 (기록 저장) */
+  onFinish: (won: boolean) => void
+  /** 같은 친구와 다시 대결 */
+  onRetry: () => void
+  onExit: () => void
 }) {
-  const myPower = power(me.equipped, me.level)
-  const enemyPower = power(opponent.equipped, opponent.level)
+  const myPower = powerOf(me.equipped, me.level).total
+  const enemyPower = powerOf(opponent.equipped, opponent.level).total
   const [myHp, setMyHp] = useState(MAX_HP)
   const [enemyHp, setEnemyHp] = useState(MAX_HP)
   const [turn, setTurn] = useState(1)
@@ -50,14 +50,23 @@ export function BattleScreen({
   const [shield, setShield] = useState(false)
   const [log, setLog] = useState('문제를 맞혀 공격하거나 방어하세요!')
   const [hit, setHit] = useState<'me' | 'enemy' | null>(null)
+  /** 승패 모션 (마지막 공격 뒤 잠깐 있다가 시작) */
+  const [result, setResult] = useState<'win' | 'lose' | null>(null)
+  // 체력은 화면용 state와 판단용 ref를 함께 둔다 (끝났는지 판단·기록이 한 번만 일어나게)
+  const hpRef = useRef({ me: MAX_HP, enemy: MAX_HP })
   const timers = useRef<number[]>([])
-  const reported = useRef(false)
+  const finished = useRef(false)
 
   useEffect(() => () => timers.current.forEach((timer) => window.clearTimeout(timer)), [])
   const later = (fn: () => void, ms: number) => timers.current.push(window.setTimeout(fn, ms))
 
-  const over = myHp <= 0 || enemyHp <= 0
-  const won = enemyHp <= 0
+  const over = phase === 'over'
+
+  function setHp(side: 'me' | 'enemy', value: number) {
+    hpRef.current[side] = value
+    if (side === 'me') setMyHp(value)
+    else setEnemyHp(value)
+  }
 
   function answer(option: number) {
     if (phase !== 'question' || picked !== null) return
@@ -72,16 +81,18 @@ export function BattleScreen({
   }
 
   function act(kind: 'attack' | 'defend') {
+    if (phase !== 'choose') return
+    setPhase('resolve')
     if (kind === 'attack') {
       const damage = attackDamage(myPower)
-      const next = Math.max(0, enemyHp - damage)
-      setEnemyHp(next)
+      const next = Math.max(0, hpRef.current.enemy - damage)
+      setHp('enemy', next)
       setHit('enemy')
       setLog(`공격 성공! ${opponent.name}에게 ${damage}의 피해를 주었어요.`)
       if (next <= 0) return finish(true)
     } else {
       setShield(true)
-      setMyHp((hp) => Math.min(MAX_HP, hp + 8))
+      setHp('me', Math.min(MAX_HP, hpRef.current.me + 8))
       setLog('방어 자세! 체력을 8 회복하고 다음 공격을 막아요.')
     }
     later(enemyTurn, 1300)
@@ -97,17 +108,15 @@ export function BattleScreen({
       if (Math.random() < accuracy) {
         const raw = attackDamage(enemyPower)
         const damage = shield ? Math.round(raw * 0.3) : raw
-        setMyHp((hp) => {
-          const next = Math.max(0, hp - damage)
-          if (next <= 0) finish(false)
-          return next
-        })
+        const next = Math.max(0, hpRef.current.me - damage)
+        setHp('me', next)
         setHit('me')
         setLog(
           shield
             ? `방어 성공! ${damage}의 피해만 받았어요.`
             : `${opponent.name}의 공격! ${damage}의 피해를 받았어요.`,
         )
+        if (next <= 0) return finish(false)
       } else {
         setLog(`${withJosa(opponent.name, '이')} 문제를 틀려 공격하지 못했어요.`)
       }
@@ -117,30 +126,31 @@ export function BattleScreen({
         setTurn((value) => value + 1)
         setQuestion((prev) => randomBattleQuestion(prev.question))
         setPicked(null)
-        setPhase((current) => (current === 'over' ? current : 'question'))
+        setPhase('question')
       }, 1500)
     }, 1100)
   }
 
   function finish(meWon: boolean) {
+    if (finished.current) return
+    finished.current = true
+    // 아직 남은 '다음 차례' 예약을 모두 취소해 끝난 상태가 되돌아가지 않게 한다
+    timers.current.forEach((timer) => window.clearTimeout(timer))
+    timers.current = []
     setPhase('over')
-    setLog(
-      meWon
-        ? '승리했어요! 역사 지식으로 대결에서 이겼어요.'
-        : '아쉽게 졌어요. 학습으로 전투력을 키워 다시 도전해요!',
-    )
-    if (!reported.current) reported.current = true
+    setShield(false)
+    setLog(meWon ? '역사 지식으로 대결에서 이겼어요.' : '아쉽게 졌어요. 학습으로 전투력을 키워 봐요.')
+    onFinish(meWon)
+    later(() => {
+      setHit(null)
+      setResult(meWon ? 'win' : 'lose')
+    }, RESULT_DELAY)
   }
 
   return (
     <section className="content-screen tab-screen avatar-screen battle-screen">
       <header className="battle-header">
-        <button
-          className="icon-button plain"
-          type="button"
-          onClick={() => onExit(over ? won : undefined)}
-          aria-label="대결 나가기"
-        >
+        <button className="icon-button plain" type="button" onClick={onExit} aria-label="대결 나가기">
           <Icon name="arrow" />
         </button>
         <div>
@@ -149,7 +159,19 @@ export function BattleScreen({
         </div>
         <span className="battle-live">{phase === 'enemy' ? '상대 차례' : over ? '종료' : '내 차례'}</span>
       </header>
-      <div className="battle-arena">
+      <div className={`battle-arena ${result ? `result-${result}` : ''}`}>
+        {result === 'win' && (
+          <div className="confetti" aria-hidden="true">
+            {Array.from({ length: CONFETTI }, (_, index) => (
+              <i key={index} style={{ '--i': index } as CSSProperties} />
+            ))}
+          </div>
+        )}
+        {result && (
+          <p className={`battle-result-banner ${result}`} role="status">
+            {result === 'win' ? '승리!' : '다음엔 이길 수 있어요!'}
+          </p>
+        )}
         <div className={`fighter enemy ${hit === 'enemy' ? 'hit' : ''}`}>
           <div className="fighter-name">
             <span>{opponent.name}</span>
@@ -233,10 +255,12 @@ export function BattleScreen({
             </button>
           </div>
         )}
-        {phase === 'over' && (
-          <div className="battle-feedback finished">
-            <strong>{won ? '🏆 승리!' : '패배'}</strong>
-            <button type="button" onClick={() => onExit(won)}>
+        {over && (
+          <div className="battle-over-actions">
+            <button type="button" className="retry" onClick={onRetry}>
+              <Icon name="refresh" size={17} /> 다시 도전
+            </button>
+            <button type="button" onClick={onExit}>
               친구 목록으로 <Icon name="chevron" size={16} />
             </button>
           </div>

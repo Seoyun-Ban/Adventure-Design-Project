@@ -121,7 +121,13 @@ export function HomeScreen({
       )}
       {tab === 'book' && <StoryBookScreen completedIds={completedIds} onLearn={onLearn} />}
       {tab === 'avatar' && (
-        <AvatarScreen {...avatar} completedIds={completedIds} onEquip={equip} onBattleEnd={recordBattle} />
+        <AvatarScreen
+          {...avatar}
+          completedIds={completedIds}
+          battle={progress.battle}
+          onEquip={equip}
+          onBattleEnd={recordBattle}
+        />
       )}
       {tab === 'profile' && (
         <ProfileScreen
@@ -146,6 +152,7 @@ export function HomeScreen({
           onToggleFavorite={toggleFavorite}
           onOpenPlace={onLearn}
           onEditNickname={openNickname}
+          battle={progress.battle}
         />
       )}
       <BottomTabs active={tab} onChange={setTab} />

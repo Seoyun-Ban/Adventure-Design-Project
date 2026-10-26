@@ -3,6 +3,7 @@ import { Icon } from '../components/Icon'
 import { ActionButton } from '../components/ActionButton'
 import { HistoryScene } from '../components/HistoryScene'
 import { Place3D } from '../components/Place3D'
+import { PlaceItems } from '../components/PlaceItems'
 import { getContent } from '../data/contents'
 import type { AvatarLook, Difficulty, Equipped, Place } from '../types'
 
@@ -12,6 +13,7 @@ export function LearnScreen({
   defaultDifficulty,
   avatar,
   favorite,
+  completed,
   onToggleFavorite,
   onBack,
   onComplete,
@@ -21,6 +23,8 @@ export function LearnScreen({
   defaultDifficulty: Difficulty
   avatar: { nickname: string; look: AvatarLook; equipped: Equipped; faceImage?: string }
   favorite: boolean
+  /** 이미 학습을 마친 장소인지 (얻는 아이템을 '획득 완료'로 표시) */
+  completed: boolean
   onToggleFavorite: () => void
   onBack: () => void
   onComplete: (difficulty: Difficulty) => void
@@ -60,6 +64,7 @@ export function LearnScreen({
         </div>
       </div>
       <article className="learn-article">
+        <PlaceItems placeId={place.id} owned={completed} className="learn-items" />
         <div className="difficulty-row">
           <div>
             <span>학습 단계</span>

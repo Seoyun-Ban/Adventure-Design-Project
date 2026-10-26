@@ -28,8 +28,16 @@ export type Progress = {
   wrongAnswers: WrongAnswer[]
   /** 관심 장소로 표시한 장소 id */
   favorites: string[]
-  battle: { played: number; wins: number }
+  battle: BattleRecord
 }
+
+/** 대결 결과 한 건 */
+export type BattleResult = { opponent: string; won: boolean; at: string }
+/** 대결 기록: 전체 판수·승리 수 + 최근 결과 (최신이 앞) */
+export type BattleRecord = { played: number; wins: number; recent: BattleResult[] }
+
+/** 최근 대결 결과를 몇 개까지 보관할지 */
+const RECENT_BATTLES = 20
 
 const STORAGE_KEY = 'history-step-progress-v3'
 
@@ -56,14 +64,19 @@ function demoProgress(): Progress {
     pushEnabled: true,
     wrongAnswers: [],
     favorites: ['bulguksa'],
-    battle: { played: 0, wins: 0 },
+    battle: { played: 0, wins: 0, recent: [] },
   }
 }
 
 function load(): Progress {
   try {
     const saved = localStorage.getItem(STORAGE_KEY)
-    if (saved) return { ...demoProgress(), ...JSON.parse(saved) }
+    if (saved) {
+      const demo = demoProgress()
+      const parsed = JSON.parse(saved)
+      // 예전에 저장한 기록에는 최근 대결 목록이 없을 수 있어 기본값과 합친다
+      return { ...demo, ...parsed, battle: { ...demo.battle, ...parsed.battle } }
+    }
   } catch {
     // 저장소를 쓸 수 없는 환경이면 기본값 사용
   }
@@ -127,10 +140,18 @@ export function useProgress() {
           ? prev.favorites.filter((id) => id !== placeId)
           : [...prev.favorites, placeId],
       })),
-    recordBattle: (won: boolean) =>
+    /** 대결이 끝나면 결과를 기록한다 */
+    recordBattle: (opponent: string, won: boolean) =>
       setProgress((prev) => ({
         ...prev,
-        battle: { played: prev.battle.played + 1, wins: prev.battle.wins + (won ? 1 : 0) },
+        battle: {
+          played: prev.battle.played + 1,
+          wins: prev.battle.wins + (won ? 1 : 0),
+          recent: [{ opponent, won, at: new Date().toISOString() }, ...prev.battle.recent].slice(
+            0,
+            RECENT_BATTLES,
+          ),
+        },
       })),
     resetProgress: () => setProgress(demoProgress()),
   }

@@ -1,12 +1,12 @@
-import { useEffect, useState, type FormEvent } from 'react'
-import { Icon } from './Icon'
+import { useState, type FormEvent } from 'react'
 import { ActionButton } from './ActionButton'
 import { FieldHint } from './AuthHeader'
+import { BottomSheet } from './BottomSheet'
 
 /** 닉네임 최대 글자 수 (앞뒤 공백을 지운 뒤 센다) */
 export const NICKNAME_MAX = 10
 
-// 닉네임 바꾸기: 화면 아래에서 올라오는 작은 창 (내 정보 탭, 설정 화면에서 함께 쓴다)
+// 닉네임 바꾸기 창 (내 정보 탭, 설정 화면에서 함께 쓴다)
 export function NicknameSheet({
   current,
   onSave,
@@ -23,35 +23,14 @@ export function NicknameSheet({
   const tooLong = length > NICKNAME_MAX
   const canSave = length > 0 && !tooLong && trimmed !== current
 
-  // Esc 키로 닫기
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => event.key === 'Escape' && onClose()
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
-
   function submit(event: FormEvent) {
     event.preventDefault()
     if (canSave) onSave(trimmed)
   }
 
   return (
-    <div className="sheet-layer" onClick={onClose}>
-      <form
-        className="bottom-sheet"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="nickname-sheet-title"
-        onClick={(event) => event.stopPropagation()}
-        onSubmit={submit}
-      >
-        <span className="sheet-grip" aria-hidden="true" />
-        <div className="sheet-head">
-          <h2 id="nickname-sheet-title">닉네임 바꾸기</h2>
-          <button className="icon-button plain" type="button" onClick={onClose} aria-label="닫기">
-            <Icon name="close" size={19} />
-          </button>
-        </div>
+    <BottomSheet title="닉네임 바꾸기" onClose={onClose}>
+      <form onSubmit={submit}>
         <label className="field">
           <span className="field-label-row">
             새 닉네임
@@ -76,6 +55,6 @@ export function NicknameSheet({
           저장
         </ActionButton>
       </form>
-    </div>
+    </BottomSheet>
   )
 }

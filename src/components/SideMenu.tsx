@@ -1,5 +1,6 @@
 import { Icon } from './Icon'
 import { CharacterAvatar } from './CharacterAvatar'
+import { levelFor } from '../data/avatar'
 import type { AvatarLook, IconName, SubPage } from '../types'
 
 export function SideMenu({
@@ -43,7 +44,7 @@ export function SideMenu({
             <strong>{nickname}</strong>
             <span>발자국 {footprintCount}개</span>
           </div>
-          <span className="level-chip">Lv. {1 + footprintCount}</span>
+          <span className="level-chip">Lv. {levelFor(footprintCount)}</span>
         </div>
         <div className="drawer-progress">
           <div>
