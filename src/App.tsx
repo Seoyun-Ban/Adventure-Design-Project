@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { LoginScreen } from './screens/LoginScreen'
+import { SignupScreen } from './screens/SignupScreen'
+import { ResetPasswordScreen } from './screens/ResetPasswordScreen'
 import { OnboardingScreen } from './screens/OnboardingScreen'
 import { HomeScreen } from './screens/HomeScreen'
 import { LearnScreen } from './screens/LearnScreen'
@@ -34,6 +36,7 @@ export default function App() {
   const [quizRun, setQuizRun] = useState(0)
   const [showComplete, setShowComplete] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
+  const [resetEmail, setResetEmail] = useState('')
 
   /** 위치가 없는 사건(event)은 지금 내 위치에 발자국을 남긴다 */
   const positionFor = (place: Place) => (place.kind === 'event' ? CURRENT_LOCATION : undefined)
@@ -124,7 +127,30 @@ export default function App() {
 
   return (
     <div className="app-frame">
-      {screen === 'login' && <LoginScreen rememberedEmail={progress.rememberedEmail} onEnter={enter} />}
+      {screen === 'login' && (
+        <LoginScreen
+          rememberedEmail={progress.rememberedEmail}
+          onEnter={enter}
+          onSignup={() => setScreen('signup')}
+          onFindPassword={(email) => {
+            setResetEmail(email)
+            setScreen('reset')
+          }}
+        />
+      )}
+      {screen === 'signup' && (
+        <SignupScreen
+          onBack={() => setScreen('login')}
+          onDone={(nickname) => {
+            // 새로 가입한 계정은 닉네임을 채워 둔 온보딩부터 시작한다 (비밀번호는 저장하지 않는다)
+            update({ loggedIn: true, nickname })
+            setScreen('onboarding')
+          }}
+        />
+      )}
+      {screen === 'reset' && (
+        <ResetPasswordScreen initialEmail={resetEmail} onBack={() => setScreen('login')} />
+      )}
       {screen === 'onboarding' && (
         <OnboardingScreen
           initial={progress}

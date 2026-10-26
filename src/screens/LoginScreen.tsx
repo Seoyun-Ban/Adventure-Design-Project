@@ -16,10 +16,15 @@ const socialLogins = [
 export function LoginScreen({
   rememberedEmail,
   onEnter,
+  onSignup,
+  onFindPassword,
 }: {
   rememberedEmail?: string
   /** loggedIn: 로그인 여부, email: '이메일 기억하기'가 켜져 있으면 저장할 이메일 */
   onEnter: (loggedIn: boolean, email?: string) => void
+  onSignup: () => void
+  /** 입력해 둔 이메일을 비밀번호 찾기 화면에 미리 채운다 */
+  onFindPassword: (email: string) => void
 }) {
   const [remember, setRemember] = useState(Boolean(rememberedEmail))
   const [email, setEmail] = useState(rememberedEmail ?? '')
@@ -80,13 +85,16 @@ export function LoginScreen({
             </span>
             이메일 기억하기
           </label>
-          <button className="text-link" type="button">
+          <button className="text-link" type="button" onClick={() => onFindPassword(email)}>
             비밀번호 찾기
           </button>
         </div>
         <ActionButton onClick={login}>로그인</ActionButton>
         <p className="signup-copy">
-          처음이신가요? <button type="button">회원가입</button>
+          처음이신가요?{' '}
+          <button type="button" onClick={onSignup}>
+            회원가입
+          </button>
         </p>
         <ActionButton onClick={() => onEnter(false)} variant="ghost" className="preview-button">
           먼저 둘러보기 <Icon name="chevron" size={18} />

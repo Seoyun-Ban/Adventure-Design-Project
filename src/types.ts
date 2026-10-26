@@ -1,6 +1,6 @@
 // 앱 전체에서 쓰는 타입 정의
 
-export type Screen = 'login' | 'onboarding' | 'home' | 'learn' | 'quiz'
+export type Screen = 'login' | 'signup' | 'reset' | 'onboarding' | 'home' | 'learn' | 'quiz'
 export type Tab = 'map' | 'book' | 'avatar' | 'profile'
 export type SubPage = 'main' | 'archive' | 'settings' | 'quiz-new' | 'quiz-review'
 export type Difficulty = '쉬움' | '보통' | '어려움'
