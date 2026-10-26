@@ -1,7 +1,12 @@
+import { useState } from 'react'
+import { Icon } from '../components/Icon'
+import { ActionButton } from '../components/ActionButton'
 import { SubpageHeader } from '../components/SubpageHeader'
 import { LEVEL_POWER } from '../data/avatar'
+import type { Inquiry, InquiryKind } from '../hooks/useProgress'
 
-// 도움말: 앱 사용법 + 자주 묻는 질문 (초등학생 눈높이, 누르면 펼쳐지는 방식)
+// 도움말: 앱 사용법 + 자주 묻는 질문 (초등학생 눈높이, 누르면 펼쳐지는 방식) + 문의하기
+// 문의는 지금 기기에만 저장한다 (실제 서비스에서는 서버에 저장하고 운영팀이 답변한다).
 // 내용은 실제 앱 동작과 맞아야 한다. 기능을 바꾸면 여기 설명도 함께 고친다.
 
 type HelpItem = { q: string; a: string[] }
@@ -86,19 +91,183 @@ const faq: HelpItem[] = [
   {
     q: '잠긴 장소는 어떻게 여나요?',
     a: [
-      '자물쇠가 있는 장소는 그곳에 직접 찾아가면 열려요.',
-      '지금은 시험용 앱이라 위치를 실제로 확인하지 않고, 한산도가 잠긴 장소의 예시로 들어 있어요.',
+      '자물쇠가 있는 장소는 그 역사 장소에 직접 찾아가면 잠금이 풀려요.',
+      '근처에 가면 알림으로 알려줄게요. 설정에서 푸시 알림을 켜 두세요.',
     ],
   },
 ]
 
-export function HelpScreen({ onBack }: { onBack: () => void }) {
+const INQUIRY_KINDS: InquiryKind[] = ['사용 방법', '오류 신고', '학습 내용', '기타']
+const TITLE_MAX = 40
+const BODY_MAX = 1000
+
+const formatDate = (iso: string) => {
+  const date = new Date(iso)
+  return `${date.getFullYear()}.${date.getMonth() + 1}.${date.getDate()}`
+}
+
+export function HelpScreen({
+  inquiries,
+  onSendInquiry,
+  onBack,
+}: {
+  inquiries: Inquiry[]
+  onSendInquiry: (inquiry: Pick<Inquiry, 'kind' | 'title' | 'body'>) => void
+  onBack: () => void
+}) {
+  const [view, setView] = useState<'main' | 'write' | 'sent' | 'history'>('main')
+  const toMain = () => setView('main')
+
+  if (view === 'write') {
+    return (
+      <section className="utility-screen help-screen">
+        <SubpageHeader title="문의하기" subtitle="궁금한 점이나 불편한 점을 알려 주세요" onBack={toMain} />
+        <InquiryForm
+          onSend={(inquiry) => {
+            onSendInquiry(inquiry)
+            setView('sent')
+          }}
+        />
+      </section>
+    )
+  }
+
+  if (view === 'sent') {
+    return (
+      <section className="utility-screen help-screen">
+        <SubpageHeader title="문의하기" subtitle="운영팀이 확인하고 답변해 드려요" onBack={toMain} />
+        <div className="inquiry-sent" role="status">
+          <span className="auth-done-icon">
+            <Icon name="check" size={30} />
+          </span>
+          <h2>문의를 보냈어요</h2>
+          <p>답변이 오면 여기서 확인할 수 있어요.</p>
+          <ActionButton onClick={() => setView('history')}>내 문의 내역 보기</ActionButton>
+          <ActionButton variant="ghost" onClick={toMain}>
+            도움말로 돌아가기
+          </ActionButton>
+        </div>
+      </section>
+    )
+  }
+
+  if (view === 'history') {
+    return (
+      <section className="utility-screen help-screen">
+        <SubpageHeader title="내 문의 내역" subtitle={`모두 ${inquiries.length}건`} onBack={toMain} />
+        {inquiries.length === 0 ? (
+          <p className="inquiry-empty">아직 보낸 문의가 없어요.</p>
+        ) : (
+          inquiries.map((inquiry) => (
+            <details key={inquiry.id} className="help-item inquiry-item">
+              <summary>
+                <span className="inquiry-head">
+                  <small>
+                    {inquiry.kind} · {formatDate(inquiry.createdAt)}
+                  </small>
+                  <strong>{inquiry.title}</strong>
+                </span>
+                <em className={inquiry.answer ? 'answered' : 'waiting'}>
+                  {inquiry.answer ? '답변 완료' : '답변 대기 중'}
+                </em>
+              </summary>
+              <div className="inquiry-body">
+                <p>{inquiry.body}</p>
+                {inquiry.answer ? (
+                  <div className="inquiry-answer">
+                    <strong>운영팀 답변 · {formatDate(inquiry.answer.at)}</strong>
+                    <p>{inquiry.answer.body}</p>
+                  </div>
+                ) : (
+                  <p className="inquiry-wait-note">운영팀이 확인하고 있어요. 조금만 기다려 주세요.</p>
+                )}
+              </div>
+            </details>
+          ))
+        )}
+      </section>
+    )
+  }
+
   return (
     <section className="utility-screen help-screen">
       <SubpageHeader title="도움말" subtitle="궁금한 항목을 눌러 보세요" onBack={onBack} />
       <HelpGroup title="앱 사용법" items={guide} />
       <HelpGroup title="자주 묻는 질문" items={faq} />
+      <div className="help-group">
+        <h3 className="section-title">문의하기</h3>
+        <p className="help-contact-copy">찾는 답이 없나요? 운영팀에게 직접 물어보세요.</p>
+        <div className="help-contact">
+          <button type="button" onClick={() => setView('write')}>
+            <Icon name="edit" size={20} />
+            문의하기
+          </button>
+          <button type="button" onClick={() => setView('history')}>
+            <Icon name="archive" size={20} />내 문의 내역 ({inquiries.length})
+          </button>
+        </div>
+      </div>
     </section>
+  )
+}
+
+/** 문의 쓰기: 종류, 제목, 내용. 제목과 내용을 채워야 보낼 수 있다 */
+function InquiryForm({ onSend }: { onSend: (inquiry: Pick<Inquiry, 'kind' | 'title' | 'body'>) => void }) {
+  const [kind, setKind] = useState<InquiryKind>('사용 방법')
+  const [title, setTitle] = useState('')
+  const [body, setBody] = useState('')
+  const canSend = title.trim().length > 0 && body.trim().length > 0
+
+  return (
+    <div className="inquiry-form">
+      <div className="field">
+        <span id="inquiry-kind">문의 종류</span>
+        <div className="settings-segments inquiry-kinds" role="group" aria-labelledby="inquiry-kind">
+          {INQUIRY_KINDS.map((item) => (
+            <button
+              type="button"
+              key={item}
+              className={kind === item ? 'active' : ''}
+              aria-pressed={kind === item}
+              onClick={() => setKind(item)}
+            >
+              {item}
+            </button>
+          ))}
+        </div>
+      </div>
+      <label className="field">
+        <span>제목</span>
+        <input
+          maxLength={TITLE_MAX}
+          placeholder="예: 퀴즈가 다음으로 넘어가지 않아요"
+          value={title}
+          onChange={(event) => setTitle(event.target.value)}
+        />
+      </label>
+      <label className="field">
+        <span className="field-label-row">
+          내용
+          <em>
+            {body.length}/{BODY_MAX}
+          </em>
+        </span>
+        <textarea
+          maxLength={BODY_MAX}
+          rows={6}
+          placeholder="어떤 화면에서 무엇을 했는지 자세히 적어 주면 더 빨리 도와줄 수 있어요."
+          value={body}
+          onChange={(event) => setBody(event.target.value)}
+        />
+      </label>
+      <ActionButton
+        disabled={!canSend}
+        onClick={() => canSend && onSend({ kind, title: title.trim(), body: body.trim() })}
+      >
+        보내기
+      </ActionButton>
+      {!canSend && <p className="auth-note">제목과 내용을 적으면 보낼 수 있어요.</p>}
+    </div>
   )
 }
 

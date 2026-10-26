@@ -29,6 +29,19 @@ export type Progress = {
   /** 관심 장소로 표시한 장소 id */
   favorites: string[]
   battle: BattleRecord
+  /** 내 문의 내역 (최신이 앞) */
+  inquiries: Inquiry[]
+}
+
+export type InquiryKind = '사용 방법' | '오류 신고' | '학습 내용' | '기타'
+/** 문의 한 건 (지금은 기기에만 저장. 실제 서비스에서는 서버에 저장하고 운영팀이 답변한다) */
+export type Inquiry = {
+  id: string
+  kind: InquiryKind
+  title: string
+  body: string
+  createdAt: string
+  answer?: { body: string; at: string }
 }
 
 /** 대결 결과 한 건 */
@@ -65,6 +78,20 @@ function demoProgress(): Progress {
     wrongAnswers: [],
     favorites: ['bulguksa'],
     battle: { played: 0, wins: 0, recent: [] },
+    // 시연용: 운영팀 답변이 달린 문의 한 건 (답변 내용은 학습 글의 사실과 맞춘다)
+    inquiries: [
+      {
+        id: 'sample-answered',
+        kind: '학습 내용',
+        title: '수원화성은 누가 설계했나요?',
+        body: '수원화성을 정약용이 설계했다고 들었는데 맞나요?',
+        createdAt: daysAgo(5),
+        answer: {
+          body: '안녕하세요, 역사 한걸음 운영팀이에요. 정약용은 수원화성의 설계에 참여했고, 무거운 돌을 적은 힘으로 들어 올리는 거중기도 고안했어요. 수원화성 학습의 ‘보통’ 단계에서 더 자세히 읽어 볼 수 있어요. 좋은 질문 고마워요!',
+          at: daysAgo(4),
+        },
+      },
+    ],
   }
 }
 
@@ -152,6 +179,15 @@ export function useProgress() {
             RECENT_BATTLES,
           ),
         },
+      })),
+    /** 문의 보내기: 내 문의 내역 맨 앞에 '답변 대기 중'으로 쌓는다 */
+    addInquiry: (inquiry: Pick<Inquiry, 'kind' | 'title' | 'body'>) =>
+      setProgress((prev) => ({
+        ...prev,
+        inquiries: [
+          { ...inquiry, id: `${Date.now()}`, createdAt: new Date().toISOString() },
+          ...prev.inquiries,
+        ],
       })),
     resetProgress: () => setProgress(demoProgress()),
   }

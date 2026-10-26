@@ -30,9 +30,7 @@ export function ResetPasswordScreen({
             <br />
             메일함에서 링크를 눌러 새 비밀번호를 만들어 주세요.
           </p>
-          <p className="auth-note">
-            메일이 보이지 않으면 스팸함도 확인해 주세요. (프로토타입이라 실제로 메일을 보내지 않아요.)
-          </p>
+          <p className="auth-note">메일이 보이지 않으면 스팸함도 확인해 주세요.</p>
           <ActionButton onClick={onBack}>로그인 화면으로 돌아가기</ActionButton>
         </section>
       </AuthLayout>

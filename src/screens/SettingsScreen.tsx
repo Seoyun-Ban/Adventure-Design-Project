@@ -123,7 +123,7 @@ export function SettingsScreen({
         {loggedIn ? '로그아웃' : '로그인'}
       </ActionButton>
       <ActionButton variant="ghost" onClick={onReset}>
-        학습 기록 초기화 (시연용)
+        학습 기록 초기화
       </ActionButton>
       <p className="app-version">역사 한걸음 · 버전 1.0.0</p>
     </section>

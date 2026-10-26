@@ -36,8 +36,17 @@ export function HomeScreen({
   /** 화면 아래 안내 메시지 (토스트) */
   onNotice: (message: string) => void
 }) {
-  const { progress, completedIds, quizDoneIds, update, equip, resetProgress, toggleFavorite, recordBattle } =
-    store
+  const {
+    progress,
+    completedIds,
+    quizDoneIds,
+    update,
+    equip,
+    resetProgress,
+    toggleFavorite,
+    recordBattle,
+    addInquiry,
+  } = store
   const [tab, setTab] = useState<Tab>('map')
   const [menuOpen, setMenuOpen] = useState(false)
   const [page, setPage] = useState<SubPage>('main')
@@ -95,7 +104,7 @@ export function HomeScreen({
   if (page === 'help') {
     return (
       <main className="screen home-shell">
-        <HelpScreen onBack={back} />
+        <HelpScreen inquiries={progress.inquiries} onSendInquiry={addInquiry} onBack={back} />
       </main>
     )
   }
