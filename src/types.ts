@@ -1,6 +1,6 @@
 // 앱 전체에서 쓰는 타입 정의
 
-export type Screen = 'login' | 'signup' | 'reset' | 'onboarding' | 'home' | 'learn' | 'quiz'
+export type Screen = 'login' | 'signup' | 'reset' | 'challenge' | 'onboarding' | 'home' | 'learn' | 'quiz'
 /** 간편 로그인 회사 */
 export type SocialProvider = 'kakao' | 'naver' | 'google'
 export type Tab = 'map' | 'book' | 'avatar' | 'profile'

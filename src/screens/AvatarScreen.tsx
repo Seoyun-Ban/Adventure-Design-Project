@@ -4,6 +4,7 @@ import { CharacterAvatar } from '../components/CharacterAvatar'
 import { ItemDetailModal } from '../components/ItemDetailModal'
 import { PowerInfoSheet } from '../components/PowerInfoSheet'
 import { BattleRecordCard } from '../components/BattleRecordCard'
+import { ChallengeShareButton } from '../components/ChallengeShareButton'
 import { historyItems, battleFriends, findItem, levelFor, powerOf } from '../data/avatar'
 import { BattleScreen } from './BattleScreen'
 import type { BattleRecord } from '../hooks/useProgress'
@@ -20,6 +21,7 @@ export function AvatarScreen({
   battle,
   onEquip,
   onBattleEnd,
+  onNotice,
 }: {
   nickname: string
   look: AvatarLook
@@ -28,6 +30,7 @@ export function AvatarScreen({
   battle: BattleRecord
   onEquip: (category: ItemCategory, itemId?: string) => void
   onBattleEnd: (opponent: string, won: boolean) => void
+  onNotice: (message: string) => void
 }) {
   const isOwned = (item: HistoryItem) => completedIds.includes(item.placeId)
   const ownedCount = historyItems.filter(isOwned).length
@@ -72,6 +75,13 @@ export function AvatarScreen({
             <strong>누구와 대결할까요?</strong>
             <span>문제를 맞혀 상대의 체력을 먼저 0으로 만드세요.</span>
           </div>
+        </div>
+        <div className="challenge-invite">
+          <div>
+            <strong>진짜 친구에게 도전해 볼까요?</strong>
+            <span>내 아바타가 담긴 도전장 링크를 보내요.</span>
+          </div>
+          <ChallengeShareButton me={{ nickname, look, equipped, level }} onNotice={onNotice} />
         </div>
         <h3 className="section-title">내 대결 기록</h3>
         <BattleRecordCard battle={battle} />

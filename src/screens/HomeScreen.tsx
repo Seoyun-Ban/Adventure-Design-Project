@@ -144,6 +144,7 @@ export function HomeScreen({
           battle={progress.battle}
           onEquip={equip}
           onBattleEnd={recordBattle}
+          onNotice={onNotice}
         />
       )}
       {tab === 'profile' && (

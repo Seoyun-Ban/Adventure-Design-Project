@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { LoginScreen } from './screens/LoginScreen'
+import { ChallengeScreen } from './screens/ChallengeScreen'
 import { SignupScreen } from './screens/SignupScreen'
 import { ResetPasswordScreen } from './screens/ResetPasswordScreen'
 import { OnboardingScreen } from './screens/OnboardingScreen'
@@ -9,6 +10,8 @@ import { QuizScreen, type QuizResult } from './screens/QuizScreen'
 import { CompleteModal } from './components/CompleteModal'
 import { CURRENT_LOCATION, findPlace, places } from './data/places'
 import { useProgress } from './hooks/useProgress'
+import { levelFor } from './data/avatar'
+import { clearChallengeHash, readChallenge } from './lib/challenge'
 import { generateLocal, generateQuiz, shuffleOptions, type GeneratedQuiz } from './lib/quizGenerator'
 import type { Difficulty, Place, Screen, SocialProvider } from './types'
 
@@ -27,9 +30,19 @@ type QuizSession = {
 // 앱 최상위: 어떤 화면을 보여줄지(로그인/온보딩/홈/학습/퀴즈)와 사용자 진행 상황을 관리한다
 export default function App() {
   const store = useProgress()
-  const { progress, completedIds, update, completeLearning, completeQuiz, recordAnswers, toggleFavorite } =
-    store
-  const [screen, setScreen] = useState<Screen>('login')
+  const {
+    progress,
+    completedIds,
+    update,
+    completeLearning,
+    completeQuiz,
+    recordAnswers,
+    toggleFavorite,
+    recordBattle,
+  } = store
+  /** 친구가 보낸 도전장 링크로 들어왔으면 그 도전장 (망가진 링크면 ok: false) */
+  const [challenge, setChallenge] = useState(() => readChallenge(window.location.hash))
+  const [screen, setScreen] = useState<Screen>(challenge ? 'challenge' : 'login')
   const [selectedPlace, setSelectedPlace] = useState<Place>(places[0])
   const [learnDifficulty, setLearnDifficulty] = useState<Difficulty>(progress.defaultDifficulty)
   const [quiz, setQuiz] = useState<QuizSession | null>(null)
@@ -47,6 +60,35 @@ export default function App() {
     setToast(message)
     window.setTimeout(() => setToast(null), 3200)
   }
+
+  // 앱을 켜 둔 채로 도전장 링크를 열어도(주소의 # 부분만 바뀜) 도전장 화면으로 간다
+  useEffect(() => {
+    const onHash = () => {
+      const next = readChallenge(window.location.hash)
+      if (!next) return
+      setChallenge(next)
+      setScreen('challenge')
+    }
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+  }, [])
+
+  /** 도전장 화면을 떠나면 주소에서 도전장을 지운다 (새로고침해도 다시 열리지 않게) */
+  function leaveChallenge(next: Screen) {
+    clearChallengeHash()
+    setChallenge(null)
+    setScreen(next)
+  }
+
+  /** 내 아바타를 도전장 모양으로 (온보딩을 마친 사람만) */
+  const meAsChallenger = progress.onboarded
+    ? {
+        nickname: progress.nickname,
+        look: progress.look,
+        equipped: progress.equipped,
+        level: levelFor(completedIds.length),
+      }
+    : null
 
   function openLearn(place: Place) {
     if (place.status === 'locked') return
@@ -129,6 +171,16 @@ export default function App() {
 
   return (
     <div className="app-frame">
+      {screen === 'challenge' && challenge && (
+        <ChallengeScreen
+          challenge={challenge}
+          me={meAsChallenger}
+          onFinish={recordBattle}
+          onStart={() => leaveChallenge('login')}
+          onClose={() => leaveChallenge('home')}
+          onNotice={showToast}
+        />
+      )}
       {screen === 'login' && (
         <LoginScreen
           rememberedEmail={progress.rememberedEmail}

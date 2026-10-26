@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { Icon } from '../components/Icon'
 import { CharacterAvatar } from '../components/CharacterAvatar'
 import { powerOf } from '../data/avatar'
@@ -30,9 +30,15 @@ export function BattleScreen({
   onFinish,
   onRetry,
   onExit,
+  exitLabel = '친구 목록으로',
+  overExtra,
 }: {
   me: Fighter
   opponent: Opponent
+  /** 끝난 뒤 나가기 버튼 이름 */
+  exitLabel?: string
+  /** 끝난 뒤 버튼 아래에 더 보여줄 것 (예: 답장 도전장 보내기) */
+  overExtra?: ReactNode
   /** 대결이 끝났을 때 한 번 불린다 (기록 저장) */
   onFinish: (won: boolean) => void
   /** 같은 친구와 다시 대결 */
@@ -261,10 +267,11 @@ export function BattleScreen({
               <Icon name="refresh" size={17} /> 다시 도전
             </button>
             <button type="button" onClick={onExit}>
-              친구 목록으로 <Icon name="chevron" size={16} />
+              {exitLabel} <Icon name="chevron" size={16} />
             </button>
           </div>
         )}
+        {over && overExtra}
       </div>
     </section>
   )
