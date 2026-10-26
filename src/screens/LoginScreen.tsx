@@ -2,16 +2,15 @@ import { useState } from 'react'
 import { Icon } from '../components/Icon'
 import { ActionButton } from '../components/ActionButton'
 
-// 간편 로그인 버튼: 각 회사가 제공한 공식 버튼 이미지를 그대로 쓴다 (로고·색·비율을 바꾸지 않는다).
-// 원본은 art/login/ (저장소 제외)
-// - 카카오: kakao_login_kr_medium.png
-// - 네이버: NAVER_login_Light_KR_green_narrow_H48.png
-// - 구글: Theme=Light, Show text=Yes, Shape=Square, Platform=Android+Web.png
-// 구글 가이드에 따라 세 버튼은 비슷한 크기로 보이도록 같은 높이로 쌓는다.
+// 간편 로그인 버튼: 각 회사가 제공한 공식 원형 아이콘 이미지를 그대로 쓴다 (로고·색·비율을 바꾸지 않는다).
+// 프로토타입이라 원형 아이콘 3개를 나란히 둔다. 원본은 art/login/ (저장소 제외)
+// - 카카오: kakao_login_light.png (노란 원 + 말풍선 심볼)
+// - 네이버: NAVER_login_Light_KR_green_icon_H56.png
+// - 구글: Theme=Light, Show text=No, Shape=Pill, Platform=Android+Web.png
 const socialLogins = [
-  { id: 'naver', label: '네이버로 로그인', image: '/images/login/naver-login.png' },
-  { id: 'kakao', label: '카카오로 로그인', image: '/images/login/kakao-login.png' },
-  { id: 'google', label: '구글로 로그인', image: '/images/login/google-login.png' },
+  { id: 'naver', label: '네이버로 로그인', image: '/images/login/naver-icon.png' },
+  { id: 'kakao', label: '카카오로 로그인', image: '/images/login/kakao-icon.png' },
+  { id: 'google', label: '구글로 로그인', image: '/images/login/google-icon.png' },
 ]
 
 export function LoginScreen({

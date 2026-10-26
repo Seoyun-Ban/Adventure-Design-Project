@@ -193,18 +193,17 @@ button {
   font-size: 13px;
   font-weight: 700;
 }
-/* 간편 로그인: 공식 버튼 이미지를 같은 높이로 위아래로 쌓는다.
-   이미지는 늘리거나 자르지 않고 높이만 맞춰 비율 그대로 보여준다 (각 회사 디자인 가이드). */
+/* 간편 로그인: 공식 원형 아이콘 3개를 같은 크기·간격으로 나란히 둔다.
+   이미지는 원이 가장자리까지 꽉 찬 정사각형이라 같은 크기로 보여주면 원 크기도 같아진다. */
 .social-list {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
+  justify-content: center;
+  gap: 22px;
 }
 .social-button {
   padding: 0;
   border: 0;
-  border-radius: 12px;
+  border-radius: 50%;
   background: none;
   line-height: 0;
   cursor: pointer;
@@ -215,8 +214,8 @@ button {
 }
 .social-button img {
   display: block;
-  width: auto;
-  height: 44px;
+  width: 48px;
+  height: 48px;
 }
 .divider {
   display: flex;
