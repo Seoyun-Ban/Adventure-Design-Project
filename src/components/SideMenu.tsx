@@ -23,6 +23,7 @@ export function SideMenu({
     { icon: 'quiz', label: '퀴즈', desc: '새로운 문제에 도전하기', target: 'quiz-new' },
     { icon: 'refresh', label: '복습 퀴즈', desc: '이미 푼 퀴즈 다시 보기', target: 'quiz-review' },
     { icon: 'settings', label: '설정', desc: '알림과 앱 환경 설정', target: 'settings' },
+    { icon: 'help', label: '도움말', desc: '앱 사용법과 자주 묻는 질문', target: 'help' },
   ]
   return (
     <div className={`drawer-layer ${open ? 'open' : ''}`} aria-hidden={!open}>

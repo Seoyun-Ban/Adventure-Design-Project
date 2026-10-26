@@ -8,6 +8,7 @@ import { AvatarScreen } from './AvatarScreen'
 import { ProfileScreen } from './ProfileScreen'
 import { ArchiveScreen } from './ArchiveScreen'
 import { SettingsScreen } from './SettingsScreen'
+import { HelpScreen } from './HelpScreen'
 import { QuizHubScreen } from './QuizHubScreen'
 import { isBookDone, storyBooks } from '../data/storyBooks'
 import { places } from '../data/places'
@@ -88,6 +89,13 @@ export function HomeScreen({
           onLogout={onLogout}
         />
         {nicknameSheet}
+      </main>
+    )
+  }
+  if (page === 'help') {
+    return (
+      <main className="screen home-shell">
+        <HelpScreen onBack={back} />
       </main>
     )
   }

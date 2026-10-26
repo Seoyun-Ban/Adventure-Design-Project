@@ -4,7 +4,7 @@ export type Screen = 'login' | 'signup' | 'reset' | 'onboarding' | 'home' | 'lea
 /** 간편 로그인 회사 */
 export type SocialProvider = 'kakao' | 'naver' | 'google'
 export type Tab = 'map' | 'book' | 'avatar' | 'profile'
-export type SubPage = 'main' | 'archive' | 'settings' | 'quiz-new' | 'quiz-review'
+export type SubPage = 'main' | 'archive' | 'settings' | 'help' | 'quiz-new' | 'quiz-review'
 export type Difficulty = '쉬움' | '보통' | '어려움'
 
 export type IconName =
@@ -34,6 +34,8 @@ export type IconName =
   | 'camera'
   | 'heart'
   | 'edit'
+  | 'image'
+  | 'help'
 
 /**
  * 지도에 표시되는 역사 장소

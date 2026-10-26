@@ -3,6 +3,8 @@ import { Icon } from '../components/Icon'
 import { ActionButton } from '../components/ActionButton'
 import { Avatar } from '../components/Avatar'
 import { CharacterAvatar } from '../components/CharacterAvatar'
+import { BottomSheet } from '../components/BottomSheet'
+import { WebcamCapture } from '../components/WebcamCapture'
 import { characterStyles, skinTones, styleIdFor, stylesFor } from '../data/avatar'
 import type { AvatarLook, Difficulty, Equipped } from '../types'
 
@@ -35,7 +37,12 @@ export function OnboardingScreen({
   const [look, setLook] = useState<AvatarLook>(initial.look)
   const [faceImage, setFaceImage] = useState<string | undefined>(initial.faceImage)
   const [difficulty, setDifficulty] = useState<Difficulty>(initial.defaultDifficulty)
-  const fileInput = useRef<HTMLInputElement>(null)
+  const cameraInput = useRef<HTMLInputElement>(null)
+  const albumInput = useRef<HTMLInputElement>(null)
+  /** '촬영하기'를 누르면 여는 "카메라로 찍기 / 앨범에서 고르기" 창 */
+  const [photoMenu, setPhotoMenu] = useState(false)
+  /** 컴퓨터의 웹캠 촬영 창 */
+  const [webcam, setWebcam] = useState(false)
 
   const titles = ['나만의 탐험가 만들기', '얼굴 등록하기', '학습 단계 고르기']
   const subtitles = [
@@ -44,10 +51,29 @@ export function OnboardingScreen({
     '나중에 설정이나 학습 화면에서 언제든 바꿀 수 있어요.',
   ]
 
+  /** 받은 사진을 만화풍으로 바꿔 얼굴로 쓴다 (기기 안에서만 처리) */
+  async function applyPhoto(photo: Blob) {
+    setFaceImage(await resizeImage(photo, 160))
+  }
+
   async function handlePhoto(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0]
-    if (!file) return
-    setFaceImage(await resizeImage(file, 160))
+    const input = event.target
+    const file = input.files?.[0]
+    input.value = '' // 같은 사진을 다시 골라도 바뀌도록
+    if (file) await applyPhoto(file)
+  }
+
+  /** 휴대폰(터치 화면)은 앞면 카메라 입력, 컴퓨터는 웹캠 화면 */
+  function takeWithCamera() {
+    setPhotoMenu(false)
+    if (window.matchMedia('(pointer: coarse)').matches) cameraInput.current?.click()
+    else setWebcam(true)
+  }
+
+  function pickFromAlbum() {
+    setPhotoMenu(false)
+    setWebcam(false)
+    albumInput.current?.click()
   }
 
   function next() {
@@ -145,8 +171,17 @@ export function OnboardingScreen({
             <br />
             사진은 이 기기에만 저장돼요.
           </p>
-          <input ref={fileInput} type="file" accept="image/*" capture="user" hidden onChange={handlePhoto} />
-          <ActionButton variant="secondary" onClick={() => fileInput.current?.click()}>
+          {/* 휴대폰: 앞면 카메라로 바로 찍기 / 사진 앨범에서 고르기 */}
+          <input
+            ref={cameraInput}
+            type="file"
+            accept="image/*"
+            capture="user"
+            hidden
+            onChange={handlePhoto}
+          />
+          <input ref={albumInput} type="file" accept="image/*" hidden onChange={handlePhoto} />
+          <ActionButton variant="secondary" onClick={() => setPhotoMenu(true)}>
             <Icon name="camera" size={18} /> {faceImage ? '다시 찍기' : '촬영하기'}
           </ActionButton>
           {faceImage && (
@@ -155,6 +190,35 @@ export function OnboardingScreen({
             </button>
           )}
         </section>
+      )}
+      {photoMenu && (
+        <BottomSheet title="얼굴 사진 넣기" onClose={() => setPhotoMenu(false)}>
+          <div className="photo-choices">
+            <button type="button" onClick={takeWithCamera}>
+              <span>
+                <Icon name="camera" size={22} />
+              </span>
+              카메라로 찍기
+            </button>
+            <button type="button" onClick={pickFromAlbum}>
+              <span>
+                <Icon name="image" size={22} />
+              </span>
+              앨범에서 고르기
+            </button>
+          </div>
+          <p className="face-guide">사진은 만화풍으로 바뀌어 이 기기에만 저장돼요.</p>
+        </BottomSheet>
+      )}
+      {webcam && (
+        <WebcamCapture
+          onClose={() => setWebcam(false)}
+          onUseAlbum={pickFromAlbum}
+          onCapture={(photo) => {
+            setWebcam(false)
+            void applyPhoto(photo)
+          }}
+        />
       )}
 
       {step === 2 && (
@@ -229,7 +293,7 @@ function OptionRow<T extends string>({
  * 사진을 정사각형으로 잘라 작게 줄이고, 2D 캐릭터와 어울리도록 만화풍으로 바꾼다.
  * (색 단순화 + 부드럽게 + 윤곽선) — 사진은 서버로 보내지 않고 기기 안에서만 처리한다.
  */
-function resizeImage(file: File, size: number): Promise<string> {
+function resizeImage(file: Blob, size: number): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
     reader.onerror = reject
