@@ -53,19 +53,20 @@ git push
 | 김대성 | `kimdaeseong.png` | ✅ |
 | 김구 | `kimgu.png` | ✅ |
 | 유관순 | `yugwansun.png` | ✅ |
-| 내 캐릭터 (남/여) | `me-boy.png`, `me-girl.png` | ✅ |
+| 내 캐릭터 남 (짧은 머리/상투) | `me-boy-short.png`, `me-boy-sangtu.png` | ✅ |
+| 내 캐릭터 여 (땋은 머리/단발/장발) | `me-girl-braid.png`, `me-girl-bob.png`, `me-girl-long.png` | ✅ |
 
 1. 배경이 **투명한** PNG로 만든다 (전신, 정면, 기존 그림과 비슷한 비율)
 2. 원본을 `art/characters/` 폴더에 넣는다
 3. 터미널에서 `npm run images` → 여백을 자르고 용량을 줄인 그림이 `public/images/characters/`에 생긴다 (약 1MB → 100KB)
 4. `npm run dev`로 확인 후 커밋 (원본과 줄인 그림 둘 다)
 
-내 캐릭터 그림을 바꾸면 `src/data/avatar.ts`의 `myCharacters`에서 얼굴 사진 위치(`face`)와 아이템 배지 자리(`slots`)도 새 그림에 맞게 고쳐야 합니다.
+내 캐릭터 그림을 바꾸거나 머리 모양을 추가하면 `src/data/avatar.ts`의 `characterStyles`에서 그림 경로, 얼굴 사진 위치(`face`), 아이템 배지 자리(`slots`)를 그림에 맞게 고쳐야 합니다. 머리 모양을 추가할 때는 `src/types.ts`의 `CharacterStyleId`에도 이름을 더합니다. 성별마다 맨 앞에 적은 머리 모양이 기본값이에요.
 
 ### 아이템 옷 그림 넣기 (꾸미기 방식이 정해지면)
 
 지금은 착용한 아이템이 캐릭터 주변에 원형 배지로 보입니다. 옷 그림을 만들면:
-1. `me-boy.png`/`me-girl.png`와 **같은 크기·위치**로 겹쳐지게 그린 투명 PNG를 만든다 (옷 부분만)
+1. 내 캐릭터 그림(`me-boy-short.png` 등)과 **같은 크기·위치**로 겹쳐지게 그린 투명 PNG를 만든다 (옷 부분만)
 2. `public/images/`에 넣고 `src/data/avatar.ts`의 그 아이템에 `art: '/images/파일이름.png'`를 추가한다
 3. 그 아이템은 배지 대신 캐릭터 위에 그림으로 겹쳐진다
 

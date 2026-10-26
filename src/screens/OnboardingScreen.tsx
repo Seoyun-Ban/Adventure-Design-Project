@@ -3,16 +3,16 @@ import { Icon } from '../components/Icon'
 import { ActionButton } from '../components/ActionButton'
 import { Avatar } from '../components/Avatar'
 import { CharacterAvatar } from '../components/CharacterAvatar'
-import { skinTones } from '../data/avatar'
+import { characterStyles, skinTones, styleIdFor, stylesFor } from '../data/avatar'
 import type { AvatarLook, Difficulty, Equipped } from '../types'
 
 // 처음 이용할 때 한 번 거치는 설정 화면
-// 1) 닉네임·아바타 외형  2) 얼굴 등록  3) 기본 학습 단계
+// 1) 닉네임·성별·머리 모양  2) 얼굴 등록  3) 기본 학습 단계
 
 /**
- * 체형·머리·피부색 선택을 보여줄지.
- * 지금 그림 캐릭터는 성별별 한 종류뿐이라 꺼 둔다 (선택해도 그림에 반영되지 않으므로).
- * 체형·머리 모양별 그림이 생기면 true로 바꾸고, CharacterAvatar가 그 선택을 쓰도록 고치면 된다.
+ * SVG 캐릭터용 체형·머리·피부색 선택을 보여줄지.
+ * 그림 캐릭터는 성별과 머리 모양(characterStyles)만 반영되므로 꺼 둔다.
+ * 체형·피부색별 그림이 생기면 true로 바꾸고, CharacterAvatar가 그 선택을 쓰도록 고치면 된다.
  * true로 바꾸면 지금은 미리보기가 선택이 반영되는 SVG 캐릭터로 나온다.
  */
 const SHOW_DETAILED_LOOK = false
@@ -72,11 +72,7 @@ export function OnboardingScreen({
         {SHOW_DETAILED_LOOK ? (
           <Avatar look={look} equipped={step === 0 ? {} : equipped} />
         ) : (
-          <CharacterAvatar
-            gender={look.gender}
-            equipped={step === 0 ? {} : equipped}
-            label="내 아바타 미리보기"
-          />
+          <CharacterAvatar look={look} equipped={step === 0 ? {} : equipped} label="내 아바타 미리보기" />
         )}
       </div>
 
@@ -95,7 +91,14 @@ export function OnboardingScreen({
             label="성별"
             options={['남', '여'] as const}
             value={look.gender}
-            onChange={(gender) => setLook({ ...look, gender })}
+            onChange={(gender) => setLook({ ...look, gender, style: stylesFor(gender)[0] })}
+          />
+          <OptionRow
+            label="머리 모양"
+            options={stylesFor(look.gender)}
+            value={styleIdFor(look)}
+            labelOf={(id) => characterStyles[id].label}
+            onChange={(style) => setLook({ ...look, style })}
           />
           {SHOW_DETAILED_LOOK && (
             <>
@@ -193,11 +196,14 @@ function OptionRow<T extends string>({
   label,
   options,
   value,
+  labelOf = (option) => option,
   onChange,
 }: {
   label: string
   options: readonly T[]
   value: T
+  /** 버튼에 보일 이름 (값과 다를 때) */
+  labelOf?: (option: T) => string
   onChange: (value: T) => void
 }) {
   return (
@@ -211,7 +217,7 @@ function OptionRow<T extends string>({
             className={value === option ? 'active' : ''}
             onClick={() => onChange(option)}
           >
-            {option}
+            {labelOf(option)}
           </button>
         ))}
       </div>

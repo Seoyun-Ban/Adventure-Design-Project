@@ -91,8 +91,14 @@ export type LearningRecord = {
   left?: string
 }
 
+/** 그림 캐릭터의 머리 모양 (성별마다 고를 수 있는 것이 다르다. data/avatar.ts의 characterStyles) */
+export type CharacterStyleId = 'boy-short' | 'boy-sangtu' | 'girl-braid' | 'girl-bob' | 'girl-long'
+
 export type AvatarLook = {
   gender: '남' | '여'
+  /** 그림 캐릭터 머리 모양. 없거나 성별과 맞지 않으면 성별 기본 머리 모양을 쓴다 */
+  style?: CharacterStyleId
+  // 아래 셋은 SVG 캐릭터(Avatar.tsx)용
   body: '마름' | '보통' | '튼튼'
   hair: '짧은 머리' | '긴 머리' | '상투·쪽머리'
   skin: string

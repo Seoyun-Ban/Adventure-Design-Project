@@ -117,7 +117,7 @@ export function ProfileScreen({
     <section className="content-screen tab-screen">
       <header className="profile-head">
         <div className="profile-avatar">
-          <CharacterAvatar gender={look.gender} label={`${nickname}의 아바타`} />
+          <CharacterAvatar look={look} label={`${nickname}의 아바타`} />
         </div>
         <div>
           <p>{loggedIn ? '반가워요!' : '둘러보는 중이에요'}</p>

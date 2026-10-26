@@ -163,7 +163,7 @@ export function BattleScreen({
           </small>
           <CharacterAvatar
             className="fighter-avatar enemy-avatar"
-            gender={opponent.look.gender}
+            look={opponent.look}
             equipped={opponent.equipped}
             label={`${opponent.name}의 아바타`}
           />
@@ -172,7 +172,7 @@ export function BattleScreen({
         <div className={`fighter player ${hit === 'me' ? 'hit' : ''} ${shield ? 'shielded' : ''}`}>
           <CharacterAvatar
             className="fighter-avatar"
-            gender={me.look.gender}
+            look={me.look}
             equipped={me.equipped}
             label="나의 아바타"
           />

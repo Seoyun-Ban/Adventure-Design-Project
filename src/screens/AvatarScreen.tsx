@@ -117,7 +117,7 @@ export function AvatarScreen({
         <div className="sun-disc" />
         <CharacterAvatar
           className="stage-avatar"
-          gender={look.gender}
+          look={look}
           equipped={equipped}
           label={`${nickname}의 아바타`}
         />

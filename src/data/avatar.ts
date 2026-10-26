@@ -1,27 +1,78 @@
-import type { AvatarLook, Equipped, HistoryItem, ItemCategory } from '../types'
+import type { AvatarLook, CharacterStyleId, Equipped, HistoryItem, ItemCategory } from '../types'
 
 type Point = { x: number; y: number }
 
+export type CharacterStyle = {
+  gender: AvatarLook['gender']
+  /** 온보딩 선택지에 보이는 이름 */
+  label: string
+  image: string
+  /** 학습 영상 장면에서 등록한 얼굴 사진을 겹칠 동그라미의 가운데(x, y)와 지름(size) */
+  face: Point & { size: number }
+  /** 착용한 아이템 배지를 띄울 자리 (장비: 머리 근처, 무기: 손 근처, 의복: 몸 옆) */
+  slots: Record<ItemCategory, Point>
+}
+
 /**
- * 내 캐릭터 그림 (성별별). 위치 값은 모두 그림 너비·높이 대비 %.
- * - face: 학습 영상 장면에서 등록한 얼굴 사진을 겹칠 동그라미의 가운데(x, y)와 지름(size)
- * - slots: 착용한 아이템 배지를 띄울 자리 (장비: 머리 근처, 무기: 손 근처, 의복: 몸 옆)
- * 그림을 바꾸면 이 값도 새 그림에 맞게 고쳐야 한다.
+ * 내 캐릭터 그림 (머리 모양별). 위치 값은 모두 그림 너비·높이 대비 %.
+ * 그림마다 얼굴·손 위치가 조금씩 달라서 face와 slots를 따로 맞춘다.
+ * 그림을 바꾸거나 추가하면 이 값도 새 그림에 맞게 고쳐야 한다.
+ * 성별마다 맨 앞에 적은 머리 모양이 기본값이다.
  */
-export const myCharacters: Record<
-  AvatarLook['gender'],
-  { image: string; face: Point & { size: number }; slots: Record<ItemCategory, Point> }
-> = {
-  남: {
-    image: '/images/characters/me-boy.png',
+export const characterStyles: Record<CharacterStyleId, CharacterStyle> = {
+  'boy-short': {
+    gender: '남',
+    label: '짧은 머리',
+    image: '/images/characters/me-boy-short.png',
     face: { x: 50, y: 28, size: 43 },
     slots: { 장비: { x: 88, y: 9 }, 무기: { x: 94, y: 62 }, 의복: { x: 6, y: 47 } },
   },
-  여: {
-    image: '/images/characters/me-girl.png',
+  'boy-sangtu': {
+    gender: '남',
+    label: '상투',
+    image: '/images/characters/me-boy-sangtu.png',
+    face: { x: 50, y: 32, size: 44 },
+    slots: { 장비: { x: 86, y: 12 }, 무기: { x: 94, y: 66 }, 의복: { x: 6, y: 50 } },
+  },
+  'girl-braid': {
+    gender: '여',
+    label: '땋은 머리',
+    image: '/images/characters/me-girl-braid.png',
     face: { x: 50, y: 24, size: 42 },
     slots: { 장비: { x: 88, y: 7 }, 무기: { x: 94, y: 58 }, 의복: { x: 6, y: 44 } },
   },
+  'girl-bob': {
+    gender: '여',
+    label: '단발',
+    image: '/images/characters/me-girl-bob.png',
+    face: { x: 50, y: 25, size: 43 },
+    slots: { 장비: { x: 90, y: 7 }, 무기: { x: 94, y: 60 }, 의복: { x: 6, y: 45 } },
+  },
+  'girl-long': {
+    gender: '여',
+    label: '장발',
+    image: '/images/characters/me-girl-long.png',
+    face: { x: 50, y: 25, size: 42 },
+    slots: { 장비: { x: 90, y: 7 }, 무기: { x: 94, y: 60 }, 의복: { x: 6, y: 46 } },
+  },
+}
+
+/** 성별에 고를 수 있는 머리 모양 (맨 앞이 기본값) */
+export function stylesFor(gender: AvatarLook['gender']) {
+  return (Object.keys(characterStyles) as CharacterStyleId[]).filter(
+    (id) => characterStyles[id].gender === gender,
+  )
+}
+
+/** 외형에 맞는 머리 모양 id. 고른 적이 없거나 성별과 맞지 않으면 성별 기본값 */
+export function styleIdFor(look: Pick<AvatarLook, 'gender' | 'style'>): CharacterStyleId {
+  if (look.style && characterStyles[look.style].gender === look.gender) return look.style
+  return stylesFor(look.gender)[0]
+}
+
+/** 외형에 맞는 캐릭터 그림 정보 */
+export function characterFor(look: Pick<AvatarLook, 'gender' | 'style'>) {
+  return characterStyles[styleIdFor(look)]
 }
 
 // 아바타 아이템: 연결된 장소(placeId)의 학습을 완료하면 획득한다
@@ -149,7 +200,7 @@ export const battleFriends = [
     level: 4,
     title: '성곽 수호자',
     color: 'blue',
-    look: { gender: '남', body: '튼튼', hair: '짧은 머리', skin: '#e8b48a' },
+    look: { gender: '남', style: 'boy-short', body: '튼튼', hair: '짧은 머리', skin: '#e8b48a' },
     equipped: { 장비: 'helmet', 무기: 'jeongjo-bow', 의복: 'armor' },
   },
   {
@@ -158,7 +209,7 @@ export const battleFriends = [
     level: 5,
     title: '궁궐 박사',
     color: 'red',
-    look: { gender: '여', body: '보통', hair: '긴 머리', skin: '#f2c9a0' },
+    look: { gender: '여', style: 'girl-long', body: '보통', hair: '긴 머리', skin: '#f2c9a0' },
     equipped: { 장비: 'gat', 무기: 'brush', 의복: 'official-robe' },
   },
   {
@@ -167,7 +218,7 @@ export const battleFriends = [
     level: 3,
     title: '신라의 별',
     color: 'gold',
-    look: { gender: '남', body: '마름', hair: '상투·쪽머리', skin: '#d9a47c' },
+    look: { gender: '남', style: 'boy-sangtu', body: '마름', hair: '상투·쪽머리', skin: '#d9a47c' },
     equipped: { 무기: 'hwarang-sword', 의복: 'hwarang-robe' },
   },
 ] satisfies {
@@ -182,7 +233,13 @@ export const battleFriends = [
 
 export const skinTones = ['#f6d3b3', '#f2c9a0', '#e8b48a', '#d9a47c', '#b98361']
 
-export const defaultLook: AvatarLook = { gender: '남', body: '보통', hair: '짧은 머리', skin: '#f2c9a0' }
+export const defaultLook: AvatarLook = {
+  gender: '남',
+  style: 'boy-short',
+  body: '보통',
+  hair: '짧은 머리',
+  skin: '#f2c9a0',
+}
 
 export function findItem(id?: string) {
   return historyItems.find((item) => item.id === id)

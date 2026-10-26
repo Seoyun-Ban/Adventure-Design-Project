@@ -3,7 +3,7 @@ import { Icon } from './Icon'
 import { Avatar } from './Avatar'
 import { Place3D } from './Place3D'
 import { figures, myVoice } from '../data/figures'
-import { myCharacters } from '../data/avatar'
+import { characterFor } from '../data/avatar'
 import { Bgm } from '../lib/bgm'
 import { canSpeak, speak, stopSpeaking } from '../lib/speech'
 import { withJosa } from '../lib/korean'
@@ -49,7 +49,7 @@ export function HistoryScene({
 
   if (!figure) return null
   const line = index >= 0 ? figure.dialogue[index] : null
-  const me = myCharacters[look.gender]
+  const me = characterFor(look)
   const figureTalking = playing && line?.speaker === 'figure'
   const meTalking = playing && line?.speaker === 'me'
 

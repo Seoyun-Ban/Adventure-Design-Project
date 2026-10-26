@@ -37,7 +37,7 @@ export function SideMenu({
         </div>
         <div className="traveler-card">
           <div className="avatar-small">
-            <CharacterAvatar gender={look.gender} label={`${nickname}의 아바타`} />
+            <CharacterAvatar look={look} label={`${nickname}의 아바타`} />
           </div>
           <div>
             <strong>{nickname}</strong>

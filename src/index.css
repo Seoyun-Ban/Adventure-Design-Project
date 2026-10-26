@@ -3888,18 +3888,18 @@ button {
   height: 22px;
   font-size: 11px;
 }
-/* 동그란 프로필 칸: 얼굴이 가운데 오도록 그림을 위쪽에 맞춘다 */
+/* 동그란 프로필 칸: 그림마다 다른 얼굴 높이(--face-y, 그림 높이 대비 %)를 칸 가운데에 맞춘다 */
 .avatar-small .character-avatar,
 .profile-avatar .character-avatar {
   align-self: start;
 }
 .avatar-small .character-avatar {
   height: 96px;
-  margin-top: -2px;
+  margin-top: calc(23px - 96px * var(--face-y) / 100);
 }
 .profile-avatar .character-avatar {
   height: 128px;
-  margin-top: -5px;
+  margin-top: calc(31px - 128px * var(--face-y) / 100);
 }
 
 .equip-slots {
