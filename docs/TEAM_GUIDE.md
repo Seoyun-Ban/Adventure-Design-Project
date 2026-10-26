@@ -95,7 +95,7 @@ git push
 ### 꼭 필요한 것
 - [ ] 학습 글·퀴즈 내용 검토 (사실 확인, 초등학생 눈높이) — `src/data/contents.ts`, `src/data/quizBank.ts`, `src/data/facts.ts` (담당: ) — 새로 추가한 **아우내 장터**도 꼭 확인- [ ] 영상 장면 대사 검토 (인물 말투, 사실 확인) — `src/data/figures.ts` (담당: )
 - [ ] (선택) Vercel에 `ANTHROPIC_API_KEY` 설정해서 AI 퀴즈 켜기 (담당: )
-- [ ] 배포해서 데모 링크 만들기 (Vercel 또는 GitHub Pages) → README에 링크 추가 (담당: )
+- [x] 배포해서 데모 링크 만들기 → https://adventure-design-project.vercel.app/ (Vercel)
 - [ ] README에 스크린샷, 팀원 이름/역할 채우기 (담당: )
 
 ### 있으면 좋은 것

@@ -4,7 +4,7 @@
 
 충남대학교 어드벤처디자인 팀 프로젝트 프로토타입입니다.
 
-- 🔗 데모: (배포 후 링크 추가)
+- 🔗 데모: https://adventure-design-project.vercel.app/
 - 📄 기획서: `docs/` 참고
 
 ## 주요 기능
