@@ -36,6 +36,8 @@ export type IconName =
   | 'edit'
   | 'image'
   | 'help'
+  | 'expand'
+  | 'stop'
 
 /**
  * 지도에 표시되는 역사 장소

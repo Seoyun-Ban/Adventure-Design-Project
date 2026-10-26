@@ -140,6 +140,12 @@ export function Icon({ name, size = 24 }: { name: IconName; size?: number }) {
         <path d="m4 18 5-5 4 4 3-3 4 4" />
       </>
     ),
+    expand: (
+      <>
+        <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />
+      </>
+    ),
+    stop: <rect x="5.5" y="5.5" width="13" height="13" rx="2.5" />,
     help: (
       <>
         <circle cx="12" cy="12" r="10" />

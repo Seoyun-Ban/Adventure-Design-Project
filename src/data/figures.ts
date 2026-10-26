@@ -1,8 +1,10 @@
 import type { AvatarLook, Equipped } from '../types'
+import type { VoiceSpec } from '../lib/speech'
 
 // 학습 화면 2D 장면에 등장하는 역사 인물과 대사
 // - speaker: 'figure'(역사 인물) / 'me'(사용자 아바타)
-// - voice: 음성 읽기(TTS)의 높낮이·빠르기. 인물 분위기에 맞게 조절한다.
+// - voice: 기기 목소리 중 남성/여성을 골라 읽고, 높낮이·빠르기는 나이·성격에 맞게 살짝만 바꾼다.
+//   녹음 파일 public/audio/장소id/줄번호.mp3 가 있으면 그것을 먼저 재생한다 (docs/TEAM_GUIDE.md).
 // - image: 캐릭터 그림 경로. 파일이 아직 없으면 look·equipped로 그린 SVG 캐릭터가 대신 나온다.
 //   그림을 추가하는 법은 docs/TEAM_GUIDE.md 참고 (art/characters에 넣고 npm run images).
 // 대사에는 인물이 살아 있던 때의 일만 직접 겪은 것처럼 말하게 한다.
@@ -16,7 +18,8 @@ export type HistoricalFigure = {
   look: AvatarLook
   equipped: Equipped
   beard?: 'mustache' | 'beard'
-  voice: { pitch: number; rate: number }
+  /** 목소리: 남성/여성 + 나이·성격에 맞게 살짝 조절한 높낮이·빠르기 */
+  voice: VoiceSpec
   /** 배경 음악 분위기 */
   mood: 'court' | 'temple' | 'sea' | 'memorial'
   dialogue: DialogueLine[]
@@ -32,7 +35,7 @@ export const figures: Record<string, HistoricalFigure> = {
     look: king,
     equipped: { 장비: 'ikseongwan', 의복: 'royal-robe' },
     beard: 'beard',
-    voice: { pitch: 0.75, rate: 0.92 },
+    voice: { gender: 'male', pitch: 0.92, rate: 0.92 },
     mood: 'court',
     dialogue: [
       { speaker: 'figure', text: '어서 오너라! 나는 조선을 세운 태조 이성계란다.' },
@@ -51,7 +54,7 @@ export const figures: Record<string, HistoricalFigure> = {
     look: { ...king, body: '보통' },
     equipped: { 장비: 'ikseongwan', 의복: 'royal-robe', 무기: 'jeongjo-bow' },
     beard: 'mustache',
-    voice: { pitch: 0.85, rate: 0.95 },
+    voice: { gender: 'male', pitch: 0.98, rate: 0.96 },
     mood: 'court',
     dialogue: [
       { speaker: 'figure', text: '반갑구나. 나는 조선의 스물두 번째 임금, 정조다.' },
@@ -72,7 +75,7 @@ export const figures: Record<string, HistoricalFigure> = {
     look: { gender: '남', body: '보통', hair: '짧은 머리', skin: '#e3b48c' },
     equipped: {},
     beard: 'mustache',
-    voice: { pitch: 0.7, rate: 0.86 },
+    voice: { gender: 'male', pitch: 0.9, rate: 0.88 },
     mood: 'memorial',
     dialogue: [
       { speaker: 'figure', text: '반갑소. 나는 중국에서 대한민국 임시정부를 이끌며 독립운동을 한 김구요.' },
@@ -90,7 +93,7 @@ export const figures: Record<string, HistoricalFigure> = {
     image: '/images/characters/yugwansun.png',
     look: { gender: '여', body: '마름', hair: '긴 머리', skin: '#f2c9a0' },
     equipped: { 무기: 'declaration' },
-    voice: { pitch: 1.2, rate: 0.98 },
+    voice: { gender: 'female', pitch: 1.05, rate: 1.0 },
     mood: 'memorial',
     dialogue: [
       { speaker: 'figure', text: '반가워요. 나는 이화학당 학생 유관순이에요.' },
@@ -112,7 +115,7 @@ export const figures: Record<string, HistoricalFigure> = {
     look: { gender: '남', body: '보통', hair: '상투·쪽머리', skin: '#e8b890' },
     equipped: { 의복: 'silla-noble' },
     beard: 'mustache',
-    voice: { pitch: 0.9, rate: 0.9 },
+    voice: { gender: 'male', pitch: 0.96, rate: 0.92 },
     mood: 'temple',
     dialogue: [
       { speaker: 'figure', text: '나는 신라의 김대성이오. 751년부터 이 절을 짓기 시작했다오.' },
@@ -128,7 +131,7 @@ export const figures: Record<string, HistoricalFigure> = {
     look: { gender: '남', body: '튼튼', hair: '상투·쪽머리', skin: '#dcaa80' },
     equipped: { 장비: 'helmet', 의복: 'armor', 무기: 'hwarang-sword' },
     beard: 'beard',
-    voice: { pitch: 0.7, rate: 0.9 },
+    voice: { gender: 'male', pitch: 0.9, rate: 0.94 },
     mood: 'sea',
     dialogue: [
       { speaker: 'figure', text: '나는 조선 수군을 이끈 이순신이다.' },
@@ -144,7 +147,7 @@ export const figures: Record<string, HistoricalFigure> = {
     look: king,
     equipped: { 장비: 'ikseongwan', 의복: 'royal-robe', 무기: 'brush' },
     beard: 'beard',
-    voice: { pitch: 0.8, rate: 0.9 },
+    voice: { gender: 'male', pitch: 0.95, rate: 0.92 },
     mood: 'court',
     dialogue: [
       { speaker: 'figure', text: '어서 오너라. 나는 조선의 네 번째 임금, 세종이다.' },
@@ -158,5 +161,9 @@ export const figures: Record<string, HistoricalFigure> = {
   },
 }
 
-/** 사용자 아바타 목소리 */
-export const myVoice = { pitch: 1.35, rate: 1.0 }
+/** 내 캐릭터 목소리: 남자아이는 남성 목소리, 여자아이는 여성 목소리를 조금 높게 */
+export function myVoiceFor(gender: AvatarLook['gender']): VoiceSpec {
+  return gender === '남'
+    ? { gender: 'male', pitch: 1.12, rate: 1.02 }
+    : { gender: 'female', pitch: 1.1, rate: 1.02 }
+}
