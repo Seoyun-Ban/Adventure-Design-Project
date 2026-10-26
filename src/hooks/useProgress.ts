@@ -12,6 +12,8 @@ export type WrongAnswer = { placeId: string; item: QuizItem; wrongAt: string }
 
 export type Progress = {
   loggedIn: boolean
+  /** 이 기기에서 회원가입(이메일 또는 간편 로그인)을 마쳤는지. 간편 로그인 첫 이용 판단에 쓴다 */
+  joined: boolean
   onboarded: boolean
   nickname: string
   look: AvatarLook
@@ -41,6 +43,7 @@ function daysAgo(days: number) {
 function demoProgress(): Progress {
   return {
     loggedIn: false,
+    joined: false,
     onboarded: false,
     nickname: '작은 탐험가',
     look: defaultLook,

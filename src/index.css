@@ -353,16 +353,45 @@ button {
 .field-hint.error {
   color: var(--danger);
 }
-.auth-age {
-  margin: 4px 0 14px;
+.birth-row {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 8px;
 }
-.auth-age > span {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--ink-soft);
+.birth-row select {
+  width: 100%;
+  height: 46px;
+  border: 1px solid rgba(55, 66, 55, 0.14);
+  border-radius: 13px;
+  padding: 0 12px;
+  outline: none;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.75);
+  font-size: 13px;
 }
-.auth-age .settings-segments button {
+.birth-row select:focus {
+  border-color: var(--green-2);
+  box-shadow: 0 0 0 3px rgba(47, 107, 80, 0.1);
+}
+.terms-summary {
+  margin: 6px 0 0 24px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--green-3);
+}
+.terms-summary strong {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--green);
+  font-size: 10px;
+}
+.terms-summary ul {
+  margin: 0;
+  padding-left: 16px;
+  list-style: disc;
+  color: var(--ink);
   font-size: 11px;
+  line-height: 1.6;
 }
 .terms-box {
   margin: 0 0 16px;
@@ -443,6 +472,10 @@ button {
 }
 .auth-done .auth-note {
   margin: -6px 0 16px;
+}
+.auth-guardian-wait {
+  margin-bottom: 14px;
+  text-align: left;
 }
 .auth-done-icon {
   width: 64px;

@@ -10,7 +10,7 @@ import { CompleteModal } from './components/CompleteModal'
 import { CURRENT_LOCATION, findPlace, places } from './data/places'
 import { useProgress } from './hooks/useProgress'
 import { generateLocal, generateQuiz, shuffleOptions, type GeneratedQuiz } from './lib/quizGenerator'
-import type { Difficulty, Place, Screen } from './types'
+import type { Difficulty, Place, Screen, SocialProvider } from './types'
 
 /** 복습 퀴즈 문제 수 */
 const REVIEW_COUNT = 5
@@ -37,6 +37,8 @@ export default function App() {
   const [showComplete, setShowComplete] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
   const [resetEmail, setResetEmail] = useState('')
+  /** 간편 로그인으로 처음 가입할 때 그 회사 (없으면 이메일 가입) */
+  const [signupProvider, setSignupProvider] = useState<SocialProvider>()
 
   /** 위치가 없는 사건(event)은 지금 내 위치에 발자국을 남긴다 */
   const positionFor = (place: Place) => (place.kind === 'event' ? CURRENT_LOCATION : undefined)
@@ -131,7 +133,18 @@ export default function App() {
         <LoginScreen
           rememberedEmail={progress.rememberedEmail}
           onEnter={enter}
-          onSignup={() => setScreen('signup')}
+          onSocial={(provider) => {
+            // 이 기기에서 처음 쓰는 간편 로그인이면 이메일 가입과 같은 나이 확인·보호자 허락 단계를 거친다
+            if (progress.joined) enter(true)
+            else {
+              setSignupProvider(provider)
+              setScreen('signup')
+            }
+          }}
+          onSignup={() => {
+            setSignupProvider(undefined)
+            setScreen('signup')
+          }}
           onFindPassword={(email) => {
             setResetEmail(email)
             setScreen('reset')
@@ -140,10 +153,12 @@ export default function App() {
       )}
       {screen === 'signup' && (
         <SignupScreen
+          provider={signupProvider}
           onBack={() => setScreen('login')}
           onDone={(nickname) => {
-            // 새로 가입한 계정은 닉네임을 채워 둔 온보딩부터 시작한다 (비밀번호는 저장하지 않는다)
-            update({ loggedIn: true, nickname })
+            // 새로 가입한 계정은 닉네임을 채워 둔 온보딩부터 시작한다
+            // (비밀번호·태어난 해와 달·보호자 이메일은 넘겨받지 않으므로 저장되지 않는다)
+            update({ loggedIn: true, joined: true, nickname })
             setScreen('onboarding')
           }}
         />
