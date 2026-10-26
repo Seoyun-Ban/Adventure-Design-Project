@@ -6,3 +6,6 @@ dist/
 .DS_Store
 .vscode/*
 !.vscode/extensions.json
+
+# 간편 로그인 공식 버튼 원본 (보관용, 사용하는 그림만 public/images/login/에 복사)
+art/login/

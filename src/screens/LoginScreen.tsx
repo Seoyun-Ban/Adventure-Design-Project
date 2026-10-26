@@ -2,6 +2,18 @@ import { useState } from 'react'
 import { Icon } from '../components/Icon'
 import { ActionButton } from '../components/ActionButton'
 
+// 간편 로그인 버튼: 각 회사가 제공한 공식 버튼 이미지를 그대로 쓴다 (로고·색·비율을 바꾸지 않는다).
+// 원본은 art/login/ (저장소 제외)
+// - 카카오: kakao_login_kr_medium.png
+// - 네이버: NAVER_login_Light_KR_green_narrow_H48.png
+// - 구글: Theme=Light, Show text=Yes, Shape=Square, Platform=Android+Web.png
+// 구글 가이드에 따라 세 버튼은 비슷한 크기로 보이도록 같은 높이로 쌓는다.
+const socialLogins = [
+  { id: 'naver', label: '네이버로 로그인', image: '/images/login/naver-login.png' },
+  { id: 'kakao', label: '카카오로 로그인', image: '/images/login/kakao-login.png' },
+  { id: 'google', label: '구글로 로그인', image: '/images/login/google-login.png' },
+]
+
 export function LoginScreen({
   rememberedEmail,
   onEnter,
@@ -32,16 +44,18 @@ export function LoginScreen({
 
       <section className="login-panel">
         <p className="panel-title">간편하게 시작하기</p>
-        <div className="social-row">
-          <button className="social naver" onClick={login} type="button" aria-label="네이버로 로그인">
-            N
-          </button>
-          <button className="social kakao" onClick={login} type="button" aria-label="카카오로 로그인">
-            <span className="speech">•••</span>
-          </button>
-          <button className="social google" onClick={login} type="button" aria-label="구글로 로그인">
-            G
-          </button>
+        <div className="social-list">
+          {socialLogins.map((social) => (
+            <button
+              key={social.id}
+              className="social-button"
+              onClick={login}
+              type="button"
+              aria-label={social.label}
+            >
+              <img src={social.image} alt="" draggable={false} />
+            </button>
+          ))}
         </div>
         <div className="divider">
           <span>또는 이메일로</span>

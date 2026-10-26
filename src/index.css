@@ -193,43 +193,30 @@ button {
   font-size: 13px;
   font-weight: 700;
 }
-.social-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+/* 간편 로그인: 공식 버튼 이미지를 같은 높이로 위아래로 쌓는다.
+   이미지는 늘리거나 자르지 않고 높이만 맞춰 비율 그대로 보여준다 (각 회사 디자인 가이드). */
+.social-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 10px;
 }
-.social {
-  height: 46px;
+.social-button {
+  padding: 0;
   border: 0;
-  border-radius: 13px;
-  font-size: 18px;
-  font-weight: 800;
+  border-radius: 12px;
+  background: none;
+  line-height: 0;
   cursor: pointer;
 }
-.social.naver {
-  color: white;
-  background: #03c75a;
+.social-button:focus-visible {
+  outline: 3px solid var(--green);
+  outline-offset: 3px;
 }
-.social.kakao {
-  color: #201d18;
-  background: #fee500;
-}
-.social.google {
-  color: #4285f4;
-  background: white;
-  border: 1px solid #dedede;
-  font-family: Arial, sans-serif;
-}
-.speech {
-  display: inline-grid;
-  place-items: center;
-  width: 25px;
-  height: 19px;
-  border-radius: 50%;
-  color: #fee500;
-  background: #251f1d;
-  font-size: 10px;
-  letter-spacing: -1px;
+.social-button img {
+  display: block;
+  width: auto;
+  height: 44px;
 }
 .divider {
   display: flex;
