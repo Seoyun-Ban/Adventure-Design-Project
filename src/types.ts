@@ -146,9 +146,25 @@ export type HistoryItem = {
   rarity: string
   description: string
   stats: { 공격: number; 방어: number; 지혜: number }
-  /**
-   * 그림 캐릭터 위에 겹쳐 그릴 옷·장비 그림 (투명 PNG, 내 캐릭터 그림과 같은 크기·위치로 그린 것).
-   * 비어 있으면 캐릭터 주변에 작은 원형 배지로 보여준다.
-   */
-  art?: string
+  /** 그림 캐릭터에 직접 입히는 그림. 비어 있으면 캐릭터 주변에 작은 원형 배지로 보여준다 */
+  art?: ItemArt
+}
+
+/**
+ * 아이템 그림을 캐릭터에 겹치는 방법
+ * - kind: 'image'는 PNG 그림, 'taegukgi'·'declaration'은 코드로 그린 그림
+ * - anchor: 아이템 그림에서 캐릭터의 자리(머리: 이마선, 손: 손바닥)에 맞출 점 (아이템 너비·높이 대비 %)
+ * - width: 머리 아이템 너비 = 캐릭터 머리 너비 × width
+ * - height: 손 아이템 높이 = 캐릭터 키 × height(%)
+ * - split, below: 그림을 split 높이(%)에서 위아래로 나눠, 아래쪽(갓끈·투구 목가리개)이 얼굴을 가리지 않게
+ *   캐릭터 뒤에 그리거나(behind) 그리지 않는다(hide)
+ */
+export type ItemArt = {
+  kind: 'image' | 'taegukgi' | 'declaration'
+  src?: string
+  anchor: { x: number; y: number }
+  width?: number
+  height?: number
+  split?: number
+  below?: 'behind' | 'hide'
 }

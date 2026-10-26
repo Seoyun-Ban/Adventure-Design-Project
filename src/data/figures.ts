@@ -89,7 +89,7 @@ export const figures: Record<string, HistoricalFigure> = {
     title: '아우내 장터 만세 운동을 이끈 이화학당 학생',
     image: '/images/characters/yugwansun.png',
     look: { gender: '여', body: '마름', hair: '긴 머리', skin: '#f2c9a0' },
-    equipped: { 무기: 'manse-flag' },
+    equipped: { 무기: 'declaration' },
     voice: { pitch: 1.2, rate: 0.98 },
     mood: 'memorial',
     dialogue: [

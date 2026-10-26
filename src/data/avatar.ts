@@ -9,8 +9,14 @@ export type CharacterStyle = {
   image: string
   /** 학습 영상 장면에서 등록한 얼굴 사진을 겹칠 동그라미의 가운데(x, y)와 지름(size) */
   face: Point & { size: number }
-  /** 착용한 아이템 배지를 띄울 자리 (장비: 머리 근처, 무기: 손 근처, 의복: 몸 옆) */
+  /** 착용한 아이템 배지를 띄울 자리 (장비: 머리 근처, 무기: 손 근처, 의복: 몸 옆). 그림이 없는 아이템에 쓴다 */
   slots: Record<ItemCategory, Point>
+  /**
+   * 그림 아이템을 겹칠 자리
+   * - head: 모자의 아래 테두리가 닿을 이마선 가운데(x, y)와 머리(머리카락 포함) 너비(w, 그림 너비 대비 %)
+   * - hand: 손 아이템을 쥘 손바닥 가운데(x, y) — 화면 오른쪽 손
+   */
+  mounts: { head: Point & { w: number }; hand: Point }
 }
 
 /**
@@ -26,6 +32,7 @@ export const characterStyles: Record<CharacterStyleId, CharacterStyle> = {
     image: '/images/characters/me-boy-short.png',
     face: { x: 50, y: 28, size: 43 },
     slots: { 장비: { x: 88, y: 9 }, 무기: { x: 94, y: 62 }, 의복: { x: 6, y: 47 } },
+    mounts: { head: { x: 50, y: 17, w: 78 }, hand: { x: 91, y: 68 } },
   },
   'boy-sangtu': {
     gender: '남',
@@ -33,6 +40,7 @@ export const characterStyles: Record<CharacterStyleId, CharacterStyle> = {
     image: '/images/characters/me-boy-sangtu.png',
     face: { x: 50, y: 32, size: 44 },
     slots: { 장비: { x: 86, y: 12 }, 무기: { x: 94, y: 66 }, 의복: { x: 6, y: 50 } },
+    mounts: { head: { x: 49, y: 24, w: 64 }, hand: { x: 92, y: 70 } },
   },
   'girl-braid': {
     gender: '여',
@@ -40,6 +48,7 @@ export const characterStyles: Record<CharacterStyleId, CharacterStyle> = {
     image: '/images/characters/me-girl-braid.png',
     face: { x: 50, y: 24, size: 42 },
     slots: { 장비: { x: 88, y: 7 }, 무기: { x: 94, y: 58 }, 의복: { x: 6, y: 44 } },
+    mounts: { head: { x: 49, y: 14, w: 62 }, hand: { x: 94, y: 64 } },
   },
   'girl-bob': {
     gender: '여',
@@ -47,6 +56,7 @@ export const characterStyles: Record<CharacterStyleId, CharacterStyle> = {
     image: '/images/characters/me-girl-bob.png',
     face: { x: 50, y: 25, size: 43 },
     slots: { 장비: { x: 90, y: 7 }, 무기: { x: 94, y: 60 }, 의복: { x: 6, y: 45 } },
+    mounts: { head: { x: 50, y: 13, w: 72 }, hand: { x: 93, y: 64 } },
   },
   'girl-long': {
     gender: '여',
@@ -54,6 +64,7 @@ export const characterStyles: Record<CharacterStyleId, CharacterStyle> = {
     image: '/images/characters/me-girl-long.png',
     face: { x: 50, y: 25, size: 42 },
     slots: { 장비: { x: 90, y: 7 }, 무기: { x: 94, y: 60 }, 의복: { x: 6, y: 46 } },
+    mounts: { head: { x: 50, y: 13, w: 70 }, hand: { x: 94, y: 63 } },
   },
 }
 
@@ -89,6 +100,14 @@ export const historyItems: HistoryItem[] = [
     rarity: '희귀',
     description: '배움과 바른 마음가짐을 소중히 여긴 선비의 갓.',
     stats: { 공격: 12, 방어: 32, 지혜: 96 },
+    art: {
+      kind: 'image',
+      src: '/images/characters/item-gat.png',
+      anchor: { x: 50, y: 60 },
+      width: 1.4,
+      split: 62,
+      below: 'behind',
+    },
   },
   {
     id: 'helmet',
@@ -100,17 +119,14 @@ export const historyItems: HistoryItem[] = [
     rarity: '영웅',
     description: '거친 바다 위에서도 장군의 머리를 지켜준 투구.',
     stats: { 공격: 40, 방어: 88, 지혜: 50 },
-  },
-  {
-    id: 'liberation-cap',
-    name: '독립군의 군모',
-    shortName: '독립군 군모',
-    category: '장비',
-    symbol: '帽',
-    placeId: 'independence',
-    rarity: '희귀',
-    description: '나라를 되찾기 위해 먼 길을 걸었던 독립군의 모자.',
-    stats: { 공격: 52, 방어: 46, 지혜: 70 },
+    art: {
+      kind: 'image',
+      src: '/images/characters/item-helmet.png',
+      anchor: { x: 50, y: 64 },
+      width: 1.1,
+      split: 67,
+      below: 'hide',
+    },
   },
   // 무기 (손)
   {
@@ -123,6 +139,7 @@ export const historyItems: HistoryItem[] = [
     rarity: '영웅',
     description: '활쏘기 솜씨가 뛰어났던 정조를 떠올리게 하는 활.',
     stats: { 공격: 87, 방어: 25, 지혜: 62 },
+    art: { kind: 'image', src: '/images/characters/item-bow.png', anchor: { x: 30, y: 52 }, height: 46 },
   },
   {
     id: 'hwarang-sword',
@@ -134,6 +151,7 @@ export const historyItems: HistoryItem[] = [
     rarity: '영웅',
     description: '신라 화랑의 용기와 수련을 상징하는 곧은 검.',
     stats: { 공격: 94, 방어: 38, 지혜: 46 },
+    art: { kind: 'image', src: '/images/characters/item-sword.png', anchor: { x: 50, y: 84 }, height: 38 },
   },
   {
     id: 'brush',
@@ -145,17 +163,31 @@ export const historyItems: HistoryItem[] = [
     rarity: '전설',
     description: '스물여덟 글자를 세상에 남긴 붓. 지혜가 가장 큰 무기!',
     stats: { 공격: 30, 방어: 30, 지혜: 99 },
+    art: { kind: 'image', src: '/images/characters/item-brush.png', anchor: { x: 50, y: 72 }, height: 30 },
   },
   {
-    id: 'manse-flag',
-    name: '만세 태극기',
-    shortName: '만세 태극기',
+    id: 'taegukgi',
+    name: '태극기',
+    shortName: '태극기',
     category: '무기',
     symbol: '旗',
+    placeId: 'independence',
+    rarity: '희귀',
+    description: '나라를 되찾기 위해 애쓴 사람들이 소중히 지켜 낸 우리나라의 국기.',
+    stats: { 공격: 52, 방어: 46, 지혜: 70 },
+    art: { kind: 'taegukgi', anchor: { x: 6, y: 78 }, height: 56 },
+  },
+  {
+    id: 'declaration',
+    name: '독립선언서',
+    shortName: '독립선언서',
+    category: '무기',
+    symbol: '書',
     placeId: 'aunae',
     rarity: '전설',
-    description: '유관순이 아우내 장터에서 사람들에게 나누어 준 태극기를 떠올리게 하는 깃발.',
+    description: '유관순이 고향 사람들과 함께 읽은 독립선언서. 용기가 불끈 솟아나요.',
     stats: { 공격: 42, 방어: 64, 지혜: 90 },
+    art: { kind: 'declaration', anchor: { x: 50, y: 55 }, height: 20 },
   },
   // 의복 (몸)
   {
@@ -243,6 +275,21 @@ export const defaultLook: AvatarLook = {
 
 export function findItem(id?: string) {
   return historyItems.find((item) => item.id === id)
+}
+
+/**
+ * 없어진 아이템을 새 아이템으로 바꾼다 (예전에 저장한 기록·예전 도전장 링크용)
+ * - 만세 태극기(manse-flag, 손) → 독립선언서(declaration, 손)
+ * - 독립군 군모(liberation-cap, 머리) → 태극기(taegukgi, 손). 손에 이미 다른 아이템이 있으면 그대로 두고 군모만 벗는다.
+ */
+export function migrateEquipped(equipped: Equipped): Equipped {
+  const next: Equipped = { ...equipped }
+  if (next.무기 === 'manse-flag') next.무기 = 'declaration'
+  if (next.장비 === 'liberation-cap') {
+    delete next.장비
+    if (!next.무기) next.무기 = 'taegukgi'
+  }
+  return next
 }
 
 /** 이 장소를 학습하면 얻는 아이템 */

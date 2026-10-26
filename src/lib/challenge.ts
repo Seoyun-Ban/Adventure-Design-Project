@@ -1,4 +1,4 @@
-import { characterStyles, findItem } from '../data/avatar'
+import { characterStyles, findItem, migrateEquipped } from '../data/avatar'
 import { places } from '../data/places'
 import type { AvatarLook, CharacterStyleId, Equipped, ItemCategory } from '../types'
 
@@ -92,7 +92,9 @@ function validate(data: Partial<Payload>): Challenger {
   if (!Number.isInteger(data.l) || (data.l as number) < 1 || (data.l as number) > MAX_LEVEL)
     throw new Error('level')
   const equipped: Equipped = {}
-  for (const [slot, id] of Object.entries(data.e ?? {})) {
+  // 예전 링크의 없어진 아이템(군모, 만세 태극기)은 새 아이템으로 바꿔서 읽는다
+  const rawEquipped = data.e && typeof data.e === 'object' ? migrateEquipped(data.e as Equipped) : {}
+  for (const [slot, id] of Object.entries(rawEquipped)) {
     const item = findItem(id)
     // 없는 아이템이거나 맞지 않는 부위에 넣은 아이템이면 이상한 도전장
     if (!item || item.category !== slot) throw new Error('item')

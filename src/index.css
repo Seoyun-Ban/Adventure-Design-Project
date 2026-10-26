@@ -4564,21 +4564,55 @@ button {
   position: relative;
   display: block;
 }
-.character-base,
-.character-layer {
+.character-base {
+  position: relative;
+  z-index: 1;
   display: block;
   height: 100%;
   width: auto;
   user-select: none;
 }
-.character-layer {
+/* 캐릭터에 입힌 아이템 그림: 위치·크기는 CharacterAvatar가 정한다 (모자는 width, 손 아이템은 height) */
+.character-item {
   position: absolute;
-  inset: 0;
+  z-index: 2;
+  display: block;
+  max-width: none;
+  user-select: none;
+  pointer-events: none;
+}
+img.character-item {
+  height: auto;
+}
+img.character-item[style*='height'] {
+  width: auto;
+}
+/* 손에 든 태극기: 깃대 쪽을 축으로 살랑살랑 */
+.flag-wave {
+  transform-box: fill-box;
+  transform-origin: left center;
+  animation: flag-wave 2.6s ease-in-out infinite alternate;
+}
+@keyframes flag-wave {
+  0% {
+    transform: skewY(0deg) scaleX(1);
+  }
+  50% {
+    transform: skewY(-3deg) scaleX(0.97);
+  }
+  100% {
+    transform: skewY(2deg) scaleX(0.95);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .flag-wave {
+    animation: none;
+  }
 }
 /* 착용 아이템 배지: 그림 크기 대비 % 자리에 가운데를 맞춘다 */
 .item-badge {
   position: absolute;
-  z-index: 1;
+  z-index: 3;
   width: 26px;
   height: 26px;
   border: 2px solid white;

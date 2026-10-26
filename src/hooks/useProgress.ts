@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { defaultLook } from '../data/avatar'
+import { defaultLook, migrateEquipped } from '../data/avatar'
 import type { AvatarLook, Difficulty, Equipped, LearningRecord, QuizItem } from '../types'
 
 /** 틀린 문제 기록 (복습 퀴즈에서 다시 낸다) */
@@ -102,7 +102,9 @@ function load(): Progress {
       const demo = demoProgress()
       const parsed = JSON.parse(saved)
       // 예전에 저장한 기록에는 최근 대결 목록이 없을 수 있어 기본값과 합친다
-      return { ...demo, ...parsed, battle: { ...demo.battle, ...parsed.battle } }
+      // 없어진 아이템(군모, 만세 태극기)을 착용하던 기록은 새 아이템으로 바꾼다
+      const equipped = migrateEquipped(parsed.equipped ?? demo.equipped)
+      return { ...demo, ...parsed, equipped, battle: { ...demo.battle, ...parsed.battle } }
     }
   } catch {
     // 저장소를 쓸 수 없는 환경이면 기본값 사용
