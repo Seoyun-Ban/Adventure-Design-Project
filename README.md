@@ -51,6 +51,7 @@ npm run format   # 코드 정렬 (Prettier)
 npm run images   # 캐릭터 그림 용량 줄이기 (art/characters → public/images/characters)
 ```
 
+컴퓨터 브라우저에서는 휴대폰 모양 틀 안에 앱이 보이고, 창이 작으면 틀이 통째로 줄어들어 항상 화면 안에 다 들어옵니다.
 브라우저 개발자 도구(F12)에서 모바일 화면 모드(Ctrl+Shift+M)로 보면 실제 폰 화면처럼 볼 수 있습니다.
 
 ## 기술 스택

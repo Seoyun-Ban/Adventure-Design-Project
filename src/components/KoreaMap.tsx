@@ -9,6 +9,7 @@ import southKoreaMap from '@svg-maps/south-korea'
 import { Icon } from './Icon'
 import { MapMarker } from './MapMarker'
 import { CURRENT_LOCATION, places } from '../data/places'
+import { frameScale } from '../lib/frameScale'
 import type { LearningRecord, Place } from '../types'
 
 /** 지도 스테이지 크기 (index.css의 .offline-map-stage와 같아야 함) */
@@ -72,8 +73,9 @@ export function KoreaMap({
     pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY })
     const points = [...pointers.current.values()]
     if (points.length === 1) {
-      const dx = points[0].x - gestureStart.current.x
-      const dy = points[0].y - gestureStart.current.y
+      // 컴퓨터에서 틀이 줄어 있으면 마우스 이동 거리를 틀 안 거리로 바꾼다
+      const dx = (points[0].x - gestureStart.current.x) / frameScale()
+      const dy = (points[0].y - gestureStart.current.y) / frameScale()
       if (Math.abs(dx) + Math.abs(dy) > 5) moved.current = true
       setPan({
         x: clampPan(gestureStart.current.panX + dx, zoom),

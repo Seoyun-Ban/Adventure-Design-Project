@@ -12,6 +12,7 @@ import { CURRENT_LOCATION, findPlace, places } from './data/places'
 import { useProgress } from './hooks/useProgress'
 import { levelFor } from './data/avatar'
 import { clearChallengeHash, readChallenge } from './lib/challenge'
+import { scrollAppToTop } from './lib/frameScale'
 import { generateLocal, generateQuiz, shuffleOptions, type GeneratedQuiz } from './lib/quizGenerator'
 import type { Difficulty, Place, Screen, SocialProvider } from './types'
 
@@ -94,14 +95,14 @@ export default function App() {
     if (place.status === 'locked') return
     setSelectedPlace(place)
     setScreen('learn')
-    window.scrollTo(0, 0)
+    scrollAppToTop()
   }
 
   function startQuiz(session: QuizSession) {
     setQuiz(session)
     setQuizRun((value) => value + 1)
     setScreen('quiz')
-    window.scrollTo(0, 0)
+    scrollAppToTop()
   }
 
   /** 장소 퀴즈: 학습 단계와 같은 난이도로 매번 새로 출제 */
@@ -171,112 +172,115 @@ export default function App() {
 
   return (
     <div className="app-frame">
-      {screen === 'challenge' && challenge && (
-        <ChallengeScreen
-          challenge={challenge}
-          me={meAsChallenger}
-          onFinish={recordBattle}
-          onStart={() => leaveChallenge('login')}
-          onClose={() => leaveChallenge('home')}
-          onNotice={showToast}
-        />
-      )}
-      {screen === 'login' && (
-        <LoginScreen
-          rememberedEmail={progress.rememberedEmail}
-          onEnter={enter}
-          onSocial={(provider) => {
-            // 이 기기에서 처음 쓰는 간편 로그인이면 이메일 가입과 같은 나이 확인·보호자 허락 단계를 거친다
-            if (progress.joined) enter(true)
-            else {
-              setSignupProvider(provider)
+      {/* 컴퓨터 화면에서는 틀 크기가 고정이라 이 안에서 스크롤된다 */}
+      <div className="app-scroll">
+        {screen === 'challenge' && challenge && (
+          <ChallengeScreen
+            challenge={challenge}
+            me={meAsChallenger}
+            onFinish={recordBattle}
+            onStart={() => leaveChallenge('login')}
+            onClose={() => leaveChallenge('home')}
+            onNotice={showToast}
+          />
+        )}
+        {screen === 'login' && (
+          <LoginScreen
+            rememberedEmail={progress.rememberedEmail}
+            onEnter={enter}
+            onSocial={(provider) => {
+              // 이 기기에서 처음 쓰는 간편 로그인이면 이메일 가입과 같은 나이 확인·보호자 허락 단계를 거친다
+              if (progress.joined) enter(true)
+              else {
+                setSignupProvider(provider)
+                setScreen('signup')
+              }
+            }}
+            onSignup={() => {
+              setSignupProvider(undefined)
               setScreen('signup')
+            }}
+            onFindPassword={(email) => {
+              setResetEmail(email)
+              setScreen('reset')
+            }}
+          />
+        )}
+        {screen === 'signup' && (
+          <SignupScreen
+            provider={signupProvider}
+            onBack={() => setScreen('login')}
+            onDone={(nickname) => {
+              // 새로 가입한 계정은 닉네임을 채워 둔 온보딩부터 시작한다
+              // (비밀번호·태어난 해와 달·보호자 이메일은 넘겨받지 않으므로 저장되지 않는다)
+              update({ loggedIn: true, joined: true, nickname })
+              setScreen('onboarding')
+            }}
+          />
+        )}
+        {screen === 'reset' && (
+          <ResetPasswordScreen initialEmail={resetEmail} onBack={() => setScreen('login')} />
+        )}
+        {screen === 'onboarding' && (
+          <OnboardingScreen
+            initial={progress}
+            equipped={progress.equipped}
+            onDone={(result) => {
+              update({ ...result, onboarded: true })
+              setScreen('home')
+            }}
+          />
+        )}
+        {screen === 'home' && (
+          <HomeScreen
+            store={store}
+            onLearn={openLearn}
+            onStartQuiz={(place) => startPlaceQuiz(place, progress.defaultDifficulty, 'home')}
+            onStartReview={startReview}
+            onLogin={() => setScreen('login')}
+            onLogout={() => {
+              update({ loggedIn: false })
+              setScreen('login')
+            }}
+            onEditAvatar={() => setScreen('onboarding')}
+            onNotice={showToast}
+          />
+        )}
+        {screen === 'learn' && (
+          <LearnScreen
+            key={selectedPlace.id}
+            place={selectedPlace}
+            defaultDifficulty={progress.defaultDifficulty}
+            avatar={{
+              nickname: progress.nickname,
+              look: progress.look,
+              equipped: progress.equipped,
+              faceImage: progress.faceImage,
+            }}
+            favorite={progress.favorites.includes(selectedPlace.id)}
+            completed={completedIds.includes(selectedPlace.id)}
+            onToggleFavorite={() => toggleFavorite(selectedPlace.id)}
+            onBack={() => setScreen('home')}
+            onComplete={(difficulty) => {
+              setLearnDifficulty(difficulty)
+              completeLearning(selectedPlace.id, positionFor(selectedPlace))
+              setShowComplete(true)
+            }}
+            onQuiz={(difficulty) => startPlaceQuiz(selectedPlace, difficulty, 'learn')}
+          />
+        )}
+        {screen === 'quiz' && quiz && (
+          <QuizScreen
+            key={quizRun}
+            title={quiz.title}
+            load={quiz.load}
+            onBack={() =>
+              setScreen(quiz.from === 'learn' && quiz.place && findPlace(quiz.place.id) ? 'learn' : 'home')
             }
-          }}
-          onSignup={() => {
-            setSignupProvider(undefined)
-            setScreen('signup')
-          }}
-          onFindPassword={(email) => {
-            setResetEmail(email)
-            setScreen('reset')
-          }}
-        />
-      )}
-      {screen === 'signup' && (
-        <SignupScreen
-          provider={signupProvider}
-          onBack={() => setScreen('login')}
-          onDone={(nickname) => {
-            // 새로 가입한 계정은 닉네임을 채워 둔 온보딩부터 시작한다
-            // (비밀번호·태어난 해와 달·보호자 이메일은 넘겨받지 않으므로 저장되지 않는다)
-            update({ loggedIn: true, joined: true, nickname })
-            setScreen('onboarding')
-          }}
-        />
-      )}
-      {screen === 'reset' && (
-        <ResetPasswordScreen initialEmail={resetEmail} onBack={() => setScreen('login')} />
-      )}
-      {screen === 'onboarding' && (
-        <OnboardingScreen
-          initial={progress}
-          equipped={progress.equipped}
-          onDone={(result) => {
-            update({ ...result, onboarded: true })
-            setScreen('home')
-          }}
-        />
-      )}
-      {screen === 'home' && (
-        <HomeScreen
-          store={store}
-          onLearn={openLearn}
-          onStartQuiz={(place) => startPlaceQuiz(place, progress.defaultDifficulty, 'home')}
-          onStartReview={startReview}
-          onLogin={() => setScreen('login')}
-          onLogout={() => {
-            update({ loggedIn: false })
-            setScreen('login')
-          }}
-          onEditAvatar={() => setScreen('onboarding')}
-          onNotice={showToast}
-        />
-      )}
-      {screen === 'learn' && (
-        <LearnScreen
-          key={selectedPlace.id}
-          place={selectedPlace}
-          defaultDifficulty={progress.defaultDifficulty}
-          avatar={{
-            nickname: progress.nickname,
-            look: progress.look,
-            equipped: progress.equipped,
-            faceImage: progress.faceImage,
-          }}
-          favorite={progress.favorites.includes(selectedPlace.id)}
-          completed={completedIds.includes(selectedPlace.id)}
-          onToggleFavorite={() => toggleFavorite(selectedPlace.id)}
-          onBack={() => setScreen('home')}
-          onComplete={(difficulty) => {
-            setLearnDifficulty(difficulty)
-            completeLearning(selectedPlace.id, positionFor(selectedPlace))
-            setShowComplete(true)
-          }}
-          onQuiz={(difficulty) => startPlaceQuiz(selectedPlace, difficulty, 'learn')}
-        />
-      )}
-      {screen === 'quiz' && quiz && (
-        <QuizScreen
-          key={quizRun}
-          title={quiz.title}
-          load={quiz.load}
-          onBack={() =>
-            setScreen(quiz.from === 'learn' && quiz.place && findPlace(quiz.place.id) ? 'learn' : 'home')
-          }
-          onDone={finishQuiz}
-        />
-      )}
+            onDone={finishQuiz}
+          />
+        )}
+      </div>
       {showComplete && (
         <CompleteModal
           place={selectedPlace}

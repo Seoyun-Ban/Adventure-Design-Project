@@ -4473,19 +4473,49 @@ button {
   }
 }
 
+/* 컴퓨터 화면: 휴대폰 모양 틀(393×852)을 화면 가운데에 두고,
+   화면 세로가 짧으면 틀을 통째로 비율 그대로 줄인다 (--frame-scale은 lib/frameScale.ts가 계산).
+   틀에 transform이 걸려 있어서 position: fixed인 바텀시트·토스트·하단 버튼도 틀 안을 기준으로 놓인다. */
 @media (min-width: 500px) {
-  .app-frame {
-    min-height: 852px;
-    max-height: 900px;
-    margin-top: 24px;
-    margin-bottom: 24px;
-    border-radius: 34px;
+  html,
+  body {
+    height: 100%;
+    overflow: hidden;
   }
-  .screen {
+  .app-frame {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 393px;
+    height: 852px;
+    min-height: 0;
+    margin: 0;
+    border-radius: 34px;
+    transform: translate(-50%, -50%) scale(var(--frame-scale, 1));
+  }
+  .app-scroll {
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+  }
+  .app-scroll::-webkit-scrollbar {
+    display: none;
+  }
+  .screen,
+  .tab-screen,
+  .utility-screen {
     min-height: 852px;
   }
   .bottom-tabs {
-    position: absolute;
+    position: fixed;
+  }
+  .bottom-sheet {
+    max-height: 85%;
+  }
+  .scene-stage.is-full {
+    height: 100%;
   }
 }
 
