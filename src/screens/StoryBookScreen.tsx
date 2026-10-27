@@ -98,7 +98,13 @@ export function StoryBookScreen({
                   <small>{unlocked ? chapter.location : `제 ${index + 1}장`}</small>
                   <strong>{unlocked ? chapter.title : '아직 발견하지 않은 이야기'}</strong>
                   <span>
-                    {!unlocked ? '유적지를 방문하면 해금돼요' : done ? '다 읽은 이야기' : '이야기 읽기'}
+                    {!unlocked
+                      ? chapter.placeId
+                        ? '유적지를 방문하면 해금돼요'
+                        : '새로운 이야기가 곧 찾아와요'
+                      : done
+                        ? '다 읽은 이야기'
+                        : '이야기 읽기'}
                   </span>
                 </span>
                 {unlocked && <Icon name="chevron" size={19} />}

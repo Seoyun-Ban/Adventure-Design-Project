@@ -1,6 +1,7 @@
 import { Icon } from './Icon'
 import { CharacterAvatar } from './CharacterAvatar'
 import { levelFor } from '../data/avatar'
+import { WEEKLY_GOAL } from '../lib/weekly'
 import type { AvatarLook, IconName, SubPage } from '../types'
 
 export function SideMenu({
@@ -8,6 +9,7 @@ export function SideMenu({
   nickname,
   look,
   footprintCount,
+  weeklyCount,
   onClose,
   onNavigate,
 }: {
@@ -15,6 +17,8 @@ export function SideMenu({
   nickname: string
   look: AvatarLook
   footprintCount: number
+  /** 최근 7일 동안 학습한 장소 수 (내 정보의 '이번 주 탐험'과 같은 값) */
+  weeklyCount: number
   onClose: () => void
   onNavigate: (page: SubPage) => void
 }) {
@@ -49,11 +53,13 @@ export function SideMenu({
         </div>
         <div className="drawer-progress">
           <div>
-            <span>이번 주 걸음</span>
-            <strong>3 / 5</strong>
+            <span>이번 주 탐험</span>
+            <strong>
+              {Math.min(weeklyCount, WEEKLY_GOAL)} / {WEEKLY_GOAL}
+            </strong>
           </div>
           <div className="progress-track">
-            <span />
+            <span style={{ width: `${(Math.min(weeklyCount, WEEKLY_GOAL) / WEEKLY_GOAL) * 100}%` }} />
           </div>
         </div>
         <div className="menu-list">

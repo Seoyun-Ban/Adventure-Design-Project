@@ -10,7 +10,8 @@ import { ArchiveScreen } from './ArchiveScreen'
 import { SettingsScreen } from './SettingsScreen'
 import { HelpScreen } from './HelpScreen'
 import { QuizHubScreen } from './QuizHubScreen'
-import { isBookDone, storyBooks } from '../data/storyBooks'
+import { isBookCaughtUp, storyBooks, totalReadCount } from '../data/storyBooks'
+import { weeklyCount } from '../lib/weekly'
 import { places } from '../data/places'
 import type { useProgress } from '../hooks/useProgress'
 import type { Place, SubPage, Tab } from '../types'
@@ -154,17 +155,14 @@ export function HomeScreen({
           stats={{
             footprints: completedIds.length,
             quizzes: quizDoneIds.length,
-            booksDone: storyBooks.filter((book) => isBookDone(book, completedIds)).length,
+            chaptersRead: totalReadCount(completedIds),
+            booksCaughtUp: storyBooks.filter((book) => isBookCaughtUp(book, completedIds)).length,
             wins: progress.battle.wins,
             battles: progress.battle.played,
             equippedCount: Object.values(progress.equipped).filter(Boolean).length,
             totalPlaces: places.filter((place) => place.status === 'available').length,
           }}
-          weeklyCount={
-            progress.records.filter(
-              (record) => Date.now() - new Date(record.learnedAt).getTime() < 7 * 86400000,
-            ).length
-          }
+          weeklyCount={weeklyCount(progress.records)}
           favorites={progress.favorites}
           completedIds={completedIds}
           onToggleFavorite={toggleFavorite}
@@ -178,6 +176,7 @@ export function HomeScreen({
         open={menuOpen}
         {...avatar}
         footprintCount={completedIds.length}
+        weeklyCount={weeklyCount(progress.records)}
         onClose={() => setMenuOpen(false)}
         onNavigate={setPage}
       />

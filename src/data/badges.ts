@@ -3,7 +3,10 @@
 export type BadgeStats = {
   footprints: number
   quizzes: number
-  booksDone: number
+  /** 학습을 마친 이야기책 챕터 수 */
+  chaptersRead: number
+  /** 지금 열린 챕터를 모두 읽은 이야기책 수 */
+  booksCaughtUp: number
   wins: number
   battles: number
   equippedCount: number
@@ -59,8 +62,8 @@ export const badges: Badge[] = [
     id: 'bookworm',
     icon: '📖',
     name: '이야기책 완독',
-    how: '이야기책 한 권 모두 읽기',
-    earned: (s) => s.booksDone >= 1,
+    how: '이야기책 한 권의 열린 이야기 모두 읽기',
+    earned: (s) => s.booksCaughtUp >= 1,
   },
   {
     id: 'first-battle',

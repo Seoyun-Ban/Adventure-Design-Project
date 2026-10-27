@@ -7,6 +7,7 @@ import { levelFor } from '../data/avatar'
 import type { BattleRecord } from '../hooks/useProgress'
 import { badges, type BadgeStats } from '../data/badges'
 import { findPlace } from '../data/places'
+import { WEEKLY_GOAL as weeklyGoal } from '../lib/weekly'
 import type { AvatarLook, Place } from '../types'
 
 // 내 정보 탭: 요약 통계, 이번 주 탐험, 획득한 배지, 관심 장소
@@ -38,7 +39,6 @@ export function ProfileScreen({
 }) {
   const [view, setView] = useState<'main' | 'badges' | 'favorites'>('main')
   const earned = badges.filter((badge) => badge.earned(stats))
-  const weeklyGoal = 3
 
   if (view === 'badges') {
     return (
@@ -158,8 +158,8 @@ export function ProfileScreen({
         </div>
         <div>
           <Icon name="book" />
-          <strong>{stats.booksDone}</strong>
-          <span>완료한 이야기책</span>
+          <strong>{stats.chaptersRead}</strong>
+          <span>읽은 이야기</span>
         </div>
         <div>
           <Icon name="quiz" />

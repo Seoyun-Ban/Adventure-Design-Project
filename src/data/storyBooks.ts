@@ -151,7 +151,16 @@ export function readCount(book: StoryBookData, completedIds: string[]) {
   return book.chapters.filter((chapter) => chapter.placeId && completedIds.includes(chapter.placeId)).length
 }
 
-/** 이야기책의 모든 챕터를 학습했는지 (완료한 이야기책 수 계산용) */
-export function isBookDone(book: StoryBookData, completedIds: string[]) {
-  return readCount(book, completedIds) === book.chapters.length
+/** 모든 이야기책에서 학습을 마친 챕터 수 (내 정보 '읽은 이야기') */
+export function totalReadCount(completedIds: string[]) {
+  return storyBooks.reduce((sum, book) => sum + readCount(book, completedIds), 0)
+}
+
+/**
+ * 지금 열린 챕터를 모두 읽은 책인지 (배지 '이야기책 완독')
+ * 장소가 아직 없는 '곧 찾아올' 챕터는 읽을 수 없으므로 세지 않는다.
+ */
+export function isBookCaughtUp(book: StoryBookData, completedIds: string[]) {
+  const open = book.chapters.filter((chapter) => chapter.placeId && isChapterUnlocked(chapter))
+  return open.length > 0 && open.every((chapter) => completedIds.includes(chapter.placeId!))
 }
