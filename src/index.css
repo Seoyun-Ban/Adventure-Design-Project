@@ -18,6 +18,8 @@
   --radius-xl: 28px;
   --radius-lg: 20px;
   --radius-md: 15px;
+  /* 앱 화면 너비 (태블릿 같은 넓은 터치 기기에서는 아래 미디어 쿼리에서 넓힌다) */
+  --app-width: 393px;
 }
 
 * {
@@ -51,7 +53,7 @@ button {
 .app-frame {
   position: relative;
   width: 100%;
-  max-width: 393px;
+  max-width: var(--app-width);
   min-height: 100svh;
   margin: 0 auto;
   background: var(--paper);
@@ -486,7 +488,7 @@ button {
 }
 .bottom-sheet {
   width: 100%;
-  max-width: 393px;
+  max-width: var(--app-width);
   padding: 10px 20px calc(20px + env(safe-area-inset-bottom, 0px));
   max-height: 85svh;
   overflow-y: auto;
@@ -3991,7 +3993,7 @@ button {
   z-index: 20;
   left: 50%;
   bottom: 0;
-  width: min(393px, 100%);
+  width: min(var(--app-width), 100%);
   transform: translateX(-50%);
   display: grid;
   grid-template-columns: 0.9fr 1.1fr;
@@ -4312,7 +4314,7 @@ button {
   z-index: 10;
   left: 50%;
   bottom: 0;
-  width: min(393px, 100%);
+  width: min(var(--app-width), 100%);
   transform: translateX(-50%);
   padding: 12px 18px max(15px, env(safe-area-inset-bottom));
   background: rgba(255, 252, 246, 0.95);
@@ -4473,10 +4475,25 @@ button {
   }
 }
 
-/* 컴퓨터 화면: 휴대폰 모양 틀(393×852)을 화면 가운데에 두고,
+/* 태블릿·가로로 눕힌 휴대폰처럼 넓은 터치 기기: 휴대폰처럼 화면을 꽉 채우되,
+   내용이 너무 넓게 퍼지지 않게 가운데에 적당한 너비로 모은다. */
+@media (pointer: coarse) and (min-width: 600px) {
+  :root {
+    --app-width: 600px;
+  }
+  body {
+    background: var(--paper-deep);
+  }
+  .app-frame {
+    box-shadow: 0 0 40px rgba(32, 40, 35, 0.1);
+  }
+}
+
+/* 마우스로 쓰는 컴퓨터 화면: 휴대폰 모양 틀(393×852)을 화면 가운데에 두고,
    화면 세로가 짧으면 틀을 통째로 비율 그대로 줄인다 (--frame-scale은 lib/frameScale.ts가 계산).
-   틀에 transform이 걸려 있어서 position: fixed인 바텀시트·토스트·하단 버튼도 틀 안을 기준으로 놓인다. */
-@media (min-width: 500px) {
+   틀에 transform이 걸려 있어서 position: fixed인 바텀시트·토스트·하단 버튼도 틀 안을 기준으로 놓인다.
+   터치 기기(휴대폰·태블릿)는 화면이 커도 이 방식을 쓰지 않는다. */
+@media (min-width: 500px) and (hover: hover) and (pointer: fine) {
   html,
   body {
     height: 100%;
