@@ -12,6 +12,7 @@ export type BadgeStats = {
 
 export type Badge = {
   id: string
+  /** 이모지. 'footprint'이면 앱의 발자국 아이콘(Icon)으로 그린다 */
   icon: string
   name: string
   how: string
@@ -21,7 +22,7 @@ export type Badge = {
 export const badges: Badge[] = [
   {
     id: 'first-step',
-    icon: '👣',
+    icon: 'footprint',
     name: '첫 발자국',
     how: '역사 장소 1곳 학습하기',
     earned: (s) => s.footprints >= 1,

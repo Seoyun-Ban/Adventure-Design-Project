@@ -59,11 +59,17 @@ export function Icon({ name, size = 24 }: { name: IconName; size?: number }) {
         <path d="m15 18-6-6 6-6" />
       </>
     ),
+    // 맨발 발자국 두 개: 왼발(아래 왼쪽)과 오른발(위 오른쪽)이 엇갈려 위쪽으로 걸어가는 모양.
+    // 작게 봐도 또렷하도록 선이 아니라 속을 채워 그린다.
     footprint: (
-      <>
-        <ellipse cx="9" cy="15.5" rx="3.2" ry="5" transform="rotate(-18 9 15.5)" />
-        <circle cx="15.2" cy="6.2" r="2.6" />
-      </>
+      <g fill="currentColor" stroke="none">
+        <g transform="translate(11.4 7.9) rotate(-5) scale(-0.98 0.98)">
+          <Foot />
+        </g>
+        <g transform="translate(12.7 -0.6) rotate(5) scale(0.98)">
+          <Foot />
+        </g>
+      </g>
     ),
     lock: (
       <>
@@ -171,5 +177,21 @@ export function Icon({ name, size = 24 }: { name: IconName; size?: number }) {
         {paths[name]}
       </g>
     </svg>
+  )
+}
+
+/** 오른발 하나 (가로 약 10, 세로 15). 위가 발가락, 왼쪽이 엄지(안쪽). 왼발은 좌우로 뒤집어 쓴다. */
+function Foot() {
+  return (
+    <>
+      {/* 발바닥: 뒤꿈치는 둥글고 앞쪽이 넓으며, 엄지 쪽 옆선(장심)이 살짝 오목하다 */}
+      <path d="M1 7C1 5.2 2.8 4.4 4.8 4.4C6.9 4.4 8.3 5.4 8.2 7.3C8.1 9.2 7.2 10.6 7 12.2C6.8 14 5.8 15 4.5 15C3.1 15 2.2 14 2.3 12.6C2.4 11.3 2.8 10.4 2.4 9.3C2.1 8.5 1 8.3 1 7Z" />
+      {/* 발가락 5개: 엄지가 가장 크고 새끼발가락으로 갈수록 작게, 발바닥 앞쪽을 따라 둥글게 */}
+      <circle cx="2.3" cy="3" r="1.55" />
+      <circle cx="4.9" cy="2" r="1" />
+      <circle cx="7" cy="2.55" r="0.88" />
+      <circle cx="8.55" cy="3.65" r="0.76" />
+      <circle cx="9.45" cy="5" r="0.64" />
+    </>
   )
 }

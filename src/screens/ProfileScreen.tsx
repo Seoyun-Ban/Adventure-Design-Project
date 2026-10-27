@@ -53,7 +53,15 @@ export function ProfileScreen({
             const has = badge.earned(stats)
             return (
               <div key={badge.id} className={`badge-card ${has ? 'earned' : 'locked'}`}>
-                <span className="badge-icon">{has ? badge.icon : <Icon name="lock" size={20} />}</span>
+                <span className="badge-icon">
+                  {!has ? (
+                    <Icon name="lock" size={20} />
+                  ) : badge.icon === 'footprint' ? (
+                    <Icon name="footprint" size={30} />
+                  ) : (
+                    badge.icon
+                  )}
+                </span>
                 <strong>{badge.name}</strong>
                 <small>{badge.how}</small>
               </div>
