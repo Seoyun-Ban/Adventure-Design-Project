@@ -15,6 +15,10 @@ export function StoryBookScreen({
   const [query, setQuery] = useState('')
   const [selectedBook, setSelectedBook] = useState<StoryBookData | null>(null)
   const discovered = storyBooks.filter(isBookDiscovered)
+  /** 책장에 꽂아 둘 ? 책 수(최대 3권)와, 그 밖에 더 숨겨진 책 수 */
+  const unknownCount = storyBooks.length - discovered.length
+  const unknownShown = Math.min(3, unknownCount)
+  const unknownMore = unknownCount - unknownShown
   const keyword = query.trim().toLowerCase()
   const visibleBooks = discovered.filter(
     (book) =>
@@ -167,12 +171,16 @@ export function StoryBookScreen({
           )
         })}
         {!keyword &&
-          Array.from({ length: Math.min(3, storyBooks.length - discovered.length) }, (_, index) => (
+          Array.from({ length: unknownShown }, (_, index) => (
             <div key={index} className="shelf-book unknown" aria-hidden="true">
               <span className="book3d">
                 <span className="book-face">?</span>
               </span>
               <strong>발견하지 않은 책</strong>
+              {/* ? 책은 3권까지만 꽂고, 나머지 숨겨진 책 수는 마지막 ? 책에 표시한다 */}
+              {index === unknownShown - 1 && unknownMore > 0 && (
+                <span className="shelf-more">+{unknownMore}권 더</span>
+              )}
             </div>
           ))}
       </div>

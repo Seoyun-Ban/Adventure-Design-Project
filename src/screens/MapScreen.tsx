@@ -13,6 +13,7 @@ export function MapScreen({
   onToggleFavorite,
   onLearn,
   onMenu,
+  onNotice,
 }: {
   records: LearningRecord[]
   pushEnabled: boolean
@@ -20,6 +21,8 @@ export function MapScreen({
   onToggleFavorite: (placeId: string) => void
   onLearn: (place: Place) => void
   onMenu: () => void
+  /** 아래쪽 알림(토스트) 띄우기 */
+  onNotice: (message: string) => void
 }) {
   const [selected, setSelected] = useState<Place | null>(null)
   const [showFootprints, setShowFootprints] = useState(true)
@@ -113,7 +116,11 @@ export function MapScreen({
           <button
             className="place-card"
             type="button"
-            onClick={() => selected.status !== 'locked' && onLearn(selected)}
+            onClick={() =>
+              selected.status === 'locked'
+                ? onNotice(`${selected.name}에 직접 찾아가면 이야기가 열려요`)
+                : onLearn(selected)
+            }
           >
             <div className={`place-thumb ${selected.id}`}>
               {selectedThumb && selected.status !== 'locked' ? (

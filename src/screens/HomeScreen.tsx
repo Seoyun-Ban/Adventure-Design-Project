@@ -135,6 +135,7 @@ export function HomeScreen({
           onToggleFavorite={toggleFavorite}
           onLearn={onLearn}
           onMenu={() => setMenuOpen(true)}
+          onNotice={onNotice}
         />
       )}
       {tab === 'book' && <StoryBookScreen completedIds={completedIds} onLearn={onLearn} />}

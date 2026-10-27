@@ -5611,8 +5611,26 @@ button.settings-row {
   white-space: nowrap;
 }
 .shelf-book.unknown {
+  position: relative;
   cursor: default;
+}
+.shelf-book.unknown > .book3d,
+.shelf-book.unknown > strong {
   opacity: 0.55;
+}
+/* 마지막 ? 책 표지 위에 붙는 "+○권 더" */
+.shelf-more {
+  position: absolute;
+  top: -6px;
+  right: -2px;
+  padding: 3px 7px;
+  border-radius: 99px;
+  color: white;
+  background: var(--green-2);
+  font-size: 9.5px;
+  font-weight: 800;
+  white-space: nowrap;
+  box-shadow: 0 3px 8px rgba(37, 63, 48, 0.25);
 }
 .shelf-book.unknown .book3d {
   --cover: #9a9384;
