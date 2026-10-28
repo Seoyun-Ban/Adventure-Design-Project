@@ -938,6 +938,51 @@ button {
   stroke-width: var(--map-border-width);
   stroke-dasharray: 3 3;
 }
+/* 오른쪽 위 삽입 지도 (울릉도·독도, 본 지도와 같은 축척) */
+.map-inset-box {
+  fill: rgba(232, 240, 236, 0.92);
+  stroke: #839679;
+  stroke-width: var(--map-border-width);
+}
+.map-inset-land {
+  fill: #dce4ca;
+  stroke: #839679;
+  stroke-width: var(--map-border-width);
+}
+.map-inset-dokdo {
+  fill: var(--green);
+  stroke: #f8f2e5;
+  stroke-width: calc(var(--map-border-width) * 0.6);
+}
+.map-inset-route {
+  fill: none;
+  stroke: var(--green-2);
+  stroke-width: var(--map-border-width);
+  stroke-dasharray: 3 3;
+  opacity: 0.7;
+}
+.map-inset text {
+  font-family: 'Noto Sans KR', sans-serif;
+  text-anchor: middle;
+  paint-order: stroke;
+  stroke: rgba(247, 240, 223, 0.9);
+  stroke-width: var(--map-label-stroke);
+  stroke-linejoin: round;
+}
+.map-inset-label {
+  fill: #526653;
+  font-size: calc(var(--map-label-size) * 0.85);
+  font-weight: 750;
+}
+.map-inset-label.strong {
+  fill: var(--green);
+  font-weight: 850;
+}
+.map-inset-distance {
+  fill: #6b7c6b;
+  font-size: calc(var(--map-label-size) * 0.62);
+  font-weight: 700;
+}
 .map-stage {
   position: absolute;
   top: 51%;

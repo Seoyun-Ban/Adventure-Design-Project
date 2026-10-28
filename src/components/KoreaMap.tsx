@@ -10,13 +10,16 @@ import { Icon } from './Icon'
 import { MapMarker } from './MapMarker'
 import { isPlaceOpen, places } from '../data/places'
 import { regionMapPosition } from '../lib/regions'
-import { toMapPosition, type LatLng } from '../lib/geo'
+import { toMapPosition, toMapXY, type LatLng } from '../lib/geo'
 import { frameScale } from '../lib/frameScale'
 import type { LearningRecord, Place } from '../types'
 
 /** 지도 스테이지 크기 (index.css의 .offline-map-stage와 같아야 함) */
 const STAGE_WIDTH = 524
 const STAGE_HEIGHT = 631
+
+/** 울릉도가 들어 있는 경상북도 모양 (삽입 지도에서 울릉도 부분만 잘라 보여준다) */
+const ulleungPath = southKoreaMap.locations.find((location) => location.id === 'north-gyeongsang')?.path ?? ''
 
 export function KoreaMap({
   records,
@@ -228,11 +231,13 @@ export function KoreaMap({
             <text x="103" y="617">
               제주
             </text>
+            {/* 이 섬은 지도 그림 안에 실제 위치로 들어 있는 울릉도 */}
             <text className="dokdo-text" x="460" y="108">
-              독도
+              울릉도
             </text>
-            <path className="dokdo-line" d="M484 112 516 127" />
+            <path className="dokdo-line" d="M484 112 512 126" />
           </g>
+          <UlleungDokdoInset ulleungPath={ulleungPath} />
         </svg>
         {places.map((place) => {
           const record = records.find((item) => item.placeId === place.id)
@@ -277,5 +282,59 @@ export function KoreaMap({
         </button>
       </div>
     </div>
+  )
+}
+
+/** 울릉도 (섬 가운데)와 독도 (동도·서도 사이) */
+const ULLEUNG = { lat: 37.4993, lng: 130.8634 }
+const DOKDO = { lat: 37.2418, lng: 131.867 }
+
+/**
+ * 오른쪽 위 삽입 지도: 울릉도와 독도를 본 지도와 같은 축척·같은 방향으로 함께 보여준다.
+ * 독도는 지도 그림 오른쪽 경계 밖이라 본 지도에는 그릴 수 없어서, 바다 위 빈 곳에 네모 칸을 둔다.
+ * 칸 안의 위치는 위도·경도 계산식(lib/geo.ts)으로 정하므로 두 섬의 거리와 방향이 실제와 같다 (약 87km).
+ */
+function UlleungDokdoInset({ ulleungPath }: { ulleungPath: string }) {
+  const u = toMapXY(ULLEUNG)
+  const d = toMapXY(DOKDO)
+  const pad = 9
+  const left = u.x - 9
+  const top = u.y - 9
+  const width = d.x + 8 - left + pad * 2
+  const height = d.y + 22 - top + pad * 2
+  const boxX = 521 - width
+  const boxY = 6
+  // 칸 안으로 옮기기 (크기는 그대로 = 본 지도와 같은 축척)
+  const shiftX = boxX + pad - left
+  const shiftY = boxY + pad - top
+  const ux = u.x + shiftX
+  const uy = u.y + shiftY
+  const dx = d.x + shiftX
+  const dy = d.y + shiftY
+  return (
+    <g className="map-inset" aria-label="울릉도와 독도 삽입 지도">
+      <defs>
+        <clipPath id="ulleung-dokdo-clip">
+          <rect x={boxX} y={boxY} width={width} height={height} rx="7" />
+        </clipPath>
+      </defs>
+      <rect className="map-inset-box" x={boxX} y={boxY} width={width} height={height} rx="7" />
+      <g clipPath="url(#ulleung-dokdo-clip)">
+        <path className="map-inset-land" d={ulleungPath} transform={`translate(${shiftX} ${shiftY})`} />
+        <path className="map-inset-route" d={`M${ux + 5} ${uy + 2} L${dx - 4} ${dy - 1}`} />
+        {/* 독도: 동도와 서도 두 섬 (실제로는 아주 작아서 보이도록 크게 그린다) */}
+        <circle className="map-inset-dokdo" cx={dx - 1.6} cy={dy} r="1.9" />
+        <circle className="map-inset-dokdo" cx={dx + 1.8} cy={dy + 0.4} r="1.6" />
+        <text className="map-inset-label" x={ux} y={uy + 16}>
+          울릉도
+        </text>
+        <text className="map-inset-label strong" x={dx} y={dy + 15}>
+          독도
+        </text>
+        <text className="map-inset-distance" x={(ux + dx) / 2 + 4} y={(uy + dy) / 2 - 5}>
+          약 87km
+        </text>
+      </g>
+    </g>
   )
 }
