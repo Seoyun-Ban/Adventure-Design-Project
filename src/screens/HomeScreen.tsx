@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { BottomTabs } from '../components/BottomTabs'
 import { NicknameSheet } from '../components/NicknameSheet'
+import { LocationIntro } from '../components/LocationIntro'
 import { MapScreen } from './MapScreen'
 import { StoryBookScreen } from './StoryBookScreen'
 import { AvatarScreen } from './AvatarScreen'
@@ -13,6 +14,7 @@ import { QuizHubScreen } from './QuizHubScreen'
 import { isBookCaughtUp, storyBooks, totalReadCount } from '../data/storyBooks'
 import { places } from '../data/places'
 import type { useProgress } from '../hooks/useProgress'
+import type { useLocation } from '../hooks/useLocation'
 import type { Place, SubPage, Tab } from '../types'
 
 // 로그인 이후의 메인 화면: 하단 탭 4개 + 잠깐 여는 서브 화면
@@ -20,6 +22,9 @@ import type { Place, SubPage, Tab } from '../types'
 // - 내 정보의 학습 아카이브·도움말, 오른쪽 위 톱니바퀴 → 설정 → 개인정보 고치기
 export function HomeScreen({
   store,
+  location,
+  onLocationOn,
+  onLocationLater,
   onLearn,
   onStartQuiz,
   onLogin,
@@ -27,6 +32,11 @@ export function HomeScreen({
   onNotice,
 }: {
   store: ReturnType<typeof useProgress>
+  /** 실제 내 위치 (App에서 하나만 켠다) */
+  location: ReturnType<typeof useLocation>
+  /** 위치 설명 화면에서 '위치 켜기' / '나중에' */
+  onLocationOn: () => void
+  onLocationLater: () => void
   onLearn: (place: Place) => void
   onStartQuiz: (place: Place) => void
   onLogin: () => void
@@ -126,13 +136,19 @@ export function HomeScreen({
       {tab === 'map' && (
         <MapScreen
           records={progress.records}
-          pushEnabled={progress.pushEnabled}
           favorites={progress.favorites}
           onToggleFavorite={toggleFavorite}
           onLearn={onLearn}
           onQuiz={() => setPage('quiz')}
           onNotice={onNotice}
+          locationStatus={location.status}
+          myPosition={location.position}
+          onLocationStart={onLocationOn}
         />
+      )}
+      {/* 처음 지도에 들어오면 위치를 쓰는 이유를 먼저 설명하고, 그다음에 브라우저가 허용 여부를 묻는다 */}
+      {tab === 'map' && !progress.locationChoice && (
+        <LocationIntro onAllow={onLocationOn} onLater={onLocationLater} />
       )}
       {tab === 'book' && <StoryBookScreen completedIds={completedIds} onLearn={onLearn} />}
       {tab === 'avatar' && (

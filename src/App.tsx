@@ -10,6 +10,7 @@ import { QuizScreen } from './screens/QuizScreen'
 import { CompleteModal } from './components/CompleteModal'
 import { CURRENT_LOCATION, findPlace, places } from './data/places'
 import { useProgress } from './hooks/useProgress'
+import { useLocation } from './hooks/useLocation'
 import { levelFor } from './data/avatar'
 import { clearChallengeHash, readChallenge } from './lib/challenge'
 import { scrollAppToTop } from './lib/frameScale'
@@ -42,6 +43,15 @@ export default function App() {
   const [resetEmail, setResetEmail] = useState('')
   /** 간편 로그인으로 처음 가입할 때 그 회사 (없으면 이메일 가입) */
   const [signupProvider, setSignupProvider] = useState<SocialProvider>()
+  /** 실제 내 위치 (앱 전체에서 하나만 켠다. 위치는 저장하지 않는다) */
+  const myLocation = useLocation()
+  const startLocation = myLocation.start
+
+  // 전에 '위치 켜기'를 골랐으면 앱을 열 때 바로 위치를 받기 시작한다
+  useEffect(() => {
+    if (progress.locationChoice === 'on') startLocation()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   /** 위치가 없는 사건(event)은 지금 내 위치에 발자국을 남긴다 */
   const positionFor = (place: Place) => (place.kind === 'event' ? CURRENT_LOCATION : undefined)
@@ -186,6 +196,12 @@ export default function App() {
         {screen === 'home' && (
           <HomeScreen
             store={store}
+            location={myLocation}
+            onLocationOn={() => {
+              update({ locationChoice: 'on' })
+              myLocation.start()
+            }}
+            onLocationLater={() => update({ locationChoice: 'later' })}
             onLearn={openLearn}
             onStartQuiz={(place) => startPlaceQuiz(place, progress.defaultDifficulty, 'home')}
             onLogin={() => setScreen('login')}

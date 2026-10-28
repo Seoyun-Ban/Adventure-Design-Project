@@ -2,21 +2,23 @@ import { useState } from 'react'
 import { Icon } from '../components/Icon'
 import { KoreaMap } from '../components/KoreaMap'
 import { PlaceItems } from '../components/PlaceItems'
-import { places } from '../data/places'
+import { LocationNotice } from '../components/LocationNotice'
 import { placeContents } from '../data/contents'
+import type { LocationStatus, MyPosition } from '../hooks/useLocation'
 import type { LearningRecord, Place } from '../types'
 
 export function MapScreen({
   records,
-  pushEnabled,
   favorites,
   onToggleFavorite,
   onLearn,
   onQuiz,
   onNotice,
+  locationStatus,
+  myPosition,
+  onLocationStart,
 }: {
   records: LearningRecord[]
-  pushEnabled: boolean
   favorites: string[]
   onToggleFavorite: (placeId: string) => void
   onLearn: (place: Place) => void
@@ -24,12 +26,15 @@ export function MapScreen({
   onQuiz: () => void
   /** 아래쪽 알림(토스트) 띄우기 */
   onNotice: (message: string) => void
+  /** 실제 내 위치 상태와 위치 (위치는 저장하지 않는다) */
+  locationStatus: LocationStatus
+  myPosition: MyPosition | null
+  /** 위치 켜기 / 다시 시도 */
+  onLocationStart: () => void
 }) {
   const [selected, setSelected] = useState<Place | null>(null)
   const [showFootprints, setShowFootprints] = useState(true)
   const [showAreas, setShowAreas] = useState(true)
-  // 근처 장소 푸시 알림 연출 (TODO: 실제 위치 기반 500m 반경 판정)
-  const [showPush, setShowPush] = useState(true)
   const selectedDone = selected ? records.some((record) => record.placeId === selected.id) : false
   const selectedThumb = selected ? placeContents[selected.id]?.heroImage : ''
 
@@ -43,42 +48,16 @@ export function MapScreen({
         </div>
       </header>
 
-      {pushEnabled && showPush && (
-        <div className="nearby-notification">
-          <button
-            type="button"
-            className="nearby-main"
-            onClick={() => {
-              setSelected(places.find((place) => place.id === 'independence') ?? null)
-              setShowPush(false)
-            }}
-          >
-            <span className="notification-icon">
-              <Icon name="bell" size={19} />
-            </span>
-            <span>
-              <strong>근처에 ‘독립기념관’이 있어요!</strong>
-              <small>지금 역사를 만나보세요</small>
-            </span>
-            <Icon name="chevron" size={18} />
-          </button>
-          <button
-            type="button"
-            className="notification-close"
-            onClick={() => setShowPush(false)}
-            aria-label="알림 닫기"
-          >
-            <Icon name="close" size={14} />
-          </button>
-        </div>
-      )}
+      <LocationNotice status={locationStatus} position={myPosition} onStart={onLocationStart} />
 
       <div className="map-viewport">
         <KoreaMap
           records={records}
           showFootprints={showFootprints}
           showAreas={showAreas}
+          me={myPosition}
           onSelect={setSelected}
+          onNotice={onNotice}
         />
         <div className="compass">
           <span>N</span>

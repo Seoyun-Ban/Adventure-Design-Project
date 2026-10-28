@@ -9,6 +9,7 @@ import southKoreaMap from '@svg-maps/south-korea'
 import { Icon } from './Icon'
 import { MapMarker } from './MapMarker'
 import { CURRENT_LOCATION, places } from '../data/places'
+import { toMapPosition, type LatLng } from '../lib/geo'
 import { frameScale } from '../lib/frameScale'
 import type { LearningRecord, Place } from '../types'
 
@@ -20,13 +21,19 @@ export function KoreaMap({
   records,
   showFootprints,
   showAreas,
+  me,
   onSelect,
+  onNotice,
 }: {
   records: LearningRecord[]
   showFootprints: boolean
   showAreas: boolean
+  /** 실제 내 위치 (모르면 null → 내 위치 점을 숨긴다) */
+  me: LatLng | null
   onSelect: (place: Place) => void
+  onNotice: (message: string) => void
 }) {
+  const mePosition = me ? toMapPosition(me) : null
   const baseZoom = 0.61
   const [zoom, setZoom] = useState(baseZoom)
   const [pan, setPan] = useState({ x: 0, y: 12 })
@@ -121,9 +128,13 @@ export function KoreaMap({
 
   /** 현재 위치가 화면 가운데 오도록 확대·이동 */
   function moveToCurrentLocation() {
+    if (!mePosition) {
+      onNotice('아직 내 위치를 몰라요. 위치를 켜 주세요.')
+      return
+    }
     const nextZoom = baseZoom * 2.5
-    const offsetX = (parseFloat(CURRENT_LOCATION.left) / 100 - 0.5) * STAGE_WIDTH
-    const offsetY = (parseFloat(CURRENT_LOCATION.top) / 100 - 0.5) * STAGE_HEIGHT
+    const offsetX = (parseFloat(mePosition.left) / 100 - 0.5) * STAGE_WIDTH
+    const offsetY = (parseFloat(mePosition.top) / 100 - 0.5) * STAGE_HEIGHT
     setZoom(nextZoom)
     setPan({ x: clampPan(-offsetX * nextZoom, nextZoom), y: clampPan(-offsetY * nextZoom, nextZoom) })
   }
@@ -238,10 +249,12 @@ export function KoreaMap({
             />
           )
         })}
-        <div className="current-location" style={CURRENT_LOCATION}>
-          <span />
-          <i />
-        </div>
+        {mePosition && (
+          <div className="current-location" style={mePosition} aria-label="내 위치">
+            <span />
+            <i />
+          </div>
+        )}
       </div>
       <div className="map-gesture-hint">드래그로 이동 · 핀치/휠로 확대</div>
       <div className="zoom-controls">

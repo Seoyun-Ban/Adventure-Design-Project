@@ -20,6 +20,8 @@ export type Progress = {
   records: LearningRecord[]
   defaultDifficulty: Difficulty
   pushEnabled: boolean
+  /** 위치 설명 화면에서 고른 것 (on: 위치 켜기, later: 나중에). 위치 자체는 저장하지 않는다 */
+  locationChoice?: 'on' | 'later'
   /** '이메일 기억하기'를 켰을 때 저장한 이메일 */
   rememberedEmail?: string
   /** 관심 장소로 표시한 장소 id */
