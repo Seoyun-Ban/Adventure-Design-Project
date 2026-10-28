@@ -4,7 +4,7 @@ import { CharacterAvatar } from '../components/CharacterAvatar'
 import { SubpageHeader } from '../components/SubpageHeader'
 import { levelFor } from '../data/avatar'
 import { badges, type BadgeStats } from '../data/badges'
-import { findPlace } from '../data/places'
+import { findPlace, isPlaceOpen } from '../data/places'
 import type { AvatarLook, Place } from '../types'
 
 // 내 정보 탭: 요약 통계, 획득한 배지, 관심 장소, 학습 아카이브, 도움말
@@ -16,6 +16,7 @@ export function ProfileScreen({
   stats,
   favorites,
   completedIds,
+  visitedIds,
   onToggleFavorite,
   onOpenPlace,
   onEditNickname,
@@ -29,6 +30,8 @@ export function ProfileScreen({
   stats: BadgeStats
   favorites: string[]
   completedIds: string[]
+  /** 방문해서 열린 장소 id */
+  visitedIds: string[]
   onToggleFavorite: (placeId: string) => void
   onOpenPlace: (place: Place) => void
   onEditNickname: () => void
@@ -86,11 +89,15 @@ export function ProfileScreen({
           <div className="archive-records quiz-hub-list">
             {list.map((place) => (
               <div className="favorite-row" key={place.id}>
-                <button type="button" onClick={() => onOpenPlace(place)} disabled={place.status === 'locked'}>
+                <button
+                  type="button"
+                  onClick={() => onOpenPlace(place)}
+                  disabled={!isPlaceOpen(place, visitedIds)}
+                >
                   <span className="record-foot">
                     <Icon
                       name={
-                        place.status === 'locked'
+                        !isPlaceOpen(place, visitedIds)
                           ? 'lock'
                           : completedIds.includes(place.id)
                             ? 'footprint'
@@ -103,8 +110,8 @@ export function ProfileScreen({
                     <small>{place.region}</small>
                     <strong>{place.name}</strong>
                     <span className="favorite-state">
-                      {place.status === 'locked'
-                        ? '방문하면 해금돼요'
+                      {!isPlaceOpen(place, visitedIds)
+                        ? '직접 가면 열려요'
                         : completedIds.includes(place.id)
                           ? '학습 완료'
                           : '학습 가능'}

@@ -1,8 +1,8 @@
-import { findPlace } from './places'
+import { findPlace, isPlaceOpen } from './places'
 import type { StoryBookData, StoryChapter } from '../types'
 
 // 이야기책: 학습 내용을 주제별로 묶은 책
-// - 챕터에 placeId가 있으면 그 장소가 해금될 때 챕터도 해금된다.
+// - 챕터에 placeId가 있으면 그 장소가 열릴 때(직접 방문, 사건은 처음부터) 챕터도 열린다.
 // - 한 챕터라도 해금된 책만 책장에 나타나고, 나머지는 '총 권 수'에만 포함된다.
 // - cover: 표지 색, emblem: 표지 가운데 한자
 
@@ -135,15 +135,18 @@ export const storyBooks: StoryBookData[] = [
   },
 ]
 
-/** 챕터 해금 여부: 장소가 연결돼 있으면 장소 해금 상태를 따른다 */
-export function isChapterUnlocked(chapter: StoryChapter): boolean {
-  if (chapter.placeId) return findPlace(chapter.placeId)?.status === 'available'
+/** 챕터 해금 여부: 장소가 연결돼 있으면 그 장소가 열렸는지 따른다 */
+export function isChapterUnlocked(chapter: StoryChapter, visitedIds: string[]): boolean {
+  if (chapter.placeId) {
+    const place = findPlace(chapter.placeId)
+    return place ? isPlaceOpen(place, visitedIds) : false
+  }
   return chapter.unlocked ?? false
 }
 
 /** 책장에 보이는 책 (한 챕터라도 해금된 책) */
-export function isBookDiscovered(book: StoryBookData) {
-  return book.chapters.some(isChapterUnlocked)
+export function isBookDiscovered(book: StoryBookData, visitedIds: string[]) {
+  return book.chapters.some((chapter) => isChapterUnlocked(chapter, visitedIds))
 }
 
 /** 학습을 마친 챕터 수 */
@@ -160,7 +163,7 @@ export function totalReadCount(completedIds: string[]) {
  * 지금 열린 챕터를 모두 읽은 책인지 (배지 '이야기책 완독')
  * 장소가 아직 없는 '곧 찾아올' 챕터는 읽을 수 없으므로 세지 않는다.
  */
-export function isBookCaughtUp(book: StoryBookData, completedIds: string[]) {
-  const open = book.chapters.filter((chapter) => chapter.placeId && isChapterUnlocked(chapter))
+export function isBookCaughtUp(book: StoryBookData, completedIds: string[], visitedIds: string[]) {
+  const open = book.chapters.filter((chapter) => chapter.placeId && isChapterUnlocked(chapter, visitedIds))
   return open.length > 0 && open.every((chapter) => completedIds.includes(chapter.placeId!))
 }

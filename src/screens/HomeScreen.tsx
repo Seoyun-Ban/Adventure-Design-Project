@@ -136,6 +136,7 @@ export function HomeScreen({
       {tab === 'map' && (
         <MapScreen
           records={progress.records}
+          visitedIds={progress.visitedIds}
           favorites={progress.favorites}
           onToggleFavorite={toggleFavorite}
           onLearn={onLearn}
@@ -150,7 +151,9 @@ export function HomeScreen({
       {tab === 'map' && !progress.locationChoice && (
         <LocationIntro onAllow={onLocationOn} onLater={onLocationLater} />
       )}
-      {tab === 'book' && <StoryBookScreen completedIds={completedIds} onLearn={onLearn} />}
+      {tab === 'book' && (
+        <StoryBookScreen completedIds={completedIds} visitedIds={progress.visitedIds} onLearn={onLearn} />
+      )}
       {tab === 'avatar' && (
         <AvatarScreen
           {...avatar}
@@ -169,14 +172,17 @@ export function HomeScreen({
             footprints: completedIds.length,
             quizzes: quizDoneIds.length,
             chaptersRead: totalReadCount(completedIds),
-            booksCaughtUp: storyBooks.filter((book) => isBookCaughtUp(book, completedIds)).length,
+            booksCaughtUp: storyBooks.filter((book) =>
+              isBookCaughtUp(book, completedIds, progress.visitedIds),
+            ).length,
             wins: progress.battle.wins,
             battles: progress.battle.played,
             equippedCount: Object.values(progress.equipped).filter(Boolean).length,
-            totalPlaces: places.filter((place) => place.status === 'available').length,
+            totalPlaces: places.length,
           }}
           favorites={progress.favorites}
           completedIds={completedIds}
+          visitedIds={progress.visitedIds}
           onToggleFavorite={toggleFavorite}
           onOpenPlace={onLearn}
           onEditNickname={() => setNicknameOpen(true)}

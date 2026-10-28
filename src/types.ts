@@ -49,7 +49,6 @@ export type Place = {
   id: string
   name: string
   region: string
-  status: 'available' | 'locked'
   /**
    * site: 위치가 정해진 유적지
    * event: 위치가 분명하지 않은 역사적 사건 → 학습한 순간 사용자의 위치에 발자국이 찍힌다
@@ -98,7 +97,12 @@ export type LearningRecord = {
   placeId: string
   learnedAt: string
   quizAt?: string
-  /** event 장소의 발자국 위치 (학습한 순간의 사용자 위치) */
+  /**
+   * event 장소의 발자국을 찍을 시·도 (지도 그림의 지역 id, 예: 'seoul').
+   * 정확한 위치는 저장하지 않고, 학습한 순간 내가 있던 시·도만 남긴다.
+   */
+  region?: string
+  /** 예전 기록의 발자국 위치 (지도 영역 기준 %). 새 기록은 region을 쓴다 */
   top?: string
   left?: string
 }

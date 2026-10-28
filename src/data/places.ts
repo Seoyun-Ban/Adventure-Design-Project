@@ -13,7 +13,6 @@ const placeList: PlaceInput[] = [
     id: 'gyeongbokgung',
     name: '경복궁',
     region: '서울',
-    status: 'available',
     kind: 'site',
     lat: 37.5798,
     lng: 126.9767,
@@ -24,7 +23,6 @@ const placeList: PlaceInput[] = [
     id: 'suwon',
     name: '수원화성',
     region: '수원',
-    status: 'available',
     kind: 'site',
     lat: 37.2822,
     lng: 127.0144,
@@ -36,7 +34,6 @@ const placeList: PlaceInput[] = [
     id: 'independence',
     name: '독립기념관',
     region: '천안',
-    status: 'available',
     kind: 'site',
     lat: 36.783,
     lng: 127.2249,
@@ -48,7 +45,6 @@ const placeList: PlaceInput[] = [
     id: 'aunae',
     name: '아우내 장터',
     region: '천안 병천',
-    status: 'available',
     kind: 'site',
     lat: 36.7634,
     lng: 127.2963,
@@ -58,7 +54,6 @@ const placeList: PlaceInput[] = [
     id: 'bulguksa',
     name: '불국사',
     region: '경주',
-    status: 'available',
     kind: 'site',
     lat: 35.789,
     lng: 129.3309,
@@ -69,19 +64,17 @@ const placeList: PlaceInput[] = [
     id: 'hansando',
     name: '한산도',
     region: '통영',
-    status: 'locked',
     kind: 'site',
     lat: 34.7943,
     lng: 128.4719,
     radius: 1000,
-    summary: '아직 안개에 가려진 이야기예요.\n한산도에 도착하면 해금됩니다.',
+    summary: '학이 날개를 펴듯 적을 에워싼,\n바다 위의 큰 승리를 만나보세요.',
   },
   {
     // 위치가 분명하지 않은 사건: 어디서나 학습 가능, 학습한 곳에 발자국이 남는다
     id: 'hunminjeongeum',
     name: '훈민정음 반포',
     region: '어디서나',
-    status: 'available',
     kind: 'event',
     summary: '백성을 위해 만든 스물여덟 글자,\n지금 있는 곳에서 만나보세요.',
   },
@@ -94,11 +87,20 @@ export const places: Place[] = placeList.map((place) => ({
     : { top: '0%', left: '0%' }),
 }))
 
-/** 사용자의 현재 위치 (프로토타입에서는 고정값. TODO: 실제 GPS 연동) */
-export const CURRENT_LOCATION = { top: '24%', left: '26%' }
-
 /** 근처 장소 알림·방문 판정 기본 반경 (기획서 기준 500m) */
 export const NEARBY_RADIUS_M = 500
+
+/** 처음 시작할 때 이미 방문한 장소 (경복궁·수원화성은 학습까지 마친 상태로, 불국사는 열리기만 한 상태로 시작) */
+export const DEMO_VISITED_IDS = ['gyeongbokgung', 'suwon', 'bulguksa']
+
+/**
+ * 장소가 열렸는지 (학습할 수 있는지)
+ * - site: 직접 가서 반경 안에 들어간 적이 있어야 열린다 (방문한 장소 id만 저장)
+ * - event: 위치가 없는 사건이라 어디서나 열린다
+ */
+export function isPlaceOpen(place: Place, visitedIds: string[]) {
+  return place.kind === 'event' || visitedIds.includes(place.id)
+}
 
 export function findPlace(id: string) {
   return places.find((place) => place.id === id)

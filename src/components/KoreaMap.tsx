@@ -8,7 +8,8 @@ import {
 import southKoreaMap from '@svg-maps/south-korea'
 import { Icon } from './Icon'
 import { MapMarker } from './MapMarker'
-import { CURRENT_LOCATION, places } from '../data/places'
+import { isPlaceOpen, places } from '../data/places'
+import { regionMapPosition } from '../lib/regions'
 import { toMapPosition, type LatLng } from '../lib/geo'
 import { frameScale } from '../lib/frameScale'
 import type { LearningRecord, Place } from '../types'
@@ -19,6 +20,7 @@ const STAGE_HEIGHT = 631
 
 export function KoreaMap({
   records,
+  visitedIds,
   showFootprints,
   showAreas,
   me,
@@ -26,6 +28,8 @@ export function KoreaMap({
   onNotice,
 }: {
   records: LearningRecord[]
+  /** 방문해서 열린 장소 id */
+  visitedIds: string[]
   showFootprints: boolean
   showAreas: boolean
   /** 실제 내 위치 (모르면 null → 내 위치 점을 숨긴다) */
@@ -232,17 +236,20 @@ export function KoreaMap({
         </svg>
         {places.map((place) => {
           const record = records.find((item) => item.placeId === place.id)
-          // 위치가 없는 사건(event)은 학습한 곳에 발자국을 찍고, 학습 전에는 지도에 표시하지 않는다
+          // 위치가 없는 사건(event)은 학습한 시·도에 발자국을 찍고, 학습 전에는 지도에 표시하지 않는다
           if (place.kind === 'event' && !record) return null
           const position =
             place.kind === 'event'
-              ? { top: record?.top ?? CURRENT_LOCATION.top, left: record?.left ?? CURRENT_LOCATION.left }
+              ? record?.top && record.left && !record.region
+                ? { top: record.top, left: record.left }
+                : regionMapPosition(record?.region)
               : place
           return (
             <MapMarker
               key={place.id}
               place={{ ...place, ...position }}
               completed={Boolean(record)}
+              open={isPlaceOpen(place, visitedIds)}
               showFootprints={showFootprints}
               showAreas={showAreas}
               onSelect={onSelect}

@@ -4,11 +4,13 @@ import { KoreaMap } from '../components/KoreaMap'
 import { PlaceItems } from '../components/PlaceItems'
 import { LocationNotice } from '../components/LocationNotice'
 import { placeContents } from '../data/contents'
+import { isPlaceOpen } from '../data/places'
 import type { LocationStatus, MyPosition } from '../hooks/useLocation'
 import type { LearningRecord, Place } from '../types'
 
 export function MapScreen({
   records,
+  visitedIds,
   favorites,
   onToggleFavorite,
   onLearn,
@@ -19,6 +21,8 @@ export function MapScreen({
   onLocationStart,
 }: {
   records: LearningRecord[]
+  /** 방문해서 열린 장소 id */
+  visitedIds: string[]
   favorites: string[]
   onToggleFavorite: (placeId: string) => void
   onLearn: (place: Place) => void
@@ -37,6 +41,7 @@ export function MapScreen({
   const [showAreas, setShowAreas] = useState(true)
   const selectedDone = selected ? records.some((record) => record.placeId === selected.id) : false
   const selectedThumb = selected ? placeContents[selected.id]?.heroImage : ''
+  const selectedOpen = selected ? isPlaceOpen(selected, visitedIds) : false
 
   return (
     <section className="map-screen tab-screen">
@@ -55,6 +60,7 @@ export function MapScreen({
           records={records}
           showFootprints={showFootprints}
           showAreas={showAreas}
+          visitedIds={visitedIds}
           me={myPosition}
           onSelect={setSelected}
           onNotice={onNotice}
@@ -98,32 +104,37 @@ export function MapScreen({
             className="place-card"
             type="button"
             onClick={() =>
-              selected.status === 'locked'
-                ? onNotice(`${selected.name}에 직접 찾아가면 이야기가 열려요`)
-                : onLearn(selected)
+              !selectedOpen ? onNotice(`${selected.name}에 직접 찾아가면 이야기가 열려요`) : onLearn(selected)
             }
           >
             <div className={`place-thumb ${selected.id}`}>
-              {selectedThumb && selected.status !== 'locked' ? (
+              {selectedThumb && selectedOpen ? (
                 <img src={selectedThumb} alt="" />
               ) : (
                 <span>
-                  <Icon name={selected.status === 'locked' ? 'lock' : 'footprint'} size={27} />
+                  <Icon name={selectedOpen ? 'footprint' : 'lock'} size={27} />
                 </span>
               )}
             </div>
             <div className="place-copy">
               <div>
-                <span className={`status ${selectedDone ? 'complete' : selected.status}`}>
-                  {selectedDone ? '학습 완료' : selected.status === 'available' ? '지금 학습 가능' : '미해금'}
+                <span
+                  className={`status ${selectedDone ? 'complete' : selectedOpen ? 'available' : 'locked'}`}
+                >
+                  {selectedDone ? '학습 완료' : selectedOpen ? '지금 학습 가능' : '미해금'}
                 </span>
                 <small>{selected.region}</small>
               </div>
               <strong>{selected.name}</strong>
-              <p>{selected.summary}</p>
+              <p>
+                {selectedOpen
+                  ? selected.summary
+                  : `아직 안개에 가려진 이야기예요.
+${selected.name}에 직접 가면 열려요.`}
+              </p>
               <PlaceItems placeId={selected.id} owned={selectedDone} />
             </div>
-            {selected.status !== 'locked' && (
+            {selectedOpen && (
               <span className="card-arrow">
                 <Icon name="chevron" size={20} />
               </span>

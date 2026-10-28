@@ -7,14 +7,17 @@ import type { Place, StoryBookData, StoryChapter } from '../types'
 // 이야기책 탭: 주제마다 책 한 권으로 꽂힌 책장
 export function StoryBookScreen({
   completedIds,
+  visitedIds,
   onLearn,
 }: {
   completedIds: string[]
+  /** 방문해서 열린 장소 id */
+  visitedIds: string[]
   onLearn: (place: Place) => void
 }) {
   const [query, setQuery] = useState('')
   const [selectedBook, setSelectedBook] = useState<StoryBookData | null>(null)
-  const discovered = storyBooks.filter(isBookDiscovered)
+  const discovered = storyBooks.filter((book) => isBookDiscovered(book, visitedIds))
   /** 책장에 꽂아 둘 ? 책 수(최대 3권)와, 그 밖에 더 숨겨진 책 수 */
   const unknownCount = storyBooks.length - discovered.length
   const unknownShown = Math.min(3, unknownCount)
@@ -29,7 +32,7 @@ export function StoryBookScreen({
   )
 
   function openChapter(chapter: StoryChapter) {
-    if (!isChapterUnlocked(chapter) || !chapter.placeId) return
+    if (!isChapterUnlocked(chapter, visitedIds) || !chapter.placeId) return
     const place = places.find((item) => item.id === chapter.placeId)
     if (place) onLearn(place)
   }
@@ -79,7 +82,7 @@ export function StoryBookScreen({
         </div>
         <div className="book-chapter-list">
           {selectedBook.chapters.map((chapter, index) => {
-            const unlocked = isChapterUnlocked(chapter)
+            const unlocked = isChapterUnlocked(chapter, visitedIds)
             const done = Boolean(chapter.placeId && completedIds.includes(chapter.placeId))
             return (
               <button

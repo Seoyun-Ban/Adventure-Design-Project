@@ -8,7 +8,11 @@ import { HomeScreen } from './screens/HomeScreen'
 import { LearnScreen } from './screens/LearnScreen'
 import { QuizScreen } from './screens/QuizScreen'
 import { CompleteModal } from './components/CompleteModal'
-import { CURRENT_LOCATION, findPlace, places } from './data/places'
+import { NEARBY_RADIUS_M, findPlace, isPlaceOpen, places } from './data/places'
+import { NearbyBanner } from './components/NearbyBanner'
+import { distanceMeters } from './lib/geo'
+import { UNLOCK_ACCURACY_M } from './lib/location'
+import { regionAt } from './lib/regions'
 import { useProgress } from './hooks/useProgress'
 import { useLocation } from './hooks/useLocation'
 import { levelFor } from './data/avatar'
@@ -29,8 +33,16 @@ type QuizSession = {
 // 앱 최상위: 어떤 화면을 보여줄지(로그인/온보딩/홈/학습/퀴즈)와 사용자 진행 상황을 관리한다
 export default function App() {
   const store = useProgress()
-  const { progress, completedIds, update, completeLearning, completeQuiz, toggleFavorite, recordBattle } =
-    store
+  const {
+    progress,
+    completedIds,
+    update,
+    completeLearning,
+    completeQuiz,
+    toggleFavorite,
+    recordBattle,
+    visitPlace,
+  } = store
   /** 친구가 보낸 도전장 링크로 들어왔으면 그 도전장 (망가진 링크면 ok: false) */
   const [challenge, setChallenge] = useState(() => readChallenge(window.location.hash))
   const [screen, setScreen] = useState<Screen>(challenge ? 'challenge' : 'login')
@@ -53,8 +65,28 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  /** 위치가 없는 사건(event)은 지금 내 위치에 발자국을 남긴다 */
-  const positionFor = (place: Place) => (place.kind === 'event' ? CURRENT_LOCATION : undefined)
+  /** 지금 내가 있는 곳 (위치를 받고 있을 때). 위치는 이 메모리 안에만 있고 저장하지 않는다 */
+  const here = myLocation.position
+  /** 방금 반경 안에 들어와 열린 장소 (근처 알림) */
+  const [nearby, setNearby] = useState<Place | null>(null)
+
+  // 장소 반경(기본 500m) 안에 들어오면 그 장소를 연다. 위치 오차가 크면 판단하지 않는다.
+  // 방문한 장소 id만 저장하고, 설정의 알림이 켜져 있으면 '근처에 ○○이 있어요' 알림을 띄운다.
+  useEffect(() => {
+    if (!here || here.accuracy > UNLOCK_ACCURACY_M) return
+    for (const place of places) {
+      if (place.kind !== 'site' || place.lat === undefined || place.lng === undefined) continue
+      if (progress.visitedIds.includes(place.id)) continue
+      if (distanceMeters(here, { lat: place.lat, lng: place.lng }) > (place.radius ?? NEARBY_RADIUS_M))
+        continue
+      visitPlace(place.id)
+      if (progress.pushEnabled) setNearby(place)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [here, progress.visitedIds, progress.pushEnabled])
+
+  /** 위치가 없는 사건(event)은 학습할 때 내가 있던 시·도에 발자국을 남긴다 (위치를 모르면 기본 시·도) */
+  const regionFor = (place: Place) => (place.kind === 'event' && here ? regionAt(here) : undefined)
 
   function showToast(message: string) {
     setToast(message)
@@ -91,7 +123,7 @@ export default function App() {
     : null
 
   function openLearn(place: Place) {
-    if (place.status === 'locked') return
+    if (!isPlaceOpen(place, progress.visitedIds)) return
     setSelectedPlace(place)
     setScreen('learn')
     scrollAppToTop()
@@ -117,8 +149,8 @@ export default function App() {
 
   function finishQuiz(passed: boolean) {
     if (quiz) {
-      if (passed) completeQuiz(quiz.place.id, positionFor(quiz.place))
-      else completeLearning(quiz.place.id, positionFor(quiz.place))
+      if (passed) completeQuiz(quiz.place.id, regionFor(quiz.place))
+      else completeLearning(quiz.place.id, regionFor(quiz.place))
     }
     setScreen('home')
   }
@@ -229,7 +261,7 @@ export default function App() {
             onBack={() => setScreen('home')}
             onComplete={(difficulty) => {
               setLearnDifficulty(difficulty)
-              completeLearning(selectedPlace.id, positionFor(selectedPlace))
+              completeLearning(selectedPlace.id, regionFor(selectedPlace))
               setShowComplete(true)
             }}
             onQuiz={(difficulty) => startPlaceQuiz(selectedPlace, difficulty, 'learn')}
@@ -262,6 +294,17 @@ export default function App() {
         <div className="app-toast" role="status">
           {toast}
         </div>
+      )}
+      {nearby && (
+        <NearbyBanner
+          key={nearby.id}
+          place={nearby}
+          onOpen={() => {
+            setNearby(null)
+            openLearn(nearby)
+          }}
+          onClose={() => setNearby(null)}
+        />
       )}
     </div>
   )
