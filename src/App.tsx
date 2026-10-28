@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { LoginScreen } from './screens/LoginScreen'
 import { ChallengeScreen } from './screens/ChallengeScreen'
 import { SignupScreen } from './screens/SignupScreen'
@@ -65,8 +65,20 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  /**
+   * 지도 제목을 5번 눌러 고른 장소 (그 장소에 서 있는 것처럼 동작). 저장하지 않아 새로고침하면 사라진다.
+   * 고르지 않았으면 null → 실제 내 위치를 쓴다.
+   */
+  const [pretendId, setPretendId] = useState<string | null>(null)
+  const pretendPlace = pretendId ? findPlace(pretendId) : undefined
   /** 지금 내가 있는 곳 (위치를 받고 있을 때). 위치는 이 메모리 안에만 있고 저장하지 않는다 */
-  const here = myLocation.position
+  const here = useMemo(
+    () =>
+      pretendPlace?.lat !== undefined && pretendPlace.lng !== undefined
+        ? { lat: pretendPlace.lat, lng: pretendPlace.lng, accuracy: 0 }
+        : myLocation.position,
+    [pretendPlace, myLocation.position],
+  )
   /** 방금 반경 안에 들어와 열린 장소 (근처 알림) */
   const [nearby, setNearby] = useState<Place | null>(null)
 
@@ -228,7 +240,9 @@ export default function App() {
         {screen === 'home' && (
           <HomeScreen
             store={store}
-            location={myLocation}
+            location={{ ...myLocation, position: here, status: pretendPlace ? 'on' : myLocation.status }}
+            pretendId={pretendId}
+            onPretend={setPretendId}
             onLocationOn={() => {
               update({ locationChoice: 'on' })
               myLocation.start()

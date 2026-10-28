@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { BottomTabs } from '../components/BottomTabs'
 import { NicknameSheet } from '../components/NicknameSheet'
 import { LocationIntro } from '../components/LocationIntro'
+import { LocationPicker } from '../components/LocationPicker'
 import { MapScreen } from './MapScreen'
 import { StoryBookScreen } from './StoryBookScreen'
 import { AvatarScreen } from './AvatarScreen'
@@ -23,6 +24,8 @@ import type { Place, SubPage, Tab } from '../types'
 export function HomeScreen({
   store,
   location,
+  pretendId,
+  onPretend,
   onLocationOn,
   onLocationLater,
   onLearn,
@@ -34,6 +37,9 @@ export function HomeScreen({
   store: ReturnType<typeof useProgress>
   /** 실제 내 위치 (App에서 하나만 켠다) */
   location: ReturnType<typeof useLocation>
+  /** 숨겨진 위치 고르기로 고른 장소 (없으면 실제 위치) */
+  pretendId: string | null
+  onPretend: (placeId: string | null) => void
   /** 위치 설명 화면에서 '위치 켜기' / '나중에' */
   onLocationOn: () => void
   onLocationLater: () => void
@@ -66,6 +72,8 @@ export function HomeScreen({
   }
   // 닉네임 바꾸기 창: 내 정보 탭의 연필 버튼
   const [nicknameOpen, setNicknameOpen] = useState(false)
+  // 지도 제목을 5번 빠르게 누르면 여는 위치 고르기 창
+  const [pickerOpen, setPickerOpen] = useState(false)
 
   if (page === 'archive') {
     return (
@@ -145,6 +153,7 @@ export function HomeScreen({
           locationStatus={location.status}
           myPosition={location.position}
           onLocationStart={onLocationOn}
+          onTitleSecret={() => setPickerOpen(true)}
         />
       )}
       {/* 처음 지도에 들어오면 위치를 쓰는 이유를 먼저 설명하고, 그다음에 브라우저가 허용 여부를 묻는다 */}
@@ -192,6 +201,20 @@ export function HomeScreen({
         />
       )}
       <BottomTabs active={tab} onChange={setTab} />
+      {pickerOpen && (
+        <LocationPicker
+          currentId={pretendId ?? undefined}
+          onPick={(placeId) => {
+            onPretend(placeId)
+            setPickerOpen(false)
+          }}
+          onUseReal={() => {
+            onPretend(null)
+            setPickerOpen(false)
+          }}
+          onClose={() => setPickerOpen(false)}
+        />
+      )}
       {nicknameOpen && (
         <NicknameSheet
           current={progress.nickname}

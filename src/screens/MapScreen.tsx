@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Icon } from '../components/Icon'
 import { KoreaMap } from '../components/KoreaMap'
 import { PlaceItems } from '../components/PlaceItems'
@@ -19,6 +19,7 @@ export function MapScreen({
   locationStatus,
   myPosition,
   onLocationStart,
+  onTitleSecret,
 }: {
   records: LearningRecord[]
   /** 방문해서 열린 장소 id */
@@ -35,7 +36,19 @@ export function MapScreen({
   myPosition: MyPosition | null
   /** 위치 켜기 / 다시 시도 */
   onLocationStart: () => void
+  /** 지도 제목을 5번 빠르게 눌렀을 때 (위치 고르기 창) */
+  onTitleSecret: () => void
 }) {
+  // 제목을 누른 시각들. 2.5초 안에 5번이면 onTitleSecret
+  const titleTaps = useRef<number[]>([])
+  function tapTitle() {
+    const now = Date.now()
+    titleTaps.current = [...titleTaps.current.filter((at) => now - at < 2500), now]
+    if (titleTaps.current.length >= 5) {
+      titleTaps.current = []
+      onTitleSecret()
+    }
+  }
   const [selected, setSelected] = useState<Place | null>(null)
   const [showFootprints, setShowFootprints] = useState(true)
   const [showAreas, setShowAreas] = useState(true)
@@ -47,7 +60,7 @@ export function MapScreen({
     <section className="map-screen tab-screen">
       <div className="map-paper" />
       <header className="map-header">
-        <div className="map-heading">
+        <div className="map-heading" onClick={tapTitle}>
           <span>오늘의 역사 산책</span>
           <strong>어디로 떠나볼까요?</strong>
         </div>

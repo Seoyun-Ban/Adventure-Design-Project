@@ -727,6 +727,48 @@ button {
   color: var(--ink-soft);
   font-size: 9.5px;
 }
+/* 지도 제목 5번 누르기로 여는 위치 고르기 */
+.map-heading {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.location-picker {
+  display: grid;
+  gap: 7px;
+  max-height: 55vh;
+  overflow-y: auto;
+}
+.location-picker button {
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 13px;
+  color: var(--green);
+  background: var(--cream);
+  text-align: left;
+  cursor: pointer;
+}
+.location-picker button.active {
+  border-color: var(--green-2);
+  background: var(--green-3);
+}
+.location-picker strong,
+.location-picker small {
+  display: block;
+}
+.location-picker strong {
+  color: var(--ink);
+  font-size: 12px;
+}
+.location-picker small {
+  margin-top: 2px;
+  color: var(--ink-soft);
+  font-size: 9.5px;
+}
 /* 위치 권한을 묻기 전 설명 화면 */
 .location-intro-layer {
   position: fixed;
