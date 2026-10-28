@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { defaultLook, migrateEquipped } from '../data/avatar'
 import { DEMO_VISITED_IDS } from '../data/places'
-import type { AvatarLook, Difficulty, Equipped, LearningRecord } from '../types'
+import type { AvatarLook, Difficulty, Equipped, LearningRecord, SocialProvider } from '../types'
 
 // 사용자 진행 상황 (학습 기록, 아바타, 설정)
 // '먼저 둘러보기' 사용자를 위해 브라우저(localStorage)에 저장한다.
@@ -27,6 +27,10 @@ export type Progress = {
   locationChoice?: 'on' | 'later'
   /** '이메일 기억하기'를 켰을 때 저장한 이메일 */
   rememberedEmail?: string
+  /** 간편 로그인으로 들어왔으면 그 회사 (이메일 가입이면 없음) */
+  loginProvider?: SocialProvider
+  /** 이메일 가입 계정의 이메일 (계정 관리에 보여준다. 비밀번호는 저장하지 않는다) */
+  accountEmail?: string
   /** 관심 장소로 표시한 장소 id */
   favorites: string[]
   battle: BattleRecord
@@ -192,6 +196,17 @@ export function useProgress() {
           ...prev.inquiries,
         ],
       })),
+    /** 학습 기록 초기화: 처음 실행했을 때 상태로 (시연용 기록 포함) */
     resetProgress: () => setProgress(demoProgress()),
+    /** 회원 탈퇴: 학습 기록·방문 기록·아바타·얼굴 사진·계정 정보를 모두 비운다 */
+    clearAll: () =>
+      setProgress({
+        ...demoProgress(),
+        equipped: {},
+        records: [],
+        visitedIds: [],
+        favorites: [],
+        inquiries: [],
+      }),
   }
 }

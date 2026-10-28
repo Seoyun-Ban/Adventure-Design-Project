@@ -8,6 +8,7 @@ import { StoryBookScreen } from './StoryBookScreen'
 import { AvatarScreen } from './AvatarScreen'
 import { ProfileScreen } from './ProfileScreen'
 import { ProfileEditScreen } from './ProfileEditScreen'
+import { PROVIDER_NAME } from './SignupScreen'
 import { ArchiveScreen } from './ArchiveScreen'
 import { SettingsScreen } from './SettingsScreen'
 import { HelpScreen } from './HelpScreen'
@@ -28,6 +29,7 @@ export function HomeScreen({
   onPretend,
   onLocationOn,
   onLocationLater,
+  onWithdraw,
   onLearn,
   onStartQuiz,
   onLogin,
@@ -43,6 +45,8 @@ export function HomeScreen({
   /** 위치 설명 화면에서 '위치 켜기' / '나중에' */
   onLocationOn: () => void
   onLocationLater: () => void
+  /** 회원 탈퇴 (저장된 기록을 지우고 처음 화면으로) */
+  onWithdraw: () => void
   onLearn: (place: Place) => void
   onStartQuiz: (place: Place) => void
   onLogin: () => void
@@ -88,7 +92,9 @@ export function HomeScreen({
         <SettingsScreen
           loggedIn={progress.loggedIn}
           nickname={progress.nickname}
-          email={progress.rememberedEmail}
+          email={
+            progress.loginProvider ? `${PROVIDER_NAME[progress.loginProvider]} 계정` : progress.accountEmail
+          }
           difficulty={progress.defaultDifficulty}
           pushEnabled={progress.pushEnabled}
           onDifficultyChange={(defaultDifficulty) => update({ defaultDifficulty })}
@@ -115,6 +121,18 @@ export function HomeScreen({
             onNotice('개인정보를 저장했어요')
           }}
           onBack={() => setPage('settings')}
+          account={{
+            loggedIn: progress.loggedIn,
+            loginProvider: progress.loginProvider,
+            accountEmail: progress.accountEmail,
+          }}
+          onChangeEmail={(email) =>
+            // '이메일 기억하기'로 저장해 둔 이메일도 새 이메일로 바꾼다
+            update({ accountEmail: email, ...(progress.rememberedEmail ? { rememberedEmail: email } : {}) })
+          }
+          onLogin={onLogin}
+          onWithdraw={onWithdraw}
+          onNotice={onNotice}
         />
       </main>
     )

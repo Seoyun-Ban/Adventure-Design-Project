@@ -6,9 +6,10 @@ import { FacePhotoField } from '../components/FacePhotoField'
 import { NICKNAME_MAX } from '../components/NicknameSheet'
 import { LookFields } from '../components/OptionRow'
 import { SubpageHeader } from '../components/SubpageHeader'
-import type { AvatarLook } from '../types'
+import { AccountSection, EmailChange, PasswordChange, type AccountView } from '../components/AccountSection'
+import type { AvatarLook, SocialProvider } from '../types'
 
-// 설정 > 개인정보 고치기: 닉네임, 성별, 머리 모양, 얼굴 사진
+// 설정 > 개인정보 고치기: 닉네임, 성별, 머리 모양, 얼굴 사진 + 계정 관리(이메일·비밀번호 바꾸기, 회원 탈퇴)
 // '저장'을 눌러야 바뀐다. 얼굴 사진은 이 기기에만 저장되고 학습 영상 장면에서만 쓰인다.
 export function ProfileEditScreen({
   nickname,
@@ -16,13 +17,25 @@ export function ProfileEditScreen({
   faceImage,
   onSave,
   onBack,
+  account,
+  onChangeEmail,
+  onLogin,
+  onWithdraw,
+  onNotice,
 }: {
   nickname: string
   look: AvatarLook
   faceImage?: string
   onSave: (patch: { nickname: string; look: AvatarLook; faceImage?: string }) => void
   onBack: () => void
+  account: { loggedIn: boolean; loginProvider?: SocialProvider; accountEmail?: string }
+  onChangeEmail: (email: string) => void
+  onLogin: () => void
+  onWithdraw: () => void
+  onNotice: (message: string) => void
 }) {
+  // 계정 관리의 이메일·비밀번호 바꾸기 화면 (위에서 고치던 내용은 그대로 남는다)
+  const [view, setView] = useState<AccountView>('main')
   const [name, setName] = useState(nickname)
   const [nextLook, setNextLook] = useState(look)
   const [nextFace, setNextFace] = useState(faceImage)
@@ -41,6 +54,18 @@ export function ProfileEditScreen({
     event.preventDefault()
     if (canSave) onSave({ nickname: trimmed, look: nextLook, faceImage: nextFace })
   }
+
+  if (view === 'email') {
+    return (
+      <EmailChange
+        currentEmail={account.accountEmail}
+        onChange={onChangeEmail}
+        onNotice={onNotice}
+        onBack={() => setView('main')}
+      />
+    )
+  }
+  if (view === 'password') return <PasswordChange onBack={() => setView('main')} />
 
   return (
     <section className="utility-screen profile-edit-screen">
@@ -91,6 +116,14 @@ export function ProfileEditScreen({
           저장
         </ActionButton>
       </form>
+      <AccountSection
+        loggedIn={account.loggedIn}
+        loginProvider={account.loginProvider}
+        accountEmail={account.accountEmail}
+        onOpen={setView}
+        onLogin={onLogin}
+        onWithdraw={onWithdraw}
+      />
     </section>
   )
 }

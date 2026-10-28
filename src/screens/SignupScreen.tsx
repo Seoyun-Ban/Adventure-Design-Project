@@ -15,7 +15,12 @@ import type { SocialProvider } from '../types'
 type Step = 'form' | 'guardian' | 'done'
 type TermId = 'service' | 'privacy'
 
-const PROVIDER_NAME: Record<SocialProvider, string> = { kakao: '카카오', naver: '네이버', google: '구글' }
+/** 간편 로그인 회사 이름 (가입 화면, 계정 관리) */
+export const PROVIDER_NAME: Record<SocialProvider, string> = {
+  kakao: '카카오',
+  naver: '네이버',
+  google: '구글',
+}
 
 // 약관 예시 문구 (실제 서비스 전에 정식 약관으로 바꿔야 한다). summary는 초등학생용 '쉽게 읽는 요약' 세 줄
 function termsFor(
@@ -61,7 +66,8 @@ export function SignupScreen({
   /** 간편 로그인으로 처음 들어온 경우 그 회사. 없으면 이메일 가입 */
   provider?: SocialProvider
   onBack: () => void
-  onDone: (nickname: string) => void
+  /** email: 이메일 가입이면 계정 이메일 (간편 로그인은 없음). 비밀번호는 넘기지 않는다 */
+  onDone: (nickname: string, email?: string) => void
 }) {
   const [step, setStep] = useState<Step>('form')
   const [email, setEmail] = useState('')
@@ -116,7 +122,7 @@ export function SignupScreen({
               </p>
             </div>
           )}
-          <ActionButton onClick={() => onDone(nickname.trim())}>
+          <ActionButton onClick={() => onDone(nickname.trim(), provider ? undefined : email.trim())}>
             아바타 만들러 가기 <Icon name="chevron" size={18} />
           </ActionButton>
         </section>

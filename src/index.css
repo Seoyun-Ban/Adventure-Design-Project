@@ -3685,6 +3685,85 @@ button {
 .profile-edit-screen form > .action-button {
   margin-bottom: 20px;
 }
+/* 계정 관리 (개인정보 고치기 아래) */
+.account-section {
+  margin-top: 26px;
+}
+.account-rows {
+  display: grid;
+  gap: 10px;
+}
+.account-guest p,
+.account-current {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 11px;
+  line-height: 1.5;
+}
+.account-social {
+  flex-direction: row;
+  align-items: center;
+}
+.account-social .settings-icon {
+  flex: none;
+  margin: 0;
+}
+.account-social strong,
+.account-social span {
+  display: block;
+}
+.account-social strong {
+  font-size: 11px;
+}
+.account-social div > span {
+  margin-top: 4px;
+  color: var(--ink-soft);
+  font-size: 9px;
+}
+.withdraw-button {
+  display: block;
+  margin: 26px auto 8px;
+  border: 0;
+  padding: 8px 12px;
+  color: #9a948a;
+  background: none;
+  font-size: 11px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.profile-edit-screen .auth-done {
+  padding-top: 30px;
+}
+/* 확인 창 (회원 탈퇴) */
+.confirm-dialog {
+  width: min(320px, 100%);
+  display: grid;
+  gap: 10px;
+  padding: 26px 22px 20px;
+  border-radius: 24px;
+  text-align: center;
+  background: var(--cream);
+  box-shadow: 0 20px 50px rgba(20, 30, 24, 0.3);
+}
+.confirm-dialog h2 {
+  margin: 0;
+  color: var(--ink);
+  font-family: 'Gowun Batang', serif;
+  font-size: 20px;
+}
+.confirm-dialog p {
+  margin: 0 0 8px;
+  color: var(--ink-soft);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.confirm-dialog p b {
+  color: var(--danger);
+}
+.action-button.danger {
+  color: white;
+  background: var(--danger);
+}
 .settings-row {
   border: 1px solid rgba(54, 64, 54, 0.08);
   border-radius: 18px;

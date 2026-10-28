@@ -42,6 +42,7 @@ export default function App() {
     toggleFavorite,
     recordBattle,
     visitPlace,
+    clearAll,
   } = store
   /** 친구가 보낸 도전장 링크로 들어왔으면 그 도전장 (망가진 링크면 ok: false) */
   const [challenge, setChallenge] = useState(() => readChallenge(window.location.hash))
@@ -167,13 +168,30 @@ export default function App() {
     setScreen('home')
   }
 
-  function enter(loggedIn: boolean, email?: string) {
+  /**
+   * 로그인(이메일 또는 간편 로그인) / 먼저 둘러보기
+   * - email: 이메일 로그인한 계정 이메일, remember: '이메일 기억하기'
+   * - provider: 간편 로그인 회사
+   */
+  function enter(loggedIn: boolean, email?: string, remember?: boolean, provider?: SocialProvider) {
     // '먼저 둘러보기'로 쌓은 기록은 로그인하면 그대로 계정 기록이 된다
     if (loggedIn && !progress.loggedIn && progress.onboarded && progress.records.length > 0) {
       showToast(`둘러보며 남긴 발자국 ${progress.records.length}개를 계정에 저장했어요.`)
     }
-    update({ loggedIn, rememberedEmail: email })
+    update({
+      loggedIn,
+      rememberedEmail: remember ? email : undefined,
+      ...(loggedIn ? { loginProvider: provider, accountEmail: provider ? undefined : email } : {}),
+    })
     setScreen(progress.onboarded ? 'home' : 'onboarding')
+  }
+
+  /** 회원 탈퇴: 이 기기에 저장된 기록(학습 기록, 아바타, 계정 정보)을 모두 지우고 처음 화면으로 */
+  function withdraw() {
+    clearAll()
+    setPretendId(null)
+    setScreen('login')
+    showToast('탈퇴했어요. 그동안 함께해 줘서 고마워요.')
   }
 
   return (
@@ -196,7 +214,7 @@ export default function App() {
             onEnter={enter}
             onSocial={(provider) => {
               // 이 기기에서 처음 쓰는 간편 로그인이면 이메일 가입과 같은 나이 확인·보호자 허락 단계를 거친다
-              if (progress.joined) enter(true)
+              if (progress.joined) enter(true, undefined, false, provider)
               else {
                 setSignupProvider(provider)
                 setScreen('signup')
@@ -216,10 +234,16 @@ export default function App() {
           <SignupScreen
             provider={signupProvider}
             onBack={() => setScreen('login')}
-            onDone={(nickname) => {
+            onDone={(nickname, email) => {
               // 새로 가입한 계정은 닉네임을 채워 둔 온보딩부터 시작한다
               // (비밀번호·태어난 해와 달·보호자 이메일은 넘겨받지 않으므로 저장되지 않는다)
-              update({ loggedIn: true, joined: true, nickname })
+              update({
+                loggedIn: true,
+                joined: true,
+                nickname,
+                loginProvider: signupProvider,
+                accountEmail: email,
+              })
               setScreen('onboarding')
             }}
           />
@@ -248,6 +272,7 @@ export default function App() {
               myLocation.start()
             }}
             onLocationLater={() => update({ locationChoice: 'later' })}
+            onWithdraw={withdraw}
             onLearn={openLearn}
             onStartQuiz={(place) => startPlaceQuiz(place, progress.defaultDifficulty, 'home')}
             onLogin={() => setScreen('login')}

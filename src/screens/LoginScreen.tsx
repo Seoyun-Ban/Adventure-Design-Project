@@ -22,8 +22,8 @@ export function LoginScreen({
   onFindPassword,
 }: {
   rememberedEmail?: string
-  /** loggedIn: 로그인 여부, email: '이메일 기억하기'가 켜져 있으면 저장할 이메일 */
-  onEnter: (loggedIn: boolean, email?: string) => void
+  /** loggedIn: 로그인 여부, email: 로그인한 이메일, remember: '이메일 기억하기'를 켰는지 */
+  onEnter: (loggedIn: boolean, email?: string, remember?: boolean) => void
   /** 간편 로그인 (처음이면 가입 단계를 거친다) */
   onSocial: (provider: SocialProvider) => void
   onSignup: () => void
@@ -32,7 +32,7 @@ export function LoginScreen({
 }) {
   const [remember, setRemember] = useState(Boolean(rememberedEmail))
   const [email, setEmail] = useState(rememberedEmail ?? '')
-  const login = () => onEnter(true, remember ? email : undefined)
+  const login = () => onEnter(true, email.trim(), remember)
   return (
     <main className="login-screen screen">
       <div className="paper-grain" />
