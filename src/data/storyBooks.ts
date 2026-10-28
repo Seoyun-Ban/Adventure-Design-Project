@@ -82,7 +82,7 @@ export const storyBooks: StoryBookData[] = [
   {
     id: 'goguryeo',
     title: '고구려의 기상',
-    subtitle: '',
+    subtitle: '고구려 사람들의 이야기',
     cover: '#5a3a6b',
     emblem: '高',
     tags: ['고구려'],
@@ -91,7 +91,7 @@ export const storyBooks: StoryBookData[] = [
   {
     id: 'baekje',
     title: '백제의 미소',
-    subtitle: '',
+    subtitle: '백제 사람들의 이야기',
     cover: '#4f7a6a',
     emblem: '濟',
     tags: ['백제'],
@@ -100,7 +100,7 @@ export const storyBooks: StoryBookData[] = [
   {
     id: 'gaya',
     title: '철의 나라 가야',
-    subtitle: '',
+    subtitle: '가야 사람들의 이야기',
     cover: '#6b5a45',
     emblem: '鐵',
     tags: ['가야'],
@@ -109,7 +109,7 @@ export const storyBooks: StoryBookData[] = [
   {
     id: 'goryeo',
     title: '고려의 하늘길',
-    subtitle: '',
+    subtitle: '고려 사람들의 이야기',
     cover: '#3d7a8a',
     emblem: '麗',
     tags: ['고려'],
@@ -118,7 +118,7 @@ export const storyBooks: StoryBookData[] = [
   {
     id: 'scientists',
     title: '조선의 과학자들',
-    subtitle: '',
+    subtitle: '조선의 발명과 과학',
     cover: '#5f6b2f',
     emblem: '器',
     tags: ['과학'],
@@ -127,7 +127,7 @@ export const storyBooks: StoryBookData[] = [
   {
     id: 'modern',
     title: '개항과 근대의 문',
-    subtitle: '',
+    subtitle: '바깥 세상과 만난 조선',
     cover: '#7a4a5a',
     emblem: '門',
     tags: ['근대'],
