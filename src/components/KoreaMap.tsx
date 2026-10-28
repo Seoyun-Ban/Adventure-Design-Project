@@ -18,6 +18,62 @@ import type { LearningRecord, Place } from '../types'
 const STAGE_WIDTH = 524
 const STAGE_HEIGHT = 631
 
+/**
+ * 표시(발자국 핀·이름표)끼리 이 거리(지도 그림 단위, 확대 보정 전)보다 가까우면 서로 밀어낸다.
+ * 독립기념관과 아우내 장터처럼 실제로 몇 km 떨어진 곳은 전국 지도에서 겹쳐 보이기 때문이다.
+ */
+const MARKER_GAP = 58
+
+type MapPoint = {
+  place: Place
+  completed: boolean
+  open: boolean
+  /** 표시를 그릴 위치 */
+  x: number
+  y: number
+  /** 실제 위치 */
+  trueX: number
+  trueY: number
+  /** 겹쳐서 실제 위치에서 옮겼는지 */
+  moved: boolean
+}
+
+/** 가까운 표시끼리 서로 반씩 밀어내기를 몇 번 되풀이해서 겹치지 않게 한다 */
+function spreadMarkers(points: MapPoint[], minDistance: number): MapPoint[] {
+  const result = points.map((point) => ({ ...point }))
+  for (let round = 0; round < 12; round += 1) {
+    let changed = false
+    for (let i = 0; i < result.length; i += 1) {
+      for (let j = i + 1; j < result.length; j += 1) {
+        const a = result[i]
+        const b = result[j]
+        const dx = b.x - a.x
+        const dy = b.y - a.y
+        const distance = Math.hypot(dx, dy)
+        if (distance >= minDistance - 0.01) continue
+        // 같은 자리면 옆으로 나란히
+        const [ux, uy] = distance > 0.01 ? [dx / distance, dy / distance] : [1, 0]
+        const push = (minDistance - distance) / 2
+        a.x -= ux * push
+        a.y -= uy * push
+        b.x += ux * push
+        b.y += uy * push
+        changed = true
+      }
+    }
+    if (!changed) break
+  }
+  return result.map((point) => ({
+    ...point,
+    moved: Math.hypot(point.x - point.trueX, point.y - point.trueY) > 0.5,
+  }))
+}
+
+const toPercent = (x: number, y: number) => ({
+  top: `${((y / STAGE_HEIGHT) * 100).toFixed(3)}%`,
+  left: `${((x / STAGE_WIDTH) * 100).toFixed(3)}%`,
+})
+
 /** 울릉도가 들어 있는 경상북도 모양 (삽입 지도에서 울릉도 부분만 잘라 보여준다) */
 const ulleungPath = southKoreaMap.locations.find((location) => location.id === 'north-gyeongsang')?.path ?? ''
 
@@ -150,6 +206,30 @@ export function KoreaMap({
   const zoomRatio = zoom / baseZoom
   const overlayCompensation = 1 / Math.sqrt(zoomRatio)
 
+  // 지도에 보일 표시들 (지도 그림 단위 좌표)
+  const markers = spreadMarkers(
+    places.flatMap((place) => {
+      const record = records.find((item) => item.placeId === place.id)
+      // 위치가 없는 사건(event)은 학습한 시·도에 발자국을 찍고, 학습 전에는 지도에 표시하지 않는다
+      if (place.kind === 'event' && !record) return []
+      const position =
+        place.kind === 'event'
+          ? record?.top && record.left && !record.region
+            ? { top: record.top, left: record.left }
+            : regionMapPosition(record?.region)
+          : place
+      const completed = Boolean(record)
+      const open = isPlaceOpen(place, visitedIds)
+      // 버튼으로 꺼 둔 표시는 밀어내기 계산에서도 뺀다 (MapMarker의 보이기 규칙과 같다)
+      if (completed && !showFootprints) return []
+      if (!completed && open && !showAreas) return []
+      const x = (parseFloat(position.left) / 100) * STAGE_WIDTH
+      const y = (parseFloat(position.top) / 100) * STAGE_HEIGHT
+      return [{ place, completed, open, x, y, trueX: x, trueY: y, moved: false }]
+    }),
+    MARKER_GAP * overlayCompensation,
+  )
+
   return (
     <div
       className={`offline-map ${dragging ? 'dragging' : ''}`}
@@ -239,28 +319,28 @@ export function KoreaMap({
           </g>
           <UlleungDokdoInset ulleungPath={ulleungPath} />
         </svg>
-        {places.map((place) => {
-          const record = records.find((item) => item.placeId === place.id)
-          // 위치가 없는 사건(event)은 학습한 시·도에 발자국을 찍고, 학습 전에는 지도에 표시하지 않는다
-          if (place.kind === 'event' && !record) return null
-          const position =
-            place.kind === 'event'
-              ? record?.top && record.left && !record.region
-                ? { top: record.top, left: record.left }
-                : regionMapPosition(record?.region)
-              : place
-          return (
-            <MapMarker
-              key={place.id}
-              place={{ ...place, ...position }}
-              completed={Boolean(record)}
-              open={isPlaceOpen(place, visitedIds)}
-              showFootprints={showFootprints}
-              showAreas={showAreas}
-              onSelect={onSelect}
-            />
-          )
-        })}
+        {/* 너무 가까워 겹치는 표시는 살짝 떨어뜨리고, 실제 위치까지 점선으로 잇는다 */}
+        <svg className="marker-leaders" viewBox={`0 0 ${STAGE_WIDTH} ${STAGE_HEIGHT}`} aria-hidden="true">
+          {markers
+            .filter((marker) => marker.moved)
+            .map((marker) => (
+              <g key={marker.place.id}>
+                <line x1={marker.trueX} y1={marker.trueY} x2={marker.x} y2={marker.y} />
+                <circle cx={marker.trueX} cy={marker.trueY} r={2.2 * overlayCompensation} />
+              </g>
+            ))}
+        </svg>
+        {markers.map((marker) => (
+          <MapMarker
+            key={marker.place.id}
+            place={{ ...marker.place, ...toPercent(marker.x, marker.y) }}
+            completed={marker.completed}
+            open={marker.open}
+            showFootprints={showFootprints}
+            showAreas={showAreas}
+            onSelect={onSelect}
+          />
+        ))}
         {mePosition && (
           <div className="current-location" style={mePosition} aria-label="내 위치">
             <span />
