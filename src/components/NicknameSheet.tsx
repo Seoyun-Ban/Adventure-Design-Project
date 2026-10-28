@@ -6,7 +6,7 @@ import { BottomSheet } from './BottomSheet'
 /** 닉네임 최대 글자 수 (앞뒤 공백을 지운 뒤 센다) */
 export const NICKNAME_MAX = 10
 
-// 닉네임 바꾸기 창 (내 정보 탭, 설정 화면에서 함께 쓴다)
+// 닉네임 바꾸기 창 (내 정보 탭의 연필 버튼). 설정의 '개인정보 고치기'도 같은 글자 수 규칙을 쓴다
 export function NicknameSheet({
   current,
   onSave,

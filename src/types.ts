@@ -4,11 +4,11 @@ export type Screen = 'login' | 'signup' | 'reset' | 'challenge' | 'onboarding' |
 /** 간편 로그인 회사 */
 export type SocialProvider = 'kakao' | 'naver' | 'google'
 export type Tab = 'map' | 'book' | 'avatar' | 'profile'
-export type SubPage = 'main' | 'archive' | 'settings' | 'help' | 'quiz-new' | 'quiz-review'
+/** 하단 탭 대신 잠깐 여는 화면: 지도의 '퀴즈', 내 정보의 아카이브·도움말·설정(개인정보 고치기) */
+export type SubPage = 'main' | 'archive' | 'settings' | 'profile-edit' | 'help' | 'quiz'
 export type Difficulty = '쉬움' | '보통' | '어려움'
 
 export type IconName =
-  | 'menu'
   | 'layers'
   | 'plus'
   | 'minus'

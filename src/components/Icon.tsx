@@ -3,11 +3,6 @@ import type { IconName } from '../types'
 
 export function Icon({ name, size = 24 }: { name: IconName; size?: number }) {
   const paths: Record<IconName, ReactNode> = {
-    menu: (
-      <>
-        <path d="M4 7h16M4 12h16M4 17h11" />
-      </>
-    ),
     layers: (
       <>
         <path d="m12 3-9 5 9 5 9-5-9-5Z" />

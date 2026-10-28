@@ -1,39 +1,36 @@
 import { useState } from 'react'
 import { BottomTabs } from '../components/BottomTabs'
-import { SideMenu } from '../components/SideMenu'
 import { NicknameSheet } from '../components/NicknameSheet'
 import { MapScreen } from './MapScreen'
 import { StoryBookScreen } from './StoryBookScreen'
 import { AvatarScreen } from './AvatarScreen'
 import { ProfileScreen } from './ProfileScreen'
+import { ProfileEditScreen } from './ProfileEditScreen'
 import { ArchiveScreen } from './ArchiveScreen'
 import { SettingsScreen } from './SettingsScreen'
 import { HelpScreen } from './HelpScreen'
 import { QuizHubScreen } from './QuizHubScreen'
 import { isBookCaughtUp, storyBooks, totalReadCount } from '../data/storyBooks'
-import { weeklyCount } from '../lib/weekly'
 import { places } from '../data/places'
 import type { useProgress } from '../hooks/useProgress'
 import type { Place, SubPage, Tab } from '../types'
 
-// 로그인 이후의 메인 화면: 하단 탭 4개 + 왼쪽 메뉴에서 여는 서브 화면
+// 로그인 이후의 메인 화면: 하단 탭 4개 + 잠깐 여는 서브 화면
+// - 지도의 '퀴즈' → 퀴즈 고르기
+// - 내 정보의 학습 아카이브·도움말, 오른쪽 위 톱니바퀴 → 설정 → 개인정보 고치기
 export function HomeScreen({
   store,
   onLearn,
   onStartQuiz,
-  onStartReview,
   onLogin,
   onLogout,
-  onEditAvatar,
   onNotice,
 }: {
   store: ReturnType<typeof useProgress>
   onLearn: (place: Place) => void
   onStartQuiz: (place: Place) => void
-  onStartReview: () => void
   onLogin: () => void
   onLogout: () => void
-  onEditAvatar: () => void
   /** 화면 아래 안내 메시지 (토스트) */
   onNotice: (message: string) => void
 }) {
@@ -49,7 +46,6 @@ export function HomeScreen({
     addInquiry,
   } = store
   const [tab, setTab] = useState<Tab>('map')
-  const [menuOpen, setMenuOpen] = useState(false)
   const [page, setPage] = useState<SubPage>('main')
   const back = () => setPage('main')
   // 등록한 얼굴 사진은 학습 영상 장면에서만 쓰고, 홈 화면들의 아바타는 기본 얼굴로 보여준다.
@@ -58,20 +54,8 @@ export function HomeScreen({
     look: progress.look,
     equipped: progress.equipped,
   }
-  // 닉네임 바꾸기 창: 내 정보 탭과 설정 화면에서 함께 쓴다
+  // 닉네임 바꾸기 창: 내 정보 탭의 연필 버튼
   const [nicknameOpen, setNicknameOpen] = useState(false)
-  const openNickname = () => setNicknameOpen(true)
-  const nicknameSheet = nicknameOpen && (
-    <NicknameSheet
-      current={progress.nickname}
-      onClose={() => setNicknameOpen(false)}
-      onSave={(nickname) => {
-        update({ nickname })
-        setNicknameOpen(false)
-        onNotice('닉네임을 바꿨어요')
-      }}
-    />
-  )
 
   if (page === 'archive') {
     return (
@@ -92,13 +76,28 @@ export function HomeScreen({
           onDifficultyChange={(defaultDifficulty) => update({ defaultDifficulty })}
           onPushChange={(pushEnabled) => update({ pushEnabled })}
           onReset={resetProgress}
-          onEditAvatar={onEditAvatar}
-          onEditNickname={openNickname}
+          onEditProfile={() => setPage('profile-edit')}
           onBack={back}
           onLogin={onLogin}
           onLogout={onLogout}
         />
-        {nicknameSheet}
+      </main>
+    )
+  }
+  if (page === 'profile-edit') {
+    return (
+      <main className="screen home-shell">
+        <ProfileEditScreen
+          nickname={progress.nickname}
+          look={progress.look}
+          faceImage={progress.faceImage}
+          onSave={(patch) => {
+            update(patch)
+            setPage('settings')
+            onNotice('개인정보를 저장했어요')
+          }}
+          onBack={() => setPage('settings')}
+        />
       </main>
     )
   }
@@ -109,17 +108,14 @@ export function HomeScreen({
       </main>
     )
   }
-  if (page === 'quiz-new' || page === 'quiz-review') {
+  if (page === 'quiz') {
     return (
       <main className="screen home-shell">
         <QuizHubScreen
-          mode={page === 'quiz-new' ? 'new' : 'review'}
           completedIds={completedIds}
           quizDoneIds={quizDoneIds}
-          wrongAnswers={progress.wrongAnswers}
           onBack={back}
           onStart={onStartQuiz}
-          onStartReview={onStartReview}
         />
       </main>
     )
@@ -134,7 +130,7 @@ export function HomeScreen({
           favorites={progress.favorites}
           onToggleFavorite={toggleFavorite}
           onLearn={onLearn}
-          onMenu={() => setMenuOpen(true)}
+          onQuiz={() => setPage('quiz')}
           onNotice={onNotice}
         />
       )}
@@ -163,25 +159,28 @@ export function HomeScreen({
             equippedCount: Object.values(progress.equipped).filter(Boolean).length,
             totalPlaces: places.filter((place) => place.status === 'available').length,
           }}
-          weeklyCount={weeklyCount(progress.records)}
           favorites={progress.favorites}
           completedIds={completedIds}
           onToggleFavorite={toggleFavorite}
           onOpenPlace={onLearn}
-          onEditNickname={openNickname}
-          battle={progress.battle}
+          onEditNickname={() => setNicknameOpen(true)}
+          onOpenSettings={() => setPage('settings')}
+          onOpenArchive={() => setPage('archive')}
+          onOpenHelp={() => setPage('help')}
         />
       )}
       <BottomTabs active={tab} onChange={setTab} />
-      <SideMenu
-        open={menuOpen}
-        {...avatar}
-        footprintCount={completedIds.length}
-        weeklyCount={weeklyCount(progress.records)}
-        onClose={() => setMenuOpen(false)}
-        onNavigate={setPage}
-      />
-      {nicknameSheet}
+      {nicknameOpen && (
+        <NicknameSheet
+          current={progress.nickname}
+          onClose={() => setNicknameOpen(false)}
+          onSave={(nickname) => {
+            update({ nickname })
+            setNicknameOpen(false)
+            onNotice('닉네임을 바꿨어요')
+          }}
+        />
+      )}
     </main>
   )
 }

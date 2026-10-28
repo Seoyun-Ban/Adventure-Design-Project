@@ -3,7 +3,7 @@ import { characterFor, findItem, type CharacterStyle } from '../data/avatar'
 import { ItemArtView } from './ItemArtView'
 import type { AvatarLook, Equipped, HistoryItem, ItemCategory } from '../types'
 
-// 그림 캐릭터 아바타 (아바타 탭, 내 정보, 사이드 메뉴, 대결 화면, 온보딩 미리보기, 도전장)
+// 그림 캐릭터 아바타 (아바타 탭, 내 정보, 대결 화면, 온보딩·개인정보 고치기 미리보기, 도전장)
 // 고른 머리 모양의 캐릭터 그림 위에 착용한 아이템을 입힌다.
 // - 머리·손 아이템: 그림(art)이 있으면 그 그림을 머리 위·손에 겹친다. 자리는 캐릭터 그림마다 다르다(mounts).
 // - 그림이 없는 아이템(지금은 옷): 부위 근처에 작은 원형 배지로 띄운다.

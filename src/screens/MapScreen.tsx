@@ -12,7 +12,7 @@ export function MapScreen({
   favorites,
   onToggleFavorite,
   onLearn,
-  onMenu,
+  onQuiz,
   onNotice,
 }: {
   records: LearningRecord[]
@@ -20,7 +20,8 @@ export function MapScreen({
   favorites: string[]
   onToggleFavorite: (placeId: string) => void
   onLearn: (place: Place) => void
-  onMenu: () => void
+  /** '퀴즈' 버튼: 학습한 장소의 퀴즈 고르기 화면 열기 */
+  onQuiz: () => void
   /** 아래쪽 알림(토스트) 띄우기 */
   onNotice: (message: string) => void
 }) {
@@ -36,14 +37,10 @@ export function MapScreen({
     <section className="map-screen tab-screen">
       <div className="map-paper" />
       <header className="map-header">
-        <button className="icon-button map-control" onClick={onMenu} type="button" aria-label="메뉴 열기">
-          <Icon name="menu" />
-        </button>
         <div className="map-heading">
           <span>오늘의 역사 산책</span>
           <strong>어디로 떠나볼까요?</strong>
         </div>
-        <span className="map-header-spacer" aria-hidden="true" />
       </header>
 
       {pushEnabled && showPush && (
@@ -107,6 +104,11 @@ export function MapScreen({
           >
             <i className="area-mini" />
             학습 가능 지역
+          </button>
+          {/* 켜고 끄는 버튼이 아니라, 학습한 장소의 퀴즈를 고르는 화면으로 간다 */}
+          <button type="button" className="legend-quiz" onClick={onQuiz}>
+            <Icon name="quiz" size={14} />
+            퀴즈
           </button>
         </div>
       </div>

@@ -6,41 +6,30 @@ import { ResetPasswordScreen } from './screens/ResetPasswordScreen'
 import { OnboardingScreen } from './screens/OnboardingScreen'
 import { HomeScreen } from './screens/HomeScreen'
 import { LearnScreen } from './screens/LearnScreen'
-import { QuizScreen, type QuizResult } from './screens/QuizScreen'
+import { QuizScreen } from './screens/QuizScreen'
 import { CompleteModal } from './components/CompleteModal'
 import { CURRENT_LOCATION, findPlace, places } from './data/places'
 import { useProgress } from './hooks/useProgress'
 import { levelFor } from './data/avatar'
 import { clearChallengeHash, readChallenge } from './lib/challenge'
 import { scrollAppToTop } from './lib/frameScale'
-import { generateLocal, generateQuiz, shuffleOptions, type GeneratedQuiz } from './lib/quizGenerator'
+import { generateQuiz, type GeneratedQuiz } from './lib/quizGenerator'
 import type { Difficulty, Place, Screen, SocialProvider } from './types'
 
-/** 복습 퀴즈 문제 수 */
-const REVIEW_COUNT = 5
-
+/** 장소 퀴즈 한 번 (통과하면 그 장소의 퀴즈 완료) */
 type QuizSession = {
   title: string
   load: () => Promise<GeneratedQuiz[]>
-  /** place: 장소 퀴즈 (통과하면 퀴즈 완료), review: 복습 퀴즈 */
-  kind: 'place' | 'review'
-  place?: Place
+  place: Place
+  /** 퀴즈를 연 곳: 학습 화면 또는 지도의 '퀴즈' */
   from: 'learn' | 'home'
 }
 
 // 앱 최상위: 어떤 화면을 보여줄지(로그인/온보딩/홈/학습/퀴즈)와 사용자 진행 상황을 관리한다
 export default function App() {
   const store = useProgress()
-  const {
-    progress,
-    completedIds,
-    update,
-    completeLearning,
-    completeQuiz,
-    recordAnswers,
-    toggleFavorite,
-    recordBattle,
-  } = store
+  const { progress, completedIds, update, completeLearning, completeQuiz, toggleFavorite, recordBattle } =
+    store
   /** 친구가 보낸 도전장 링크로 들어왔으면 그 도전장 (망가진 링크면 ok: false) */
   const [challenge, setChallenge] = useState(() => readChallenge(window.location.hash))
   const [screen, setScreen] = useState<Screen>(challenge ? 'challenge' : 'login')
@@ -111,52 +100,15 @@ export default function App() {
     startQuiz({
       title: `${place.name} 퀴즈 · ${difficulty}`,
       load: () => generateQuiz(place.id, difficulty),
-      kind: 'place',
       place,
       from,
     })
   }
 
-  /** 복습 퀴즈: 틀린 문제를 먼저, 모자라면 학습한 장소에서 새 문제를 섞는다 */
-  function startReview() {
-    const wrong = [...progress.wrongAnswers]
-      .reverse()
-      .slice(0, REVIEW_COUNT)
-      .map(
-        (entry): GeneratedQuiz => ({
-          ...shuffleOptions(entry.item),
-          placeId: entry.placeId,
-          level: progress.defaultDifficulty,
-          source: 'local',
-        }),
-      )
-    const seen = wrong.map((item) => item.question)
-    const extra: GeneratedQuiz[] = []
-    for (let i = 0; wrong.length + extra.length < REVIEW_COUNT && i < 20 && completedIds.length > 0; i += 1) {
-      const placeId = completedIds[Math.floor(Math.random() * completedIds.length)]
-      const [item] = generateLocal(placeId, progress.defaultDifficulty, 1, [
-        ...seen,
-        ...extra.map((q) => q.question),
-      ])
-      if (item && ![...seen, ...extra.map((q) => q.question)].includes(item.question)) extra.push(item)
-    }
-    startQuiz({
-      title: '복습 퀴즈',
-      load: async () => [...wrong, ...extra],
-      kind: 'review',
-      from: 'home',
-    })
-  }
-
-  function finishQuiz(results: QuizResult[], passed: boolean) {
-    recordAnswers(results)
-    if (quiz?.kind === 'place' && quiz.place) {
+  function finishQuiz(passed: boolean) {
+    if (quiz) {
       if (passed) completeQuiz(quiz.place.id, positionFor(quiz.place))
       else completeLearning(quiz.place.id, positionFor(quiz.place))
-    }
-    if (quiz?.kind === 'review') {
-      const fixed = results.filter((result) => result.correct).length
-      showToast(`복습 완료! ${fixed}문제를 맞혔어요.`)
     }
     setScreen('home')
   }
@@ -236,13 +188,11 @@ export default function App() {
             store={store}
             onLearn={openLearn}
             onStartQuiz={(place) => startPlaceQuiz(place, progress.defaultDifficulty, 'home')}
-            onStartReview={startReview}
             onLogin={() => setScreen('login')}
             onLogout={() => {
               update({ loggedIn: false })
               setScreen('login')
             }}
-            onEditAvatar={() => setScreen('onboarding')}
             onNotice={showToast}
           />
         )}
@@ -274,9 +224,7 @@ export default function App() {
             key={quizRun}
             title={quiz.title}
             load={quiz.load}
-            onBack={() =>
-              setScreen(quiz.from === 'learn' && quiz.place && findPlace(quiz.place.id) ? 'learn' : 'home')
-            }
+            onBack={() => setScreen(quiz.from === 'learn' && findPlace(quiz.place.id) ? 'learn' : 'home')}
             onDone={finishQuiz}
           />
         )}

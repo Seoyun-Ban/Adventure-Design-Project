@@ -1,9 +1,6 @@
 import { useEffect, useState } from 'react'
 import { defaultLook, migrateEquipped } from '../data/avatar'
-import type { AvatarLook, Difficulty, Equipped, LearningRecord, QuizItem } from '../types'
-
-/** 틀린 문제 기록 (복습 퀴즈에서 다시 낸다) */
-export type WrongAnswer = { placeId: string; item: QuizItem; wrongAt: string }
+import type { AvatarLook, Difficulty, Equipped, LearningRecord } from '../types'
 
 // 사용자 진행 상황 (학습 기록, 아바타, 설정)
 // '먼저 둘러보기' 사용자를 위해 브라우저(localStorage)에 저장한다.
@@ -25,7 +22,6 @@ export type Progress = {
   pushEnabled: boolean
   /** '이메일 기억하기'를 켰을 때 저장한 이메일 */
   rememberedEmail?: string
-  wrongAnswers: WrongAnswer[]
   /** 관심 장소로 표시한 장소 id */
   favorites: string[]
   battle: BattleRecord
@@ -75,7 +71,6 @@ function demoProgress(): Progress {
     ],
     defaultDifficulty: '보통',
     pushEnabled: true,
-    wrongAnswers: [],
     favorites: ['bulguksa'],
     battle: { played: 0, wins: 0, recent: [] },
     // 시연용: 운영팀 답변이 달린 문의 한 건 (답변 내용은 학습 글의 사실과 맞춘다)
@@ -100,7 +95,8 @@ function load(): Progress {
     const saved = localStorage.getItem(STORAGE_KEY)
     if (saved) {
       const demo = demoProgress()
-      const parsed = JSON.parse(saved)
+      // 예전 기록의 틀린 문제 목록(없어진 복습 퀴즈용)은 버린다
+      const { wrongAnswers: _removed, ...parsed } = JSON.parse(saved)
       // 예전에 저장한 기록에는 최근 대결 목록이 없을 수 있어 기본값과 합친다
       // 없어진 아이템(군모, 만세 태극기)을 착용하던 기록은 새 아이템으로 바꾼다
       const equipped = migrateEquipped(parsed.equipped ?? demo.equipped)
@@ -152,16 +148,6 @@ export function useProgress() {
       upsertRecord(placeId, { ...position, quizAt: new Date().toISOString() }),
     equip: (category: keyof Equipped, itemId?: string) =>
       setProgress((prev) => ({ ...prev, equipped: { ...prev.equipped, [category]: itemId } })),
-    /** 퀴즈 결과 반영: 틀린 문제는 복습 목록에 추가, 맞힌 문제는 복습 목록에서 뺀다 */
-    recordAnswers: (results: { placeId: string; item: QuizItem; correct: boolean }[]) =>
-      setProgress((prev) => {
-        let wrongAnswers = [...prev.wrongAnswers]
-        for (const { placeId, item, correct } of results) {
-          wrongAnswers = wrongAnswers.filter((wrong) => wrong.item.question !== item.question)
-          if (!correct) wrongAnswers.push({ placeId, item, wrongAt: new Date().toISOString() })
-        }
-        return { ...prev, wrongAnswers: wrongAnswers.slice(-40) }
-      }),
     toggleFavorite: (placeId: string) =>
       setProgress((prev) => ({
         ...prev,

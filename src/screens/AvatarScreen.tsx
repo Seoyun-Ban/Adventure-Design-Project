@@ -126,9 +126,6 @@ export function AvatarScreen({
           <h2>아바타</h2>
           <span>역사 아이템으로 능력치를 키워보세요.</span>
         </div>
-        <button type="button" className="competition-button" onClick={() => setView('friends')}>
-          <Icon name="quiz" size={17} /> 경쟁
-        </button>
       </header>
       <div className="avatar-stage">
         <div className="sun-disc" />
@@ -178,6 +175,16 @@ export function AvatarScreen({
           )
         })}
       </div>
+      <button type="button" className="competition-button" onClick={() => setView('friends')}>
+        <span className="competition-icon">
+          <Icon name="quiz" size={24} />
+        </span>
+        <span>
+          <strong>경쟁</strong>
+          <small>친구와 역사 지식 대결 · 대결 기록 보기</small>
+        </span>
+        <Icon name="chevron" size={20} />
+      </button>
       <div className="inventory-heading">
         <h3 className="section-title">수집한 역사 아이템</h3>
         <span>

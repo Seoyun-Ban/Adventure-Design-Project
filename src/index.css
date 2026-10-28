@@ -585,8 +585,8 @@ button {
   left: 0;
   right: 0;
   display: grid;
-  grid-template-columns: 48px 1fr 48px;
   align-items: center;
+  min-height: 74px;
   padding: 18px 16px 12px;
   background: linear-gradient(#f4eddd 35%, rgba(244, 237, 221, 0));
 }
@@ -616,10 +616,6 @@ button {
   margin-top: 3px;
   font-family: 'Gowun Batang', serif;
   font-size: 16px;
-}
-.map-header-spacer {
-  width: 44px;
-  height: 44px;
 }
 .nearby-notification {
   position: absolute;
@@ -1119,6 +1115,12 @@ button {
   filter: grayscale(1);
   opacity: 0.45;
 }
+/* '퀴즈'는 켜고 끄는 버튼이 아니라 화면으로 가는 버튼이라 늘 진한 초록 */
+.map-legend button.legend-quiz {
+  color: white;
+  background: var(--green);
+  font-weight: 800;
+}
 .foot-mini {
   width: 17px;
   height: 17px;
@@ -1363,176 +1365,6 @@ button {
   height: 29px;
   display: grid;
   place-items: center;
-}
-
-/* Drawer */
-.drawer-layer {
-  position: absolute;
-  z-index: 50;
-  inset: 0;
-  visibility: hidden;
-}
-.drawer-layer.open {
-  visibility: visible;
-}
-.drawer-backdrop {
-  position: absolute;
-  inset: 0;
-  border: 0;
-  background: rgba(23, 33, 27, 0.35);
-  opacity: 0;
-  transition: opacity 0.28s;
-}
-.drawer-layer.open .drawer-backdrop {
-  opacity: 1;
-}
-.side-menu {
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 316px;
-  padding: 22px 18px;
-  background: var(--cream);
-  transform: translateX(-103%);
-  transition: transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1);
-  box-shadow: 16px 0 35px rgba(27, 35, 30, 0.19);
-}
-.drawer-layer.open .side-menu {
-  transform: translateX(0);
-}
-.drawer-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-}
-.mini-brand {
-  width: 40px;
-  height: 40px;
-  border-radius: 13px;
-  display: grid;
-  place-items: center;
-  color: white;
-  background: var(--green);
-}
-.traveler-card {
-  display: grid;
-  grid-template-columns: 48px 1fr auto;
-  align-items: center;
-  gap: 11px;
-  padding: 15px;
-  border-radius: 18px;
-  background: var(--paper);
-}
-.avatar-small {
-  width: 48px;
-  height: 48px;
-  border: 3px solid white;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  color: white;
-  background: var(--green-2);
-  font-family: 'Gowun Batang', serif;
-  font-size: 20px;
-}
-.traveler-card strong,
-.traveler-card span {
-  display: block;
-}
-.traveler-card strong {
-  font-size: 13px;
-}
-.traveler-card span {
-  margin-top: 3px;
-  color: var(--ink-soft);
-  font-size: 9px;
-}
-.traveler-card .level-chip {
-  padding: 5px 7px;
-  border-radius: 8px;
-  color: var(--green);
-  background: white;
-  font-size: 9px;
-  font-weight: 800;
-}
-.drawer-progress {
-  margin: 17px 4px 24px;
-}
-.drawer-progress > div:first-child {
-  display: flex;
-  justify-content: space-between;
-  font-size: 10px;
-}
-.drawer-progress strong {
-  color: var(--green);
-}
-.progress-track {
-  height: 6px;
-  margin-top: 8px;
-  border-radius: 99px;
-  background: var(--green-3);
-  overflow: hidden;
-}
-.progress-track span {
-  display: block;
-  width: 60%;
-  height: 100%;
-  border-radius: inherit;
-  background: var(--green-2);
-}
-.menu-list {
-  border-top: 1px solid var(--line);
-}
-.menu-list button {
-  width: 100%;
-  min-height: 69px;
-  border: 0;
-  border-bottom: 1px solid var(--line);
-  display: grid;
-  grid-template-columns: 40px 1fr 20px;
-  align-items: center;
-  gap: 10px;
-  padding: 0 4px;
-  text-align: left;
-  background: transparent;
-  cursor: pointer;
-}
-.menu-item-icon {
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
-  display: grid;
-  place-items: center;
-  color: var(--green);
-  background: var(--green-3);
-}
-.menu-list strong,
-.menu-list small {
-  display: block;
-}
-.menu-list strong {
-  font-size: 12px;
-}
-.menu-list small {
-  margin-top: 4px;
-  color: var(--ink-soft);
-  font-size: 9px;
-  font-weight: 400;
-}
-.menu-list button > svg {
-  color: #9ca29c;
-}
-.drawer-quote {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 28px;
-  text-align: center;
-  color: #9b988e;
-  font-family: 'Gowun Batang', serif;
-  font-size: 11px;
 }
 
 /* Supporting tabs */
@@ -2227,20 +2059,44 @@ button {
   color: var(--ink-soft);
   font-size: 9px;
 }
+/* '수집한 역사 아이템' 바로 위의 큰 경쟁 버튼 */
 .competition-button {
-  min-height: 38px;
+  width: 100%;
+  min-height: 68px;
+  margin: 4px 0 22px;
   border: 0;
-  border-radius: 12px;
-  display: flex;
+  border-radius: 18px;
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
   align-items: center;
-  gap: 6px;
-  padding: 0 12px;
+  gap: 12px;
+  padding: 12px 16px;
   color: white;
-  background: var(--green);
-  box-shadow: 0 6px 14px rgba(23, 78, 58, 0.18);
-  font-size: 10px;
-  font-weight: 800;
+  background: linear-gradient(135deg, var(--green), var(--green-2));
+  box-shadow: 0 8px 18px rgba(23, 78, 58, 0.22);
+  text-align: left;
   cursor: pointer;
+}
+.competition-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.16);
+}
+.competition-button strong,
+.competition-button small {
+  display: block;
+}
+.competition-button strong {
+  font-size: 16px;
+  font-weight: 800;
+}
+.competition-button small {
+  margin-top: 3px;
+  font-size: 10px;
+  opacity: 0.85;
 }
 .avatar-power {
   position: absolute;
@@ -3256,7 +3112,22 @@ button {
     transform: translateY(-4px);
   }
 }
+/* 내 정보 오른쪽 위 설정(톱니바퀴) 버튼 */
+.profile-screen {
+  position: relative;
+}
+.profile-settings {
+  position: absolute;
+  z-index: 2;
+  top: 26px;
+  right: 18px;
+  color: var(--green);
+  background: rgba(255, 251, 241, 0.9);
+  border: 1px solid rgba(44, 65, 52, 0.09);
+  box-shadow: 0 5px 16px rgba(54, 63, 54, 0.12);
+}
 .profile-head {
+  padding-right: 50px;
   display: grid;
   grid-template-columns: 68px 1fr;
   gap: 14px;
@@ -3342,47 +3213,6 @@ button {
 .profile-stats span {
   color: var(--ink-soft);
   font-size: 8px;
-}
-.weekly-card {
-  position: relative;
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 4px;
-  margin-bottom: 20px;
-  padding: 17px;
-  border-radius: 17px;
-  background: var(--green-3);
-}
-.weekly-card strong,
-.weekly-card span {
-  display: block;
-}
-.weekly-card strong {
-  font-size: 12px;
-}
-.weekly-card div > span {
-  margin-top: 3px;
-  color: var(--ink-soft);
-  font-size: 9px;
-}
-.weekly-card > span {
-  color: var(--green);
-  font-size: 11px;
-  font-weight: 800;
-}
-.week-track {
-  grid-column: 1/-1;
-  height: 7px;
-  margin-top: 8px;
-  border-radius: 99px;
-  background: rgba(255, 255, 255, 0.8);
-  overflow: hidden;
-}
-.week-track i {
-  display: block;
-  width: 75%;
-  height: 100%;
-  background: var(--green-2);
 }
 .profile-menu {
   overflow: hidden;
@@ -3628,6 +3458,35 @@ button {
   color: var(--ink-soft);
   font-size: 8px;
 }
+/* 설정 > 개인정보 고치기 */
+.profile-edit-preview {
+  height: 180px;
+  margin: 0 0 18px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 24px;
+  background: radial-gradient(circle at 50% 40%, rgba(255, 246, 211, 0.9) 0 32%, transparent 33%),
+    linear-gradient(#dce4ca 0 74%, #c0cda9 74%);
+}
+.profile-edit-preview .character-avatar {
+  width: fit-content;
+  height: 160px;
+  margin-top: 10px;
+}
+.profile-edit-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 1px solid rgba(54, 64, 54, 0.08);
+  border-radius: 18px;
+  padding: 16px;
+  background: rgba(255, 252, 245, 0.88);
+  box-shadow: 0 5px 14px rgba(44, 53, 44, 0.05);
+}
+.profile-edit-screen form > .action-button {
+  margin-bottom: 20px;
+}
 .settings-row {
   border: 1px solid rgba(54, 64, 54, 0.08);
   border-radius: 18px;
@@ -3737,41 +3596,6 @@ button {
   margin-top: 4px;
   color: var(--ink-soft);
   font-size: 8px;
-}
-/* 계정 칸 안의 '닉네임 바꾸기' 줄 (계정 칸 글자 스타일을 덮어쓴다) */
-.account-card .account-nickname {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: 34px 1fr auto;
-  align-items: center;
-  gap: 10px;
-  margin-top: 4px;
-  padding: 11px 0 0;
-  border: 0;
-  border-top: 1px solid var(--line);
-  color: var(--ink-soft);
-  background: none;
-  text-align: left;
-  cursor: pointer;
-}
-.account-card .account-nickname .settings-icon {
-  width: 34px;
-  height: 34px;
-  margin: 0;
-  color: var(--green-2);
-}
-.account-card .account-nickname span {
-  margin: 0;
-}
-.account-card .account-nickname strong {
-  color: var(--ink);
-  font-size: 11px;
-}
-.account-card .account-nickname small {
-  display: block;
-  margin-top: 3px;
-  color: var(--ink-soft);
-  font-size: 9px;
 }
 .settings-screen > .action-button.ghost {
   color: var(--danger);
@@ -4586,15 +4410,9 @@ button {
   height: 206px;
   margin-top: 18px;
 }
-.avatar-small,
 .profile-avatar {
   overflow: hidden;
   background: linear-gradient(160deg, #dce4ca, #c0cda9);
-}
-.avatar-small .avatar-svg {
-  width: 60px;
-  height: 82px;
-  margin-top: 22px;
 }
 .profile-avatar .avatar-svg {
   width: 84px;
@@ -4695,13 +4513,8 @@ img.character-item[style*='height'] {
   font-size: 11px;
 }
 /* 동그란 프로필 칸: 그림마다 다른 얼굴 높이(--face-y, 그림 높이 대비 %)를 칸 가운데에 맞춘다 */
-.avatar-small .character-avatar,
 .profile-avatar .character-avatar {
   align-self: start;
-}
-.avatar-small .character-avatar {
-  height: 96px;
-  margin-top: calc(23px - 96px * var(--face-y) / 100);
 }
 .profile-avatar .character-avatar {
   height: 128px;
@@ -5787,10 +5600,6 @@ button.settings-row {
   font-size: 10px;
   font-weight: 700;
 }
-.week-track i {
-  width: 0;
-  transition: width 0.4s ease;
-}
 .badge-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -5844,12 +5653,19 @@ button.settings-row {
 .favorite-row > button:first-child {
   margin: 0;
 }
-.favorite-state {
+.favorite-state,
+.quiz-state {
   display: block;
   margin-top: 3px;
   color: var(--green-2);
   font-size: 9px;
   font-weight: 700;
+}
+.quiz-state {
+  color: var(--ink-soft);
+}
+.quiz-state.done {
+  color: var(--green-2);
 }
 .favorite-heart {
   width: 44px;
@@ -5908,47 +5724,6 @@ button.settings-row {
   50% {
     transform: rotate(180deg) scale(1.08);
   }
-}
-.result-review-note {
-  margin: 0 0 4px;
-  color: #a1522f;
-  font-size: 11px;
-}
-.review-summary {
-  margin: 6px 0 18px;
-  padding: 18px;
-  border-radius: 20px;
-  display: grid;
-  gap: 12px;
-  color: white;
-  background: linear-gradient(140deg, var(--green), var(--green-2));
-}
-.review-summary > div {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-}
-.review-summary strong {
-  font-family: 'Gowun Batang', serif;
-  font-size: 34px;
-}
-.review-summary span {
-  font-size: 12px;
-  opacity: 0.85;
-}
-.review-summary p {
-  margin: 0;
-  font-size: 11px;
-  line-height: 1.55;
-  opacity: 0.9;
-}
-.wrong-count {
-  padding: 4px 9px;
-  border-radius: 99px;
-  color: #a1522f;
-  background: #f8e4d6;
-  font-size: 9px;
-  font-weight: 800;
 }
 
 /* ======================================================================
@@ -6041,9 +5816,6 @@ button.settings-row {
 }
 .shelf-progress {
   order: 3;
-}
-.wrong-count {
-  white-space: nowrap;
 }
 .quiz-hub-list .favorite-heart.active > svg {
   color: #e2566a;

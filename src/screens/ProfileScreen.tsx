@@ -2,40 +2,39 @@ import { useState } from 'react'
 import { Icon } from '../components/Icon'
 import { CharacterAvatar } from '../components/CharacterAvatar'
 import { SubpageHeader } from '../components/SubpageHeader'
-import { BattleRecordCard } from '../components/BattleRecordCard'
 import { levelFor } from '../data/avatar'
-import type { BattleRecord } from '../hooks/useProgress'
 import { badges, type BadgeStats } from '../data/badges'
 import { findPlace } from '../data/places'
-import { WEEKLY_GOAL as weeklyGoal } from '../lib/weekly'
 import type { AvatarLook, Place } from '../types'
 
-// 내 정보 탭: 요약 통계, 이번 주 탐험, 획득한 배지, 관심 장소
+// 내 정보 탭: 요약 통계, 획득한 배지, 관심 장소, 학습 아카이브, 도움말
+// 오른쪽 위 톱니바퀴로 설정(개인정보 고치기 포함)을 연다.
 export function ProfileScreen({
   nickname,
   look,
   loggedIn,
   stats,
-  weeklyCount,
   favorites,
   completedIds,
   onToggleFavorite,
   onOpenPlace,
   onEditNickname,
-  battle,
+  onOpenSettings,
+  onOpenArchive,
+  onOpenHelp,
 }: {
   nickname: string
   look: AvatarLook
   loggedIn: boolean
   stats: BadgeStats
-  /** 최근 7일 동안 학습한 장소 수 */
-  weeklyCount: number
   favorites: string[]
   completedIds: string[]
   onToggleFavorite: (placeId: string) => void
   onOpenPlace: (place: Place) => void
   onEditNickname: () => void
-  battle: BattleRecord
+  onOpenSettings: () => void
+  onOpenArchive: () => void
+  onOpenHelp: () => void
 }) {
   const [view, setView] = useState<'main' | 'badges' | 'favorites'>('main')
   const earned = badges.filter((badge) => badge.earned(stats))
@@ -129,7 +128,15 @@ export function ProfileScreen({
   }
 
   return (
-    <section className="content-screen tab-screen">
+    <section className="content-screen tab-screen profile-screen">
+      <button
+        type="button"
+        className="icon-button profile-settings"
+        onClick={onOpenSettings}
+        aria-label="설정"
+      >
+        <Icon name="settings" size={21} />
+      </button>
       <header className="profile-head">
         <div className="profile-avatar">
           <CharacterAvatar look={look} label={`${nickname}의 아바타`} />
@@ -167,25 +174,6 @@ export function ProfileScreen({
           <span>완료한 퀴즈</span>
         </div>
       </div>
-      <h3 className="section-title">이번 주 탐험</h3>
-      <div className="weekly-card">
-        <div>
-          <strong>{weeklyCount >= weeklyGoal ? '이번 주 목표 달성!' : '한 걸음만 더!'}</strong>
-          <span>
-            {weeklyCount >= weeklyGoal
-              ? '멋진 한 주였어요.'
-              : `목표까지 ${weeklyGoal - weeklyCount}곳 남았어요.`}
-          </span>
-        </div>
-        <span>
-          {Math.min(weeklyCount, weeklyGoal)} / {weeklyGoal}
-        </span>
-        <div className="week-track">
-          <i style={{ width: `${(Math.min(weeklyCount, weeklyGoal) / weeklyGoal) * 100}%` }} />
-        </div>
-      </div>
-      <h3 className="section-title">대결 기록</h3>
-      <BattleRecordCard battle={battle} />
       <div className="profile-menu">
         <button type="button" onClick={() => setView('badges')}>
           <span className="profile-menu-icon">
@@ -203,6 +191,22 @@ export function ProfileScreen({
           </span>
           <strong>관심 장소</strong>
           <small className="menu-count">{favorites.length}곳</small>
+          <Icon name="chevron" size={18} />
+        </button>
+        <button type="button" onClick={onOpenArchive}>
+          <span className="profile-menu-icon">
+            <Icon name="archive" size={20} />
+          </span>
+          <strong>학습 아카이브</strong>
+          <small className="menu-count">{stats.footprints}개 기록</small>
+          <Icon name="chevron" size={18} />
+        </button>
+        <button type="button" onClick={onOpenHelp}>
+          <span className="profile-menu-icon">
+            <Icon name="help" size={20} />
+          </span>
+          <strong>도움말</strong>
+          <small className="menu-count">사용법·문의</small>
           <Icon name="chevron" size={18} />
         </button>
       </div>

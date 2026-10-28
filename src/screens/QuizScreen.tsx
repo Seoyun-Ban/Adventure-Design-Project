@@ -6,9 +6,9 @@ import type { GeneratedQuiz } from '../lib/quizGenerator'
 /** 이 비율 이상 맞히면 '퀴즈 완료'로 기록 */
 const PASS_RATIO = 2 / 3
 
-export type QuizResult = { placeId: string; item: GeneratedQuiz; correct: boolean }
+type QuizResult = { placeId: string; item: GeneratedQuiz; correct: boolean }
 
-// 퀴즈 화면 (장소 퀴즈와 복습 퀴즈가 함께 쓴다)
+// 장소 퀴즈 화면
 // load: 문제를 만들어 오는 함수 — AI 또는 기기 안 자동 생성
 export function QuizScreen({
   title,
@@ -20,7 +20,7 @@ export function QuizScreen({
   load: () => Promise<GeneratedQuiz[]>
   onBack: () => void
   /** passed: 기준 이상 맞혔는지 여부 */
-  onDone: (results: QuizResult[], passed: boolean) => void
+  onDone: (passed: boolean) => void
 }) {
   const [quizItems, setQuizItems] = useState<GeneratedQuiz[] | null>(null)
   const [round, setRound] = useState(0)
@@ -116,10 +116,7 @@ export function QuizScreen({
             <strong>{Math.round((score / quizItems.length) * 100)}%</strong>
           </div>
         </div>
-        {results.some((result) => !result.correct) && (
-          <p className="result-review-note">틀린 문제는 메뉴의 ‘복습 퀴즈’에서 다시 나와요.</p>
-        )}
-        <ActionButton onClick={() => onDone(results, passed)}>
+        <ActionButton onClick={() => onDone(passed)}>
           {passed ? '퀴즈 완료하고 지도 보기' : '지도로 돌아가기'}
         </ActionButton>
         <ActionButton

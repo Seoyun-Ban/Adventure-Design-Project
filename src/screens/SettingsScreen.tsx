@@ -3,6 +3,7 @@ import { ActionButton } from '../components/ActionButton'
 import { SubpageHeader } from '../components/SubpageHeader'
 import type { Difficulty } from '../types'
 
+// 설정 (내 정보 탭 오른쪽 위 톱니바퀴): 학습 단계, 알림, 개인정보 고치기, 계정
 export function SettingsScreen({
   loggedIn,
   nickname,
@@ -12,8 +13,7 @@ export function SettingsScreen({
   onDifficultyChange,
   onPushChange,
   onReset,
-  onEditAvatar,
-  onEditNickname,
+  onEditProfile,
   onBack,
   onLogin,
   onLogout,
@@ -26,8 +26,8 @@ export function SettingsScreen({
   onDifficultyChange: (difficulty: Difficulty) => void
   onPushChange: (enabled: boolean) => void
   onReset: () => void
-  onEditAvatar: () => void
-  onEditNickname: () => void
+  /** 개인정보 고치기 화면 열기 (닉네임, 성별, 머리 모양, 얼굴 사진) */
+  onEditProfile: () => void
   onBack: () => void
   onLogin: () => void
   onLogout: () => void
@@ -84,16 +84,16 @@ export function SettingsScreen({
       </div>
       <div className="settings-group">
         <div className="settings-group-title">
-          <span>아바타</span>
-          <small>외형과 등록한 얼굴을 다시 설정해요.</small>
+          <span>개인정보</span>
+          <small>닉네임, 성별, 머리 모양, 얼굴 사진을 바꿀 수 있어요.</small>
         </div>
-        <button type="button" className="settings-row push-setting" onClick={onEditAvatar}>
+        <button type="button" className="settings-row push-setting" onClick={onEditProfile}>
           <span className="settings-icon">
-            <Icon name="camera" size={20} />
+            <Icon name="edit" size={20} />
           </span>
           <div>
-            <strong>아바타·얼굴 다시 설정</strong>
-            <span>처음 설정 화면으로 이동해요.</span>
+            <strong>개인정보 고치기</strong>
+            <span>지금 닉네임: {nickname}</span>
           </div>
           <Icon name="chevron" size={18} />
         </button>
@@ -108,16 +108,6 @@ export function SettingsScreen({
             {loggedIn ? email || '간편 로그인 계정' : '로그인하면 지금까지의 기록이 계정에 저장돼요.'}
           </span>
         </div>
-        <button type="button" className="account-nickname" onClick={onEditNickname}>
-          <span className="settings-icon">
-            <Icon name="edit" size={18} />
-          </span>
-          <span>
-            <strong>닉네임 바꾸기</strong>
-            <small>지금 닉네임: {nickname}</small>
-          </span>
-          <Icon name="chevron" size={18} />
-        </button>
       </div>
       <ActionButton variant={loggedIn ? 'ghost' : 'primary'} onClick={loggedIn ? onLogout : onLogin}>
         {loggedIn ? '로그아웃' : '로그인'}
