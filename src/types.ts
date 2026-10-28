@@ -55,7 +55,12 @@ export type Place = {
    * event: 위치가 분명하지 않은 역사적 사건 → 학습한 순간 사용자의 위치에 발자국이 찍힌다
    */
   kind: 'site' | 'event'
-  /** 지도 위 마커 위치 (지도 영역 기준 %). event는 학습 기록의 위치를 쓴다 */
+  /** 실제 위치 (site만). 지도 위 위치와 '근처에 왔는지' 판단에 쓴다 */
+  lat?: number
+  lng?: number
+  /** 이 거리(m) 안에 들어오면 방문한 것으로 본다. 넓은 장소는 크게 (기본 500m) */
+  radius?: number
+  /** 지도 위 마커 위치 (지도 영역 기준 %). site는 lat/lng로 계산한다. event는 학습 기록의 위치를 쓴다 */
   top: string
   left: string
   /** 지도에서 발자국을 눌렀을 때 보이는 두 줄 요약 */
