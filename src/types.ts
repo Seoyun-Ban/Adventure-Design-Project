@@ -72,6 +72,8 @@ export type QuizItem = {
   /** 정답 보기의 인덱스 (0부터 시작) */
   answer: number
   note: string
+  /** 어려움 문제 종류: link = 연도·인물과 한 일 짝짓기, why = 이유 묻기 */
+  kind?: 'link' | 'why'
 }
 
 /** 장소별 학습 콘텐츠 */

@@ -206,6 +206,7 @@ export function HomeScreen({
         <AvatarScreen
           {...avatar}
           completedIds={completedIds}
+          xp={progress.xp}
           battle={progress.battle}
           onEquip={equip}
           onBattleEnd={recordBattle}
@@ -216,6 +217,7 @@ export function HomeScreen({
         <ProfileScreen
           {...avatar}
           loggedIn={progress.loggedIn}
+          xp={progress.xp}
           stats={{
             footprints: completedIds.length,
             quizzes: quizDoneIds.length,

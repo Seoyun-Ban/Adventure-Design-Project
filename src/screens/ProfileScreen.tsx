@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Icon } from '../components/Icon'
 import { CharacterAvatar } from '../components/CharacterAvatar'
 import { SubpageHeader } from '../components/SubpageHeader'
-import { levelFor } from '../data/avatar'
+import { levelFor, xpToNextLevel } from '../data/avatar'
 import { badges, type BadgeStats } from '../data/badges'
 import { findPlace, isPlaceOpen } from '../data/places'
 import type { AvatarLook, Place } from '../types'
@@ -14,6 +14,7 @@ export function ProfileScreen({
   look,
   loggedIn,
   stats,
+  xp,
   favorites,
   completedIds,
   visitedIds,
@@ -28,6 +29,8 @@ export function ProfileScreen({
   look: AvatarLook
   loggedIn: boolean
   stats: BadgeStats
+  /** 퀴즈로 모은 경험치 (레벨 계산) */
+  xp: number
   favorites: string[]
   completedIds: string[]
   /** 방문해서 열린 장소 id */
@@ -161,7 +164,9 @@ export function ProfileScreen({
               <Icon name="edit" size={16} />
             </button>
           </div>
-          <span>역사 탐험가 · Lv. {levelFor(stats.footprints)}</span>
+          <span>
+            역사 탐험가 · Lv. {levelFor(xp)} · 다음 레벨까지 {xpToNextLevel(xp)} XP
+          </span>
         </div>
       </header>
       <div className="profile-stats">

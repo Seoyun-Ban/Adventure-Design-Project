@@ -21,6 +21,8 @@ export type Progress = {
   records: LearningRecord[]
   /** 직접 가서 열린 장소 id (위치는 저장하지 않고, 방문한 장소만 기억한다) */
   visitedIds: string[]
+  /** 퀴즈로 모은 경험치. 레벨은 이 값으로 계산한다 (levelFor) */
+  xp: number
   defaultDifficulty: Difficulty
   pushEnabled: boolean
   /** 위치 설명 화면에서 고른 것 (on: 위치 켜기, later: 나중에). 위치 자체는 저장하지 않는다 */
@@ -81,6 +83,8 @@ function demoProgress(): Progress {
       { placeId: 'suwon', learnedAt: daysAgo(3) },
     ],
     visitedIds: DEMO_VISITED_IDS,
+    // 처음 시작할 때 Lv.3 (경험치 100마다 레벨 1)
+    xp: 200,
     defaultDifficulty: '보통',
     pushEnabled: true,
     favorites: ['bulguksa'],
@@ -117,7 +121,9 @@ function load(): Progress {
       const visitedIds = [
         ...new Set([...(parsed.visitedIds ?? demo.visitedIds), ...records.map((record) => record.placeId)]),
       ]
-      return { ...demo, ...parsed, equipped, visitedIds, battle: { ...demo.battle, ...parsed.battle } }
+      // 경험치가 없던 예전 기록은 예전 레벨(1 + 학습한 장소 수)과 같아지도록 채운다
+      const xp: number = typeof parsed.xp === 'number' ? parsed.xp : records.length * 100
+      return { ...demo, ...parsed, equipped, visitedIds, xp, battle: { ...demo.battle, ...parsed.battle } }
     }
   } catch {
     // 저장소를 쓸 수 없는 환경이면 기본값 사용
@@ -162,6 +168,8 @@ export function useProgress() {
     completeLearning: (placeId: string, region?: string) => upsertRecord(placeId, region ? { region } : {}),
     completeQuiz: (placeId: string, region?: string) =>
       upsertRecord(placeId, { ...(region ? { region } : {}), quizAt: new Date().toISOString() }),
+    /** 퀴즈에서 얻은 경험치를 더한다 */
+    addXp: (amount: number) => setProgress((prev) => ({ ...prev, xp: prev.xp + Math.max(0, amount) })),
     /** 장소 반경 안에 들어왔을 때: 방문한 장소로 기억한다 (위치는 저장하지 않는다) */
     visitPlace: (placeId: string) =>
       setProgress((prev) =>
@@ -207,6 +215,7 @@ export function useProgress() {
         equipped: {},
         records: [],
         visitedIds: [],
+        xp: 0,
         favorites: [],
         inquiries: [],
       }),

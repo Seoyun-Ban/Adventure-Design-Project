@@ -1,6 +1,6 @@
 import { BottomSheet } from './BottomSheet'
 import { Icon } from './Icon'
-import { LEVEL_POWER, type powerOf } from '../data/avatar'
+import { LEVEL_POWER, XP_PER_LEVEL, type powerOf } from '../data/avatar'
 
 // 전투력 올리는 방법 + 지금 내 전투력 계산 내역 (아바타 탭의 ⓘ 버튼)
 export function PowerInfoSheet({
@@ -19,7 +19,7 @@ export function PowerInfoSheet({
           <span>
             <Icon name="footprint" size={18} />
           </span>
-          역사 장소를 학습하면 <b>레벨이 올라요.</b>
+          퀴즈를 맞히면 경험치가 쌓여 <b>레벨이 올라요.</b> (경험치 {XP_PER_LEVEL}마다 1)
         </li>
         <li>
           <span>

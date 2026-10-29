@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Icon } from '../components/Icon'
 import { ActionButton } from '../components/ActionButton'
 import { SubpageHeader } from '../components/SubpageHeader'
-import { LEVEL_POWER } from '../data/avatar'
+import { LEVEL_POWER, XP_PER_CORRECT, XP_PER_LEVEL } from '../data/avatar'
 import type { Inquiry, InquiryKind } from '../hooks/useProgress'
 
 // 도움말: 앱 사용법 + 자주 묻는 질문 (초등학생 눈높이, 누르면 펼쳐지는 방식) + 문의하기
@@ -28,6 +28,7 @@ const guide: HelpItem[] = [
       '학습 화면 위에서 쉬움, 보통, 어려움 중 나에게 맞는 단계를 고를 수 있어요.',
       '중간에 있는 영상 장면의 재생 버튼을 누르면 역사 인물과 내 캐릭터가 이야기를 나눠요.',
       "'퀴즈 풀어보기'를 누르면 같은 단계의 문제 3개가 나와요. 2개 이상 맞히면 퀴즈 완료예요.",
+      '쉬움은 O/X와 보기 3개 문제예요. 틀리면 힌트를 보고 한 번 더 고를 수 있어요. 보통은 보기 4개, 어려움은 연도·인물을 짝짓거나 이유를 묻는 문제가 나와요.',
       "지도 아래의 '퀴즈'를 누르면 학습한 장소를 골라 퀴즈를 풀 수 있어요. 이미 푼 퀴즈도 새 문제로 다시 풀 수 있어요.",
     ],
   },
@@ -60,7 +61,7 @@ const guide: HelpItem[] = [
     q: '전투력 올리는 법',
     a: [
       `전투력은 '착용한 아이템 능력치'에 '레벨 × ${LEVEL_POWER}점'을 더한 값이에요.`,
-      '장소를 하나 공부할 때마다 레벨이 1씩 올라요.',
+      `퀴즈를 맞힐 때마다 경험치를 얻어요 (쉬움 ${XP_PER_CORRECT.쉬움}, 보통 ${XP_PER_CORRECT.보통}, 어려움 ${XP_PER_CORRECT.어려움}). 경험치 ${XP_PER_LEVEL}마다 레벨이 1씩 올라요.`,
       '공부해서 얻은 아이템을 착용하면 전투력이 더 올라가요. 아바타 탭의 ⓘ 버튼에서 내 전투력 계산을 볼 수 있어요.',
     ],
   },

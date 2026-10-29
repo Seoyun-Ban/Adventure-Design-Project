@@ -43,6 +43,7 @@ export default function App() {
     recordBattle,
     visitPlace,
     clearAll,
+    addXp,
   } = store
   /** 친구가 보낸 도전장 링크로 들어왔으면 그 도전장 (망가진 링크면 ok: false) */
   const [challenge, setChallenge] = useState(() => readChallenge(window.location.hash))
@@ -131,7 +132,7 @@ export default function App() {
         nickname: progress.nickname,
         look: progress.look,
         equipped: progress.equipped,
-        level: levelFor(completedIds.length),
+        level: levelFor(progress.xp),
       }
     : null
 
@@ -311,6 +312,8 @@ export default function App() {
             key={quizRun}
             title={quiz.title}
             load={quiz.load}
+            xp={progress.xp}
+            onXp={addXp}
             onBack={() => setScreen(quiz.from === 'learn' && findPlace(quiz.place.id) ? 'learn' : 'home')}
             onDone={finishQuiz}
           />

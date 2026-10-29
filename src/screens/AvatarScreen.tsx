@@ -18,6 +18,7 @@ export function AvatarScreen({
   look,
   equipped,
   completedIds,
+  xp,
   battle,
   onEquip,
   onBattleEnd,
@@ -27,6 +28,8 @@ export function AvatarScreen({
   look: AvatarLook
   equipped: Equipped
   completedIds: string[]
+  /** 퀴즈로 모은 경험치 (레벨 계산) */
+  xp: number
   battle: BattleRecord
   onEquip: (category: ItemCategory, itemId?: string) => void
   onBattleEnd: (opponent: string, won: boolean) => void
@@ -34,7 +37,7 @@ export function AvatarScreen({
 }) {
   const isOwned = (item: HistoryItem) => completedIds.includes(item.placeId)
   const ownedCount = historyItems.filter(isOwned).length
-  const level = levelFor(completedIds.length)
+  const level = levelFor(xp)
   const power = powerOf(equipped, level)
   const [category, setCategory] = useState<ItemCategory>('장비')
   const [selectedItem, setSelectedItem] = useState<HistoryItem | null>(null)

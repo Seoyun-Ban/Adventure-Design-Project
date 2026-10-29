@@ -4402,6 +4402,23 @@ button {
 .feedback.wrong > span {
   background: var(--danger);
 }
+/* 쉬움 단계: 틀렸을 때 힌트 한 줄 */
+.feedback.hint {
+  background: #f6ecd4;
+}
+.feedback.hint > span {
+  background: var(--gold);
+}
+.answer-list button:disabled {
+  cursor: default;
+}
+/* 퀴즈 결과: 레벨 안내 */
+.result-level {
+  margin: 0 0 10px;
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 800;
+}
 .feedback strong {
   font-size: 11px;
 }
