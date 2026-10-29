@@ -52,7 +52,10 @@ const STEPS: Step[] = [
     body: (
       <ul className="tour-legend">
         <li>
-          <i className="tour-dot gray" /> 회색: 아직 안 가 본 곳
+          <i className="tour-lock">
+            <Icon name="lock" size={11} />
+          </i>
+          회색 자물쇠: 아직 안 가 본 곳
         </li>
         <li>
           <i className="tour-dot green" /> 초록: 이야기가 열린 곳
@@ -206,6 +209,9 @@ export function AppTour({
     }
   }
 
+  // 비춘 곳이 오른쪽 위에 있으면(내 정보의 톱니바퀴) '건너뛰기'를 왼쪽 위로 옮겨 가리지 않게 한다
+  const skipOnLeft = holes.some((hole) => hole.cx + hole.rx > size.width - 130 && hole.cy - hole.ry < 70)
+
   return (
     <div className="tour-layer" ref={layer} role="dialog" aria-modal="true" aria-label="앱 소개">
       <svg className="tour-shade" width={size.width} height={size.height} aria-hidden="true">
@@ -223,7 +229,7 @@ export function AppTour({
         ))}
       </svg>
 
-      <button type="button" className="tour-skip" onClick={onFinish}>
+      <button type="button" className={`tour-skip ${skipOnLeft ? 'left' : ''}`} onClick={onFinish}>
         건너뛰기
       </button>
 

@@ -6161,6 +6161,10 @@ button.settings-row {
   font-weight: 800;
   cursor: pointer;
 }
+.tour-skip.left {
+  right: auto;
+  left: 16px;
+}
 .tour-bubble-wrap {
   position: absolute;
   z-index: 1;
@@ -6239,9 +6243,17 @@ button.settings-row {
   border-radius: 50%;
   flex: none;
 }
-.tour-dot.gray {
-  background: #b9bcb4;
-  box-shadow: 0 0 0 2px #eceae2;
+.tour-lock {
+  width: 20px;
+  height: 20px;
+  margin: 0 -4px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex: none;
+  color: #7d837c;
+  background: #efece3;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
 }
 .tour-dot.green {
   background: var(--green-2);
