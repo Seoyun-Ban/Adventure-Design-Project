@@ -44,7 +44,7 @@ export const figures: Record<string, HistoricalFigure> = {
         text: '1395년, 새 도읍 한양에 이 궁궐을 지었지. 정도전이 큰 복을 누리라는 뜻으로 경복궁이라 이름 붙였단다.',
       },
       { speaker: 'me', text: '와, 근정전이 정말 웅장해요!' },
-      { speaker: 'figure', text: '그곳에서 신하들과 나라의 큰일을 의논했지. 천천히 둘러보거라.' },
+      { speaker: 'figure', text: '그곳에서 나라의 큰 의식을 치렀단다. 천천히 둘러보거라.' },
     ],
   },
   suwon: {

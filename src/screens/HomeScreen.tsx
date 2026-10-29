@@ -24,6 +24,7 @@ import type { Place, SubPage, Tab } from '../types'
 // - 지도의 '퀴즈' → 퀴즈 고르기
 // - 내 정보의 학습 아카이브·도움말, 오른쪽 위 톱니바퀴 → 설정 → 개인정보 고치기
 export function HomeScreen({
+  initialTab = 'map',
   store,
   location,
   pretendId,
@@ -37,6 +38,8 @@ export function HomeScreen({
   onLogout,
   onNotice,
 }: {
+  /** 처음 보여줄 탭 (아이템을 바로 입어 보면 아바타 탭) */
+  initialTab?: Tab
   store: ReturnType<typeof useProgress>
   /** 실제 내 위치 (App에서 하나만 켠다) */
   location: ReturnType<typeof useLocation>
@@ -66,7 +69,7 @@ export function HomeScreen({
     recordBattle,
     addInquiry,
   } = store
-  const [tab, setTab] = useState<Tab>('map')
+  const [tab, setTab] = useState<Tab>(initialTab)
   const [page, setPage] = useState<SubPage>('main')
   const back = () => setPage('main')
   // 등록한 얼굴 사진은 학습 영상 장면에서만 쓰고, 홈 화면들의 아바타는 기본 얼굴로 보여준다.

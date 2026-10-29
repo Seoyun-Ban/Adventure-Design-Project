@@ -69,8 +69,8 @@ git push
 
 | 아이템 | 파일 | 상태 |
 | --- | --- | --- |
-| 선비의 갓, 장군의 투구 (머리) | `item-gat.png`, `item-helmet.png` | ✅ |
-| 정조의 활, 화랑의 검, 학자의 붓 (손) | `item-bow.png`, `item-sword.png`, `item-brush.png` | ✅ |
+| 선비 갓, 장군 투구 (머리) | `item-gat.png`, `item-helmet.png` | ✅ |
+| 정조 활, 화랑 검, 세종 붓 (손) | `item-bow.png`, `item-sword.png`, `item-brush.png` | ✅ |
 | 태극기, 독립선언서 (손) | 코드로 그림 (`components/ItemArtView.tsx`, 태극기는 국기 규격대로 `Taegukgi.tsx`) | ✅ |
 | 관복, 화랑 예복, 갑옷 (몸) | 없음 → 배지 | ⬜ |
 

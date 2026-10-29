@@ -8,6 +8,7 @@ import { HomeScreen } from './screens/HomeScreen'
 import { LearnScreen } from './screens/LearnScreen'
 import { QuizScreen } from './screens/QuizScreen'
 import { CompleteModal } from './components/CompleteModal'
+import { ItemRewardModal } from './components/ItemRewardModal'
 import { NEARBY_RADIUS_M, findPlace, isPlaceOpen, places } from './data/places'
 import { NearbyBanner } from './components/NearbyBanner'
 import { distanceMeters } from './lib/geo'
@@ -15,11 +16,11 @@ import { UNLOCK_ACCURACY_M } from './lib/location'
 import { regionAt } from './lib/regions'
 import { useProgress } from './hooks/useProgress'
 import { useLocation } from './hooks/useLocation'
-import { levelFor } from './data/avatar'
+import { itemsForPlace, levelFor } from './data/avatar'
 import { clearChallengeHash, readChallenge } from './lib/challenge'
 import { scrollAppToTop } from './lib/frameScale'
 import { generateQuiz, type GeneratedQuiz } from './lib/quizGenerator'
-import type { Difficulty, Place, Screen, SocialProvider } from './types'
+import type { Difficulty, HistoryItem, Place, Screen, SocialProvider, Tab } from './types'
 
 /** 장소 퀴즈 한 번 (통과하면 그 장소의 퀴즈 완료) */
 type QuizSession = {
@@ -44,6 +45,7 @@ export default function App() {
     visitPlace,
     clearAll,
     addXp,
+    equip,
   } = store
   /** 친구가 보낸 도전장 링크로 들어왔으면 그 도전장 (망가진 링크면 ok: false) */
   const [challenge, setChallenge] = useState(() => readChallenge(window.location.hash))
@@ -53,6 +55,18 @@ export default function App() {
   const [quiz, setQuiz] = useState<QuizSession | null>(null)
   const [quizRun, setQuizRun] = useState(0)
   const [showComplete, setShowComplete] = useState(false)
+  /**
+   * 처음 학습을 마쳐 얻은 아이템 카드 (한 장씩 차례로)
+   * then: 카드를 다 본 뒤 발자국 획득 창(complete)으로 갈지, 그냥 홈(home)에 있을지
+   */
+  const [reward, setReward] = useState<{
+    items: HistoryItem[]
+    index: number
+    then: 'complete' | 'home'
+  } | null>(null)
+  /** 홈 화면을 열 때 보여줄 탭 ('바로 입어보기'는 아바타 탭으로) */
+  const [homeTab, setHomeTab] = useState<Tab>('map')
+  const [homeKey, setHomeKey] = useState(0)
   const [toast, setToast] = useState<string | null>(null)
   const [resetEmail, setResetEmail] = useState('')
   /** 간편 로그인으로 처음 가입할 때 그 회사 (없으면 이메일 가입) */
@@ -136,14 +150,37 @@ export default function App() {
       }
     : null
 
+  /** 이 장소를 처음 학습하면 얻는 아이템 (이미 학습한 장소면 없음) */
+  const newItemsFor = (place: Place) => (completedIds.includes(place.id) ? [] : itemsForPlace(place.id))
+
+  /** 아이템 카드 다음 장으로. 마지막 장이면 닫고 정해 둔 곳으로 */
+  function nextReward(wore: boolean) {
+    if (!reward) return
+    if (reward.index + 1 < reward.items.length) {
+      setReward({ ...reward, index: reward.index + 1 })
+      return
+    }
+    setReward(null)
+    if (wore) {
+      // 입어 본 모습을 바로 볼 수 있게 아바타 탭으로
+      setHomeTab('avatar')
+      setHomeKey((key) => key + 1)
+      setScreen('home')
+    } else if (reward.then === 'complete') {
+      setShowComplete(true)
+    }
+  }
+
   function openLearn(place: Place) {
     if (!isPlaceOpen(place, progress.visitedIds)) return
+    setHomeTab('map')
     setSelectedPlace(place)
     setScreen('learn')
     scrollAppToTop()
   }
 
   function startQuiz(session: QuizSession) {
+    setHomeTab('map')
     setQuiz(session)
     setQuizRun((value) => value + 1)
     setScreen('quiz')
@@ -162,6 +199,9 @@ export default function App() {
   }
 
   function finishQuiz(passed: boolean) {
+    // 퀴즈로 처음 학습을 마친 경우에도 아이템 카드를 보여준다
+    const items = quiz ? newItemsFor(quiz.place) : []
+    if (items.length > 0) setReward({ items, index: 0, then: 'home' })
     if (quiz) {
       if (passed) completeQuiz(quiz.place.id, regionFor(quiz.place))
       else completeLearning(quiz.place.id, regionFor(quiz.place))
@@ -264,6 +304,8 @@ export default function App() {
         )}
         {screen === 'home' && (
           <HomeScreen
+            key={homeKey}
+            initialTab={homeTab}
             store={store}
             location={{ ...myLocation, position: here, status: pretendPlace ? 'on' : myLocation.status }}
             pretendId={pretendId}
@@ -301,8 +343,11 @@ export default function App() {
             onBack={() => setScreen('home')}
             onComplete={(difficulty) => {
               setLearnDifficulty(difficulty)
+              const items = newItemsFor(selectedPlace)
               completeLearning(selectedPlace.id, regionFor(selectedPlace))
-              setShowComplete(true)
+              // 처음 학습을 마쳤으면 아이템 카드 → 발자국 획득 창, 아니면 바로 발자국 획득 창
+              if (items.length > 0) setReward({ items, index: 0, then: 'complete' })
+              else setShowComplete(true)
             }}
             onQuiz={(difficulty) => startPlaceQuiz(selectedPlace, difficulty, 'learn')}
           />
@@ -319,6 +364,19 @@ export default function App() {
           />
         )}
       </div>
+      {reward && (
+        <ItemRewardModal
+          item={reward.items[reward.index]}
+          index={reward.index}
+          total={reward.items.length}
+          onWear={() => {
+            const item = reward.items[reward.index]
+            equip(item.category, item.id)
+            nextReward(true)
+          }}
+          onLater={() => nextReward(false)}
+        />
+      )}
       {showComplete && (
         <CompleteModal
           place={selectedPlace}
