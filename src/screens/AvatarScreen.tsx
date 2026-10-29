@@ -185,7 +185,7 @@ export function AvatarScreen({
         </span>
         <span>
           <strong>경쟁</strong>
-          <small>친구와 역사 지식 대결 · 대결 기록 보기</small>
+          <small>친구와 역사 대결 · 기록 보기</small>
         </span>
         <Icon name="chevron" size={20} />
       </button>

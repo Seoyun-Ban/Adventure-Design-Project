@@ -224,7 +224,7 @@ export function HelpScreen({
         </span>
         <span>
           <strong>앱 소개 다시 보기</strong>
-          <small>화면을 하나씩 비추며 쓰는 법을 알려 줘요</small>
+          <small>쓰는 법을 하나씩 알려 줘요</small>
         </span>
         <Icon name="chevron" size={18} />
       </button>

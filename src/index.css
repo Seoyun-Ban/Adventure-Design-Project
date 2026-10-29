@@ -85,6 +85,8 @@ button {
   gap: 8px;
   padding: 0 20px;
   font-weight: 750;
+  /* 버튼 글자는 한 줄로 (좁은 화면에서는 아래에서 여백·글자 크기를 줄인다) */
+  white-space: nowrap;
   cursor: pointer;
   transition:
     transform 0.18s ease,
@@ -5327,6 +5329,11 @@ img.character-item[style*='height'] {
 .onboarding-actions .action-button {
   flex: 1;
 }
+/* '이전'은 필요한 만큼만, 다음 단계 버튼이 남은 폭을 쓴다 */
+.onboarding-actions .action-button.ghost {
+  flex: 0 0 auto;
+  padding: 0 18px;
+}
 
 /* ======================================================================
    추가: 학습 화면의 2D 장면 (내 아바타가 역사 현장에 등장)
@@ -6290,14 +6297,20 @@ button.settings-row {
   background: var(--green);
 }
 .tour-controls {
+  grid-column: 1 / -1;
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 8px;
-  margin-top: 12px;
+  margin-top: 2px;
+  padding: 8px;
+  border-radius: 16px;
+  background: var(--cream);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
 }
 .tour-prev,
 .tour-next {
+  white-space: nowrap;
   min-height: 36px;
   border-radius: 11px;
   padding: 0 14px;
@@ -6564,4 +6577,24 @@ button.settings-row {
 }
 .reward-art .item-tag {
   font-size: 18px;
+}
+
+/* 좁은 화면(폭 360px 이하): 버튼 글자가 한 줄에 들어가도록 여백과 글자 크기를 조금 줄인다 */
+@media (max-width: 360px) {
+  .action-button {
+    gap: 6px;
+    padding: 0 12px;
+    font-size: 14px;
+  }
+  .complete-actions .action-button,
+  .onboarding-actions .action-button {
+    padding: 0 10px;
+  }
+  .tour-prev,
+  .tour-next {
+    padding: 0 12px;
+  }
+}
+.text-link {
+  white-space: nowrap;
 }

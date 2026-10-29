@@ -242,29 +242,30 @@ export function AppTour({
             <strong>{step.title}</strong>
             <div className="tour-body">{step.body}</div>
           </div>
-          <div className="tour-controls">
-            <button
-              type="button"
-              className="tour-prev"
-              onClick={() => setIndex(index - 1)}
-              disabled={index === 0}
-            >
-              이전
-            </button>
-            <div className="tour-dots" aria-label={`${STEPS.length}단계 중 ${index + 1}단계`}>
-              {STEPS.map((_, i) => (
-                <i key={i} className={i === index ? 'active' : ''} />
-              ))}
-            </div>
-            <button
-              type="button"
-              className="tour-next"
-              onClick={() => (last ? onFinish() : setIndex(index + 1))}
-            >
-              {last ? '떠나 볼까요!' : '다음'}
-            </button>
-          </div>
         </section>
+        {/* 이전·진행 점·다음: 아바타와 말풍선 아래에 전체 폭으로 (좁은 화면에서도 글자가 한 줄) */}
+        <div className="tour-controls">
+          <button
+            type="button"
+            className="tour-prev"
+            onClick={() => setIndex(index - 1)}
+            disabled={index === 0}
+          >
+            이전
+          </button>
+          <div className="tour-dots" aria-label={`${STEPS.length}단계 중 ${index + 1}단계`}>
+            {STEPS.map((_, i) => (
+              <i key={i} className={i === index ? 'active' : ''} />
+            ))}
+          </div>
+          <button
+            type="button"
+            className="tour-next"
+            onClick={() => (last ? onFinish() : setIndex(index + 1))}
+          >
+            {last ? '떠나 볼까요!' : '다음'}
+          </button>
+        </div>
       </div>
     </div>
   )
