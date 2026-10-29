@@ -27,7 +27,7 @@
 | 앱 소개 안내 | 아바타를 만들고 지도에 처음 들어오면 한 번: 화면을 어둡게 하고 설명할 곳만 밝게 비추며 내 아바타가 말풍선으로 7단계 안내(지도·장소 표시·지도 아래 버튼·이야기책·아바타·내 정보), 탭 자동 이동, 건너뛰기. 끝나면 위치 설명 화면. 도움말 '앱 소개 다시 보기' |
 | 먼저 둘러보기 | 회원가입 없이 이용, 기록은 기기(localStorage)에 저장, 로그인하면 이어서 사용 |
 
-기획서 항목별 구현 현황은 [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md)에 정리했습니다.
+기획서 항목별 구현 현황은 [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md)에 정리했습니다. 영상 장면 녹음 대본은 [`docs/voice-script.md`](docs/voice-script.md)에 있습니다.
 
 ## 학습 장소
 
