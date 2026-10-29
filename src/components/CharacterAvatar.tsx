@@ -6,7 +6,8 @@ import type { AvatarLook, Equipped, HistoryItem, ItemCategory } from '../types'
 // 그림 캐릭터 아바타 (아바타 탭, 내 정보, 대결 화면, 온보딩·개인정보 고치기 미리보기, 도전장)
 // 고른 머리 모양의 캐릭터 그림 위에 착용한 아이템을 입힌다.
 // - 머리·손 아이템: 그림(art)이 있으면 그 그림을 머리 위·손에 겹친다. 자리는 캐릭터 그림마다 다르다(mounts).
-// - 그림이 없는 아이템(지금은 옷): 부위 근처에 작은 원형 배지로 띄운다.
+// - 옷: 그 머리 모양의 옷 그림(me-{머리모양}-{옷}.png)이 있으면 캐릭터 그림을 통째로 바꾸고,
+//   아직 없으면 몸 옆에 작은 원형 배지로 띄운다.
 
 // 그리는 순서: 옷 배지 → 손 아이템 → 모자 (모자가 맨 위)
 const SLOTS: ItemCategory[] = ['의복', '무기', '장비']
@@ -23,7 +24,8 @@ export function CharacterAvatar({
   className?: string
   label?: string
 }) {
-  const character = characterFor(look)
+  // 옷을 입었고 그 옷 그림이 있으면 옷을 입은 그림으로 통째로 바뀐다
+  const character = characterFor(look, equipped)
   // 동그란 프로필 칸에서 얼굴을 가운데 맞출 때 쓰는 얼굴 높이 (CSS --face-y)
   const style = { '--face-y': character.face.y } as CSSProperties
   return (
@@ -40,6 +42,8 @@ export function CharacterAvatar({
 
 /** 착용한 아이템 한 개: 그림이 있으면 머리·손 자리에 겹치고, 없으면 배지로 보여준다 */
 function ItemLayer({ item, character }: { item: HistoryItem; character: CharacterStyle }) {
+  // 옷을 입은 그림이면 옷은 이미 그림에 들어 있다
+  if (item.category === '의복' && character.outfitWorn) return null
   const art = item.art
   if (!art || item.category === '의복') {
     const at = character.slots[item.category]

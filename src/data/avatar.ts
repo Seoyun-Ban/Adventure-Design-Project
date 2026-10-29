@@ -1,3 +1,4 @@
+import { OUTFIT_IMAGES } from './generated/outfitImages'
 import type { AvatarLook, CharacterStyleId, Difficulty, Equipped, HistoryItem, ItemCategory } from '../types'
 
 type Point = { x: number; y: number }
@@ -17,6 +18,8 @@ export type CharacterStyle = {
    * - hand: 손 아이템을 쥘 손바닥 가운데(x, y) — 화면 오른쪽 손
    */
   mounts: { head: Point & { w: number }; hand: Point }
+  /** 옷 아이템을 입은 그림이면 true (그 옷은 배지로 따로 그리지 않는다) */
+  outfitWorn?: boolean
 }
 
 /**
@@ -81,9 +84,32 @@ export function styleIdFor(look: Pick<AvatarLook, 'gender' | 'style'>): Characte
   return stylesFor(look.gender)[0]
 }
 
-/** 외형에 맞는 캐릭터 그림 정보 */
-export function characterFor(look: Pick<AvatarLook, 'gender' | 'style'>) {
-  return characterStyles[styleIdFor(look)]
+/** 옷 아이템 id → 옷 그림 이름 (me-{머리모양}-{옷}.png) */
+export const OUTFIT_OF_ITEM: Record<string, string> = {
+  'official-robe': 'robe',
+  'hwarang-robe': 'hwarang',
+  armor: 'armor',
+}
+
+/**
+ * 옷 그림마다 머리·손 자리를 조금 고친 값 ('머리모양-옷' 이름별). 적지 않으면 그 머리 모양의 기본값을 쓴다.
+ * 옷 그림도 기본 그림과 같은 자세라 대부분 기본값으로 맞는다.
+ */
+const OUTFIT_FIT: Record<string, Partial<Pick<CharacterStyle, 'face' | 'slots' | 'mounts'>>> = {}
+
+/**
+ * 외형(과 착용한 옷)에 맞는 캐릭터 그림 정보
+ * - 옷을 입었고 그 머리 모양의 옷 그림(me-{머리모양}-{옷}.png)이 있으면 옷을 입은 그림으로 통째로 바꾼다
+ * - 옷 그림이 아직 없으면 기본 그림 (옷은 배지로 보여준다)
+ * 옷 그림 목록(OUTFIT_IMAGES)은 npm run images가 art/characters를 보고 자동으로 만든다.
+ */
+export function characterFor(look: Pick<AvatarLook, 'gender' | 'style'>, equipped?: Equipped): CharacterStyle {
+  const styleId = styleIdFor(look)
+  const base = characterStyles[styleId]
+  const outfit = equipped?.의복 ? OUTFIT_OF_ITEM[equipped.의복] : undefined
+  const key = outfit ? `${styleId}-${outfit}` : ''
+  if (!key || !OUTFIT_IMAGES.includes(key)) return base
+  return { ...base, ...OUTFIT_FIT[key], image: `/images/characters/me-${key}.png`, outfitWorn: true }
 }
 
 // 아바타 아이템: 연결된 장소(placeId)의 학습을 완료하면 획득한다
