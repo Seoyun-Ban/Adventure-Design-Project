@@ -61,7 +61,9 @@ export function AccountSection({
             </span>
             <div>
               <strong>이메일 바꾸기</strong>
-              <span>{accountEmail ? `지금 이메일: ${accountEmail}` : '새 이메일로 바꿔요'}</span>
+              <span className="break-anywhere">
+                {accountEmail ? `지금 이메일: ${accountEmail}` : '새 이메일로 바꿔요'}
+              </span>
             </div>
             <Icon name="chevron" size={18} />
           </button>
@@ -200,7 +202,7 @@ export function EmailChange({
     <section className="utility-screen profile-edit-screen">
       <SubpageHeader title="이메일 바꾸기" subtitle="새 이메일로 인증 메일을 보내요" onBack={onBack} />
       <div className="profile-edit-panel">
-        {currentEmail && <p className="account-current">지금 이메일: {currentEmail}</p>}
+        {currentEmail && <p className="account-current break-anywhere">지금 이메일: {currentEmail}</p>}
         <label className="field">
           <span>새 이메일</span>
           <input

@@ -107,7 +107,7 @@ export function SettingsScreen({
         </div>
         <div>
           <strong>{loggedIn ? nickname : '로그인하지 않음'}</strong>
-          <span>
+          <span className="break-anywhere">
             {loggedIn ? email || '간편 로그인 계정' : '로그인하면 지금까지의 기록이 계정에 저장돼요.'}
           </span>
         </div>

@@ -26,7 +26,7 @@ export function ResetPasswordScreen({
           </span>
           <h1>재설정 링크를 보냈어요</h1>
           <p>
-            <b>{email.trim()}</b>
+            <b className="break-anywhere">{email.trim()}</b>
             <br />
             메일함에서 링크를 눌러 새 비밀번호를 만들어 주세요.
           </p>

@@ -43,6 +43,22 @@ body {
     'Apple SD Gothic Neo',
     sans-serif;
   -webkit-font-smoothing: antialiased;
+  /* 한국어는 단어(띄어쓰기) 단위로 줄을 바꾼다. 띄어쓰기 없이 긴 영어·링크·이메일은 칸을 넘칠 때만 중간에서 끊는다. */
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+/* 버튼·입력칸은 브라우저 기본값이 body를 따르지 않을 수 있어 직접 이어받게 한다 */
+button,
+input,
+textarea,
+select {
+  word-break: inherit;
+  overflow-wrap: inherit;
+}
+/* 링크·이메일·주소처럼 띄어쓰기 없는 긴 글자 */
+a,
+.break-anywhere {
+  overflow-wrap: anywhere;
 }
 button,
 input {
@@ -2379,6 +2395,11 @@ button {
   place-items: center;
   color: var(--green);
   background: var(--green-3);
+}
+.power-steps li > p {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
 }
 .power-steps b {
   color: var(--green);
@@ -5926,6 +5947,21 @@ button.settings-row {
   text-align: center;
   font-size: 12px;
   font-weight: 800;
+}
+/* 이 책의 이야기를 열 수 있는 지도 장소 목록 */
+.book-places {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: 0 0 8px;
+  color: var(--ink-soft);
+  font-size: 11px;
+  text-align: center;
+}
+.book-places svg {
+  flex: none;
+  color: var(--green);
 }
 .story-detail-cover {
   display: flex;
