@@ -4,7 +4,8 @@ import type { VoiceSpec } from '../lib/speech'
 // 학습 화면 2D 장면에 등장하는 역사 인물과 대사
 // - speaker: 'figure'(역사 인물) / 'me'(사용자 아바타)
 // - voice: 기기 목소리 중 남성/여성을 골라 읽고, 높낮이·빠르기는 나이·성격에 맞게 살짝만 바꾼다.
-//   녹음 파일 public/audio/장소id/줄번호.mp3 가 있으면 그것을 먼저 재생한다 (docs/TEAM_GUIDE.md).
+//   녹음 파일 public/audio/장소id/줄번호.mp3 (내 캐릭터는 줄번호-boy/-girl.mp3)가 있으면 녹음만 재생한다.
+//   대본과 파일 이름은 docs/voice-script.md. 대사를 바꾸면 대본도 고치고 '다시 녹음 필요'로 표시한다.
 // - image: 캐릭터 그림 경로. 파일이 아직 없으면 look·equipped로 그린 SVG 캐릭터가 대신 나온다.
 //   그림을 추가하는 법은 docs/TEAM_GUIDE.md 참고 (art/characters에 넣고 npm run images).
 // 대사에는 인물이 살아 있던 때의 일만 직접 겪은 것처럼 말하게 한다.

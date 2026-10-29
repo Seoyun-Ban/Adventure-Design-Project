@@ -106,11 +106,13 @@ export function HistoryScene({
     const current = figure.dialogue[i]
     const voice = current.speaker === 'figure' ? figure.voice : myVoiceFor(look.gender)
     const who = current.speaker === 'figure' ? figure.name : nickname
+    // 내 캐릭터 대사는 아바타 성별에 맞는 녹음 파일(줄번호-boy / 줄번호-girl)
+    const kid = current.speaker === 'me' ? (look.gender === '남' ? 'boy' : 'girl') : undefined
     void speak(
       current.text,
       voice,
       soundRef.current,
-      dialogueAudioUrl(placeId, i),
+      dialogueAudioUrl(placeId, i, kid),
       `대사 ${i + 1}/${total} 읽기 시작: ${who}`,
     ).then(() => {
       if (runId.current === id) setSpeaking(false)

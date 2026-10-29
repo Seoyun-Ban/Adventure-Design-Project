@@ -1,5 +1,6 @@
 // 대사 녹음 파일 목록 만들기
-// public/audio/장소id/줄번호.mp3 파일을 찾아서 src/data/generated/audioFiles.ts에 목록으로 적는다.
+// public/audio/장소id/줄번호.mp3 (내 캐릭터 대사는 줄번호-boy.mp3, 줄번호-girl.mp3) 파일을 찾아서
+// src/data/generated/audioFiles.ts에 목록으로 적는다.
 // 앱은 이 목록에 있는 파일만 재생하고, 없는 파일은 서버에 요청하지 않는다.
 // npm run dev, npm run build를 할 때 저절로 실행된다. (직접 실행: node scripts/list-audio.mjs)
 import { readdir, writeFile } from 'node:fs/promises'
@@ -12,7 +13,7 @@ for (const place of places) {
   if (!place.isDirectory()) continue
   const names = await readdir(path.join(ROOT, place.name))
   for (const name of names) {
-    if (/^\d+\.mp3$/i.test(name)) files.push(`${place.name}/${name.replace(/\.mp3$/i, '')}`)
+    if (/^\d+(-boy|-girl)?\.mp3$/i.test(name)) files.push(`${place.name}/${name.replace(/\.mp3$/i, '')}`)
   }
 }
 files.sort((a, b) => a.localeCompare(b, 'en', { numeric: true }))

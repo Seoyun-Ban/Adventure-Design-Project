@@ -1,5 +1,5 @@
 // 영상 장면 대사 읽기
-// 1) 녹음 파일(mp3)이 있으면 그 파일을 먼저 재생한다.  예: public/audio/gyeongbokgung/1.mp3
+// 1) 녹음 파일(mp3)이 있으면 녹음만 재생한다.  예: public/audio/gyeongbokgung/1.mp3, 3-boy.mp3, 3-girl.mp3
 //    있는 파일 목록은 npm run dev/build 때 scripts/list-audio.mjs가 만든다 (없는 파일은 서버에 요청하지 않는다).
 // 2) 없으면 브라우저 내장 음성(Web Speech API)으로 읽는다. 기기에 있는 한국어 목소리 중 남성/여성을 골라 쓴다.
 //    'Multilingual' 목소리는 한국어 전용 남성 목소리가 없을 때만 남성 역할에 쓰고, 높낮이·빠르기는 1로 고정한다.
@@ -66,7 +66,24 @@ function allKoreanVoices() {
 /** 이 장면에서 한 번 실패한 목소리 이름 (장면이 끝날 때까지 다시 고르지 않는다) */
 const failedVoices = new Set<string>()
 
+/** 인터넷으로 읽는 'Online' 목소리인지 (예: Microsoft 인준 Online (Natural)) */
+function isOnline(voice: SpeechSynthesisVoice) {
+  return /online/i.test(voice.name)
+}
+
+/**
+ * Online 목소리가 한 번이라도 실패했는지.
+ * 실패하는 기기에서는 Online 목소리가 전부 실패하는 경우가 많아서, 앱을 다시 열 때까지 Online 목소리를 모두 건너뛴다.
+ * (다시 시도하느라 소리가 늦게 나오지 않게)
+ */
+let onlineBroken = false
+
 function markVoiceFailed(voice: SpeechSynthesisVoice) {
+  if (isOnline(voice) && !onlineBroken) {
+    onlineBroken = true
+    cache = null
+    debugLog(`${voice.name} 실패 → 앱을 다시 열 때까지 Online 목소리는 모두 건너뜀`)
+  }
   if (failedVoices.has(voice.name)) return
   failedVoices.add(voice.name)
   cache = null
@@ -83,10 +100,13 @@ export function resetFailedVoices() {
 /**
  * 고를 수 있는 한국어 목소리
  * - 이 장면에서 한 번 실패한 목소리는 뺀다
+ * - Online 목소리가 한 번이라도 실패했으면 Online 목소리는 모두 뺀다 (앱을 다시 열 때까지)
  * - 이름에 'Multilingual'이 들어간 여러 언어용 목소리는 남성 후보로만, 한국어 전용 남성 목소리가 없을 때 쓴다 (pickVoices)
  */
 function koreanVoices() {
-  return allKoreanVoices().filter((voice) => !failedVoices.has(voice.name))
+  return allKoreanVoices().filter(
+    (voice) => !failedVoices.has(voice.name) && !(onlineBroken && isOnline(voice)),
+  )
 }
 
 /** 여러 언어용 온라인 목소리 (예: Microsoft Hyunsu Multilingual Online). 높낮이·빠르기를 바꾸면 실패할 수 있다. */
@@ -299,10 +319,17 @@ export async function speak(
     return wait(fallbackMs)
   }
   const started = generation
+  // 녹음 파일이 있으면 녹음만 재생한다. 없을 때(또는 재생할 수 없을 때)만 기기 목소리로 대신 읽는다.
   if (audioUrl && RECORDINGS.has(audioUrl)) {
     debugLog(`${label} / 녹음 파일 ${audioUrl}`)
-    if (await playRecording(audioUrl)) return
+    if (await playRecording(audioUrl)) {
+      debugLog(`${label} / 녹음 끝까지 재생 ✓`)
+      return
+    }
     if (started !== generation) return
+    debugLog(`${label} / 녹음 파일을 재생하지 못함 → 기기 목소리로 대신`)
+  } else if (audioUrl) {
+    debugLog(`${label} / 녹음 없음(${audioUrl}) → 기기 목소리로 대신`)
   }
   if (!hasSynth()) {
     debugLog(`${label} / 음성 기능 없는 브라우저 (자막만)`)
@@ -348,8 +375,12 @@ export async function speak(
           }
           debugLog(`목소리 오류: ${event.error} (${name})`)
           // 한 번 실패한 목소리는 이 장면이 끝날 때까지 다음 대사에서 고르지 않는다
+          // Online 목소리가 실패했으면 남은 방법 중 Online 목소리는 건너뛰고 바로 다음 방법(기본 목소리 등)으로
           if (attempt.voice) markVoiceFailed(attempt.voice)
-          if (step + 1 < attempts.length) tryAt(step + 1)
+          const nextStep = attempts.findIndex(
+            (a, i) => i > step && !(a.voice && onlineBroken && isOnline(a.voice)),
+          )
+          if (nextStep >= 0) tryAt(nextStep)
           else {
             debugLog(`${label} / 모든 방법 실패 → 자막만`)
             finish()
@@ -392,9 +423,13 @@ export function stopSpeaking() {
   }
 }
 
-/** 대사 녹음 파일 주소 규칙: public/audio/장소id/줄번호.mp3 (줄번호는 1부터) */
-export function dialogueAudioUrl(placeId: string, lineIndex: number) {
-  return `/audio/${placeId}/${lineIndex + 1}.mp3`
+/**
+ * 대사 녹음 파일 주소 규칙 (줄번호는 1부터, 대본: docs/voice-script.md)
+ * - 역사 인물 대사: public/audio/장소id/줄번호.mp3
+ * - 내 캐릭터 대사: public/audio/장소id/줄번호-boy.mp3, 줄번호-girl.mp3 (아바타 성별에 맞는 파일)
+ */
+export function dialogueAudioUrl(placeId: string, lineIndex: number, kid?: 'boy' | 'girl') {
+  return `/audio/${placeId}/${lineIndex + 1}${kid ? `-${kid}` : ''}.mp3`
 }
 
 function wait(ms: number) {
