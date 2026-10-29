@@ -13,6 +13,7 @@ export function BottomTabs({ active, onChange }: { active: Tab; onChange: (tab: 
       {tabs.map((tab) => (
         <button
           key={tab.id}
+          data-tab={tab.id}
           className={active === tab.id ? 'active' : ''}
           onClick={() => onChange(tab.id)}
           type="button"

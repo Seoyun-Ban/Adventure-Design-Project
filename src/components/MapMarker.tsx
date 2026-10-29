@@ -25,6 +25,7 @@ export function MapMarker({
   return (
     <button
       className={`map-marker ${state}`}
+      data-place={place.id}
       style={{ top: place.top, left: place.left }}
       onClick={() => onSelect(place)}
       type="button"

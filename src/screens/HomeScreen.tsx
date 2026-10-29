@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { BottomTabs } from '../components/BottomTabs'
 import { NicknameSheet } from '../components/NicknameSheet'
 import { LocationIntro } from '../components/LocationIntro'
+import { AppTour } from '../components/AppTour'
 import { LocationPicker } from '../components/LocationPicker'
 import { MapScreen } from './MapScreen'
 import { StoryBookScreen } from './StoryBookScreen'
@@ -76,6 +77,13 @@ export function HomeScreen({
   }
   // 닉네임 바꾸기 창: 내 정보 탭의 연필 버튼
   const [nicknameOpen, setNicknameOpen] = useState(false)
+  // 앱 소개 안내: 온보딩을 마치고 처음 지도에 오면 한 번, 도움말의 '앱 소개 다시 보기'로 언제든
+  const [tourOn, setTourOn] = useState(!progress.tourDone)
+  function finishTour() {
+    setTourOn(false)
+    setTab('map')
+    if (!progress.tourDone) update({ tourDone: true })
+  }
   // 지도 제목을 5번 빠르게 누르면 여는 위치 고르기 창
   const [pickerOpen, setPickerOpen] = useState(false)
 
@@ -140,7 +148,16 @@ export function HomeScreen({
   if (page === 'help') {
     return (
       <main className="screen home-shell">
-        <HelpScreen inquiries={progress.inquiries} onSendInquiry={addInquiry} onBack={back} />
+        <HelpScreen
+          inquiries={progress.inquiries}
+          onSendInquiry={addInquiry}
+          onBack={back}
+          onReplayTour={() => {
+            setPage('main')
+            setTab('map')
+            setTourOn(true)
+          }}
+        />
       </main>
     )
   }
@@ -175,7 +192,11 @@ export function HomeScreen({
         />
       )}
       {/* 처음 지도에 들어오면 위치를 쓰는 이유를 먼저 설명하고, 그다음에 브라우저가 허용 여부를 묻는다 */}
-      {tab === 'map' && !progress.locationChoice && (
+      {tourOn && (
+        <AppTour look={progress.look} nickname={progress.nickname} onTab={setTab} onFinish={finishTour} />
+      )}
+      {/* 앱 소개가 끝난 뒤에 위치 설명 화면이 이어진다 */}
+      {tab === 'map' && !tourOn && !progress.locationChoice && (
         <LocationIntro onAllow={onLocationOn} onLater={onLocationLater} />
       )}
       {tab === 'book' && (

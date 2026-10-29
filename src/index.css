@@ -6120,3 +6120,235 @@ button.settings-row {
   stroke: #f8f2e5;
   stroke-width: calc(1px * var(--map-overlay-compensation));
 }
+
+/* 앱 소개 안내 (스포트라이트 + 아바타 말풍선) */
+.tour-layer {
+  position: fixed;
+  z-index: 160;
+  inset: 0;
+  overflow: hidden;
+}
+.tour-shade {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+.tour-shade ellipse {
+  transition:
+    cx 0.35s ease,
+    cy 0.35s ease,
+    rx 0.35s ease,
+    ry 0.35s ease;
+}
+.tour-ring {
+  fill: none;
+  stroke: rgba(255, 252, 240, 0.9);
+  stroke-width: 2.5;
+  stroke-dasharray: 7 5;
+}
+.tour-skip {
+  position: absolute;
+  z-index: 2;
+  top: calc(14px + env(safe-area-inset-top, 0px));
+  right: 16px;
+  min-height: 34px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 99px;
+  padding: 0 14px;
+  color: white;
+  background: rgba(20, 30, 24, 0.45);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.tour-bubble-wrap {
+  position: absolute;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 58px 1fr;
+  align-items: end;
+  gap: 6px;
+  transition:
+    top 0.35s ease,
+    left 0.35s ease;
+  animation: tour-in 0.35s ease;
+}
+@keyframes tour-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+.tour-guide {
+  height: 84px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+.tour-guide .character-avatar {
+  height: 84px;
+  width: auto;
+}
+.tour-bubble {
+  position: relative;
+  padding: 15px 15px 12px;
+  border-radius: 18px;
+  color: var(--ink);
+  background: var(--cream);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.28);
+}
+/* 아바타 쪽으로 향한 말풍선 꼬리 */
+.tour-bubble::before {
+  content: '';
+  position: absolute;
+  left: -7px;
+  bottom: 26px;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  background: var(--cream);
+  transform: rotate(45deg);
+}
+.tour-bubble strong {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--green);
+  font-family: 'Gowun Batang', serif;
+  font-size: 16px;
+}
+.tour-body {
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+.tour-legend {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 5px;
+}
+.tour-legend li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tour-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex: none;
+}
+.tour-dot.gray {
+  background: #b9bcb4;
+  box-shadow: 0 0 0 2px #eceae2;
+}
+.tour-dot.green {
+  background: var(--green-2);
+  box-shadow: 0 0 0 2px #dce8da;
+}
+.tour-foot {
+  width: 20px;
+  height: 20px;
+  margin: 0 -4px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex: none;
+  color: white;
+  background: var(--green);
+}
+.tour-controls {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+.tour-prev,
+.tour-next {
+  min-height: 36px;
+  border-radius: 11px;
+  padding: 0 14px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.tour-prev {
+  border: 1px solid var(--line);
+  color: var(--green);
+  background: transparent;
+}
+.tour-prev:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.tour-next {
+  border: 0;
+  color: white;
+  background: var(--green);
+}
+.tour-dots {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+}
+.tour-dots i {
+  width: 7px;
+  height: 7px;
+  border-radius: 99px;
+  background: #cfd5c9;
+  transition: width 0.25s ease;
+}
+.tour-dots i.active {
+  width: 18px;
+  background: var(--green-2);
+}
+/* 움직임 줄이기: 스포트라이트·말풍선이 미끄러지지 않고 바로 바뀐다 */
+@media (prefers-reduced-motion: reduce) {
+  .tour-shade ellipse,
+  .tour-bubble-wrap,
+  .tour-dots i {
+    transition: none;
+  }
+  .tour-bubble-wrap {
+    animation: none;
+  }
+}
+/* 도움말 맨 위 '앱 소개 다시 보기' */
+.tour-replay {
+  width: 100%;
+  margin: 4px 0 18px;
+  border: 0;
+  border-radius: 18px;
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  color: white;
+  background: linear-gradient(135deg, var(--green), var(--green-2));
+  box-shadow: 0 8px 18px rgba(23, 78, 58, 0.2);
+  text-align: left;
+  cursor: pointer;
+}
+.tour-replay > span:first-child {
+  width: 40px;
+  height: 40px;
+  border-radius: 13px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.16);
+}
+.tour-replay strong,
+.tour-replay small {
+  display: block;
+}
+.tour-replay strong {
+  font-size: 13px;
+}
+.tour-replay small {
+  margin-top: 3px;
+  font-size: 10px;
+  opacity: 0.85;
+}

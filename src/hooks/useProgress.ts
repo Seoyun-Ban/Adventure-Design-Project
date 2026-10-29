@@ -25,6 +25,8 @@ export type Progress = {
   pushEnabled: boolean
   /** 위치 설명 화면에서 고른 것 (on: 위치 켜기, later: 나중에). 위치 자체는 저장하지 않는다 */
   locationChoice?: 'on' | 'later'
+  /** 앱 소개 안내를 끝까지 봤거나 건너뛰었는지 (다시는 자동으로 띄우지 않는다) */
+  tourDone?: boolean
   /** '이메일 기억하기'를 켰을 때 저장한 이메일 */
   rememberedEmail?: string
   /** 간편 로그인으로 들어왔으면 그 회사 (이메일 가입이면 없음) */

@@ -130,10 +130,13 @@ export function HelpScreen({
   inquiries,
   onSendInquiry,
   onBack,
+  onReplayTour,
 }: {
   inquiries: Inquiry[]
   onSendInquiry: (inquiry: Pick<Inquiry, 'kind' | 'title' | 'body'>) => void
   onBack: () => void
+  /** 앱 소개 안내 다시 보기 (지도로 가서 처음부터) */
+  onReplayTour: () => void
 }) {
   const [view, setView] = useState<'main' | 'write' | 'sent' | 'history'>('main')
   const toMain = () => setView('main')
@@ -212,6 +215,16 @@ export function HelpScreen({
   return (
     <section className="utility-screen help-screen">
       <SubpageHeader title="도움말" subtitle="궁금한 항목을 눌러 보세요" onBack={onBack} />
+      <button type="button" className="tour-replay" onClick={onReplayTour}>
+        <span>
+          <Icon name="sparkle" size={20} />
+        </span>
+        <span>
+          <strong>앱 소개 다시 보기</strong>
+          <small>화면을 하나씩 비추며 쓰는 법을 알려 줘요</small>
+        </span>
+        <Icon name="chevron" size={18} />
+      </button>
       <HelpGroup title="앱 사용법" items={guide} />
       <HelpGroup title="자주 묻는 질문" items={faq} />
       <div className="help-group">
