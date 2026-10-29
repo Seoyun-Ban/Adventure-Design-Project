@@ -12,10 +12,34 @@ import { AUDIO_FILES } from '../data/generated/audioFiles'
 export type VoiceSpec = { gender: 'male' | 'female'; pitch: number; rate: number }
 
 // 한국어 목소리 이름으로 성별을 구분한다. 앞에 적은 것일수록 먼저 고른다.
-// (엣지: Microsoft InJoon·SunHi 등, 크롬: Google 한국의, 애플: Yuna·Minsu 등)
-const PREFERRED: Record<VoiceSpec['gender'], string[]> = {
-  male: ['injoon', 'hyunsu', 'bongjin', 'gookmin', 'minsu', 'jinho'],
-  female: ['sunhi', 'jimin', 'seohyeon', 'yujin', 'soonbok', 'heami', 'yuna', 'sora', 'google'],
+// 한 칸에 적은 이름들은 같은 목소리다. 기기 언어에 따라 이름이 한글로 나오기도 한다 (예: 'Microsoft 인준 Online (Natural)').
+// (엣지: Microsoft InJoon(인준)·SunHi(선히) 등, 크롬: Google 한국의, 애플: Yuna·Minsu 등)
+const PREFERRED: Record<VoiceSpec['gender'], string[][]> = {
+  male: [
+    ['injoon', '인준'],
+    ['hyunsu', '현수'],
+    ['bongjin', '봉진'],
+    ['gookmin', '국민'],
+    ['minsu', '민수'],
+    ['jinho', '진호'],
+  ],
+  female: [
+    ['sunhi', '선히'],
+    ['jimin', '지민'],
+    ['seohyeon', '서현'],
+    ['yujin', '유진'],
+    ['soonbok', '순복'],
+    ['heami', '해미'],
+    ['yuna', '유나'],
+    ['sora', '소라'],
+    ['google'],
+  ],
+}
+
+/** 이 목소리가 PREFERRED에서 몇 번째 칸인지 (없으면 -1) */
+function preferredOrder(gender: VoiceSpec['gender'], voice: SpeechSynthesisVoice) {
+  const name = voice.name.toLowerCase()
+  return PREFERRED[gender].findIndex((names) => names.some((key) => name.includes(key)))
 }
 const GENDER_WORDS: Record<VoiceSpec['gender'], RegExp> = {
   male: /male|남성|남자/i,
@@ -71,9 +95,8 @@ function isMultilingual(voice: SpeechSynthesisVoice) {
 }
 
 function genderOf(voice: SpeechSynthesisVoice): VoiceSpec['gender'] | null {
-  const name = voice.name.toLowerCase()
   for (const gender of ['male', 'female'] as const) {
-    if (PREFERRED[gender].some((key) => name.includes(key))) return gender
+    if (preferredOrder(gender, voice) >= 0) return gender
   }
   if (GENDER_WORDS.female.test(voice.name)) return 'female'
   if (GENDER_WORDS.male.test(voice.name)) return 'male'
@@ -94,9 +117,10 @@ function pickVoices() {
       (voice) => genderOf(voice) === gender && (gender === 'male' || !isMultilingual(voice)),
     )
     const rank = (voice: SpeechSynthesisVoice) => {
-      const name = voice.name.toLowerCase()
-      const order = PREFERRED[gender].findIndex((key) => name.includes(key))
-      return (isMultilingual(voice) ? 100 : 0) + (order < 0 ? 50 : order) - (name.includes('natural') ? 0.5 : 0)
+      // 같은 목소리면 'Online (Natural)'을 먼저, Multilingual은 한국어 전용 목소리가 하나도 없을 때만
+      const order = preferredOrder(gender, voice)
+      const natural = /natural/i.test(voice.name) ? 0.5 : 0
+      return (isMultilingual(voice) ? 100 : 0) + (order < 0 ? 50 : order) - natural
     }
     return candidates.sort((a, b) => rank(a) - rank(b))[0] ?? null
   }
