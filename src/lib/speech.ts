@@ -1,7 +1,10 @@
 // 영상 장면 대사 읽기
 // 1) 녹음 파일(mp3)이 있으면 그 파일을 먼저 재생한다.  예: public/audio/gyeongbokgung/1.mp3
+//    있는 파일 목록은 npm run dev/build 때 scripts/list-audio.mjs가 만든다 (없는 파일은 서버에 요청하지 않는다).
 // 2) 없으면 브라우저 내장 음성(Web Speech API)으로 읽는다. 기기에 있는 한국어 목소리 중 남성/여성을 골라 쓴다.
-// 3) 한국어 목소리도 없으면 소리 없이 글자 수만큼 기다린다 (자막만 보인다).
+// 3) 목소리 목록을 아직 못 받았으면 목소리를 고르지 않고 lang만 'ko-KR'로 정해 기본 목소리로 읽는다.
+// 4) 음성 기능 자체가 없는 브라우저면 소리 없이 글자 수만큼 기다린다 (자막만 보인다).
+import { AUDIO_FILES } from '../data/generated/audioFiles'
 
 /** 대사 목소리: 남성/여성 + 높낮이·빠르기 (1이 기본) */
 export type VoiceSpec = { gender: 'male' | 'female'; pitch: number; rate: number }
@@ -61,18 +64,56 @@ function pickVoices() {
   return cache
 }
 
-if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+function hasSynth() {
+  return typeof window !== 'undefined' && 'speechSynthesis' in window
+}
+
+if (hasSynth()) {
   // 목소리 목록은 늦게 도착할 수 있어서, 바뀌면 다시 고른다
   window.speechSynthesis.addEventListener('voiceschanged', () => {
     cache = null
   })
 }
 
+/** 목소리 목록이 비어 있을 때 기다리는 최대 시간 */
+const VOICE_WAIT_MS = 2000
+let voicesReady: Promise<void> | null = null
+
+/**
+ * 목소리 목록 미리 불러오기 (엣지·크롬은 목록을 늦게 준다).
+ * 목록이 비어 있으면 voiceschanged를 최대 2초 기다린다. 장면이 열릴 때 불러서 '만나기'를 누르기 전에 끝내 둔다.
+ * 누를 때까지 못 받았어도 기다리지 않고 기본 한국어 목소리로 읽는다.
+ */
+export function prepareVoices(): Promise<void> {
+  if (!hasSynth()) return Promise.resolve()
+  if (voicesReady) return voicesReady
+  voicesReady = new Promise<void>((resolve) => {
+    const synth = window.speechSynthesis
+    const finish = () => {
+      synth.removeEventListener('voiceschanged', finish)
+      window.clearTimeout(timer)
+      const korean = koreanVoices()
+      debugLog(
+        `목소리 목록 ${synth.getVoices().length}개 (한국어 ${korean.length}개)` +
+          (korean.length ? `: ${korean.map((voice) => voice.name).join(', ')}` : ' → 기본 목소리(ko-KR)로 읽음'),
+      )
+      resolve()
+    }
+    const timer = window.setTimeout(finish, synth.getVoices().length > 0 ? 0 : VOICE_WAIT_MS)
+    if (synth.getVoices().length === 0) synth.addEventListener('voiceschanged', finish)
+  })
+  return voicesReady
+}
+
 const clamp = (value: number, [min, max]: [number, number]) => Math.min(max, Math.max(min, value))
 
-/** 한국어 목소리가 하나라도 있는지 */
+/**
+ * 한국어로 읽을 수 있는지 (자막 안내용)
+ * 목록을 아직 못 받았으면 읽을 수 있다고 본다. 목록이 왔는데 한국어 목소리가 없을 때만 false.
+ */
 export function canSpeak() {
-  return pickVoices().any !== null
+  if (!hasSynth()) return false
+  return window.speechSynthesis.getVoices().length === 0 || pickVoices().any !== null
 }
 
 /** 이 목소리로 읽을 때 실제로 쓸 기기 목소리와 높낮이 (디버깅·확인용으로도 쓴다) */
@@ -99,26 +140,8 @@ let generation = 0
 /** 마지막으로 기기 목소리를 끊은 시각. 끊자마자 바로 읽으면 새 줄까지 끊기는 브라우저가 있어 잠깐 기다린다. */
 let lastCancelAt = -Infinity
 const AFTER_CANCEL_MS = 120
-/** 녹음 파일이 있는지 미리 확인한 결과 (true: 있음, false: 없음) */
-const recordingExists = new Map<string, boolean>()
-
-/**
- * 장면이 열릴 때 녹음 파일이 있는지 미리 확인해 둔다.
- * 대사를 읽을 때 파일을 찾느라 기다리지 않아야, '만나기'를 누른 그 순간에 목소리를 시작할 수 있다.
- * (없는 파일은 서버가 앱 첫 화면(html)을 돌려주기도 해서, 소리 파일인지까지 확인한다)
- */
-export function checkRecordings(urls: string[]) {
-  for (const url of urls) {
-    if (recordingExists.has(url)) continue
-    recordingExists.set(url, false)
-    fetch(url, { method: 'HEAD' })
-      .then((response) => {
-        const type = response.headers.get('content-type') ?? ''
-        recordingExists.set(url, response.ok && type.startsWith('audio'))
-      })
-      .catch(() => {})
-  }
-}
+/** 저장소에 있는 녹음 파일 주소 (목록에 없는 파일은 요청하지 않는다) */
+const RECORDINGS = new Set(AUDIO_FILES.map((name) => `/audio/${name}.mp3`))
 
 /** 녹음 파일 재생. 끝까지 재생하면 true, 재생할 수 없으면 false */
 function playRecording(url: string): Promise<boolean> {
@@ -138,19 +161,23 @@ function playRecording(url: string): Promise<boolean> {
   })
 }
 
-/** 개발 중(npm run dev)에만 콘솔에 짧은 기록을 남긴다 */
-function devLog(message: string) {
-  if (import.meta.env.DEV) console.info(`[목소리] ${message}`)
+/** 콘솔 기록은 개발 중(npm run dev)이거나 주소 뒤에 ?debug를 붙였을 때만 남긴다 */
+const DEBUG =
+  import.meta.env.DEV ||
+  (typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('debug'))
+function debugLog(message: string) {
+  if (DEBUG) console.info(`[목소리] ${message}`)
 }
 
 // ---------- 대사 읽기 ----------
 
 /**
  * 대사 한 줄을 읽고, 다 읽으면 끝나는 Promise
- * - audioUrl의 녹음 파일이 있으면(checkRecordings로 미리 확인) 그것을 재생하고, 없으면 기기 목소리로 읽는다
- * - enabled가 false(소리 끔)거나 한국어 목소리가 없으면 글자 수에 맞춰 기다리기만 한다
+ * - audioUrl의 녹음 파일이 목록(AUDIO_FILES)에 있으면 그것을 재생하고, 없으면 기기 목소리로 읽는다
+ * - 목소리 목록을 아직 못 받았으면 lang만 'ko-KR'로 정해 기본 목소리로 읽는다
+ * - enabled가 false(소리 끔)거나 음성 기능이 없는 브라우저면 글자 수에 맞춰 기다리기만 한다
  * - 기다리지 않고 바로 읽기 시작하므로, 버튼을 누른 순간에 부르면 브라우저가 소리를 막지 않는다
- * - label: 개발 중 콘솔 기록에 붙일 이름 (예: "대사 3/6 읽기 시작: 세종")
+ * - label: 콘솔 기록에 붙일 이름 (예: "대사 3/6 읽기 시작: 세종")
  */
 export async function speak(
   text: string,
@@ -161,20 +188,21 @@ export async function speak(
 ): Promise<void> {
   const fallbackMs = 1400 + text.length * 95
   if (!enabled) {
-    devLog(`${label} / 소리 꺼짐 (자막만)`)
+    debugLog(`${label} / 소리 꺼짐 (자막만)`)
     return wait(fallbackMs)
   }
   const started = generation
-  if (audioUrl && recordingExists.get(audioUrl)) {
-    devLog(`${label} / 녹음 파일 ${audioUrl}`)
+  if (audioUrl && RECORDINGS.has(audioUrl)) {
+    debugLog(`${label} / 녹음 파일 ${audioUrl}`)
     if (await playRecording(audioUrl)) return
     if (started !== generation) return
   }
-  const { voice, pitch, rate } = resolveVoice(spec)
-  if (!voice) {
-    devLog(`${label} / 한국어 목소리 없음 (자막만)`)
+  if (!hasSynth()) {
+    debugLog(`${label} / 음성 기능 없는 브라우저 (자막만)`)
     return wait(fallbackMs)
   }
+  // 목소리 목록을 아직 못 받았으면 voice는 null → 목소리를 고르지 않고 ko-KR 기본 목소리로 읽는다
+  const { voice, pitch, rate } = resolveVoice(spec)
   return new Promise((resolve) => {
     let done = false
     const finish = () => {
@@ -189,8 +217,8 @@ export async function speak(
       if (started !== generation) return finish()
       try {
         const utterance = new SpeechSynthesisUtterance(text)
-        utterance.voice = voice
-        utterance.lang = voice.lang
+        if (voice) utterance.voice = voice
+        utterance.lang = voice?.lang ?? 'ko-KR'
         utterance.pitch = pitch
         utterance.rate = rate
         utterance.onend = () => {
@@ -199,11 +227,11 @@ export async function speak(
         }
         utterance.onerror = (event) => {
           // 다음 줄로 넘기며 끊은 것(interrupted·canceled)은 정상
-          if (event.error !== 'interrupted' && event.error !== 'canceled') devLog(`목소리 오류: ${event.error}`)
+          if (event.error !== 'interrupted' && event.error !== 'canceled') debugLog(`목소리 오류: ${event.error}`)
           finish()
         }
         currentUtterance = utterance
-        devLog(`${label} / ${voice.name}`)
+        debugLog(`${label} / ${voice ? voice.name : '기본 목소리(ko-KR, 목록을 아직 못 받음)'}`)
         window.speechSynthesis.speak(utterance)
       } catch {
         // 목소리 설정에 실패해도 장면이 멈추지 않도록, 자막만 보여주고 글자 수만큼 기다린다

@@ -3,7 +3,7 @@ import { Icon } from './Icon'
 import { Avatar } from './Avatar'
 import { figures, myVoiceFor } from '../data/figures'
 import { characterFor } from '../data/avatar'
-import { canSpeak, checkRecordings, dialogueAudioUrl, speak, stopSpeaking } from '../lib/speech'
+import { canSpeak, dialogueAudioUrl, prepareVoices, speak, stopSpeaking } from '../lib/speech'
 import { withJosa } from '../lib/korean'
 import type { AvatarLook, Equipped } from '../types'
 
@@ -69,11 +69,10 @@ export function HistoryScene({
     }
   }, [full])
 
-  // 녹음 파일이 있는지 미리 확인해 둔다 (누른 순간 기다리지 않고 바로 읽기 위해)
+  // 목소리 목록을 미리 불러 둔다 ('만나기'를 누른 순간 기다리지 않고 바로 읽기 위해)
   useEffect(() => {
-    const lines = figures[placeId]?.dialogue ?? []
-    checkRecordings(lines.map((_, i) => dialogueAudioUrl(placeId, i)))
-  }, [placeId])
+    void prepareVoices()
+  }, [])
 
   useEffect(() => {
     return () => {
