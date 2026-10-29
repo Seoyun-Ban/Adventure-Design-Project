@@ -92,6 +92,8 @@ export function resolveVoice(spec: VoiceSpec) {
 // ---------- 녹음 파일 ----------
 
 let currentAudio: HTMLAudioElement | null = null
+/** stopSpeaking을 부를 때마다 1씩 늘린다. 녹음 파일을 찾는 사이에 멈췄으면 기기 목소리로 넘어가지 않게 한다. */
+let generation = 0
 /** 없다고 확인된 녹음 파일 (같은 파일을 다시 찾지 않는다) */
 const missingAudio = new Set<string>()
 
@@ -130,7 +132,9 @@ export async function speak(
 ): Promise<void> {
   const fallbackMs = 1400 + text.length * 95
   if (!enabled) return wait(fallbackMs)
+  const started = generation
   if (audioUrl && (await playRecording(audioUrl))) return
+  if (started !== generation) return
   const { voice, pitch, rate } = resolveVoice(spec)
   if (!voice) return wait(fallbackMs)
   return new Promise((resolve) => {
@@ -159,6 +163,7 @@ export async function speak(
 }
 
 export function stopSpeaking() {
+  generation += 1
   if (currentAudio) {
     currentAudio.pause()
     currentAudio = null

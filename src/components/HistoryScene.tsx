@@ -1,7 +1,6 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
 import { Icon } from './Icon'
 import { Avatar } from './Avatar'
-import { Place3D } from './Place3D'
 import { figures, myVoiceFor } from '../data/figures'
 import { characterFor } from '../data/avatar'
 import { Bgm } from '../lib/bgm'
@@ -10,12 +9,14 @@ import { withJosa } from '../lib/korean'
 import type { AvatarLook, Equipped } from '../types'
 
 // 학습 중간에 나오는 영상 장면
-// 장소에 맞는 3D 배경 위에서 역사 인물과 내 캐릭터(등록한 얼굴)가 함께 대화한다.
-// 대사는 녹음 파일(public/audio/장소id/줄번호.mp3)이 있으면 그것을, 없으면 인물에 맞는 남성/여성 기기 목소리로 읽고,
-// 장소 분위기에 맞는 배경 음악이 깔린다.
+// 장소 배경 그림(public/images/backgrounds/bg-장소id.webp) 위에서 역사 인물과 내 캐릭터(등록한 얼굴)가 함께 대화한다.
+// 배경은 천천히 조금씩 확대되고, 인물과 내 캐릭터는 배경 아래쪽 빈 땅에 선다.
+// 대사는 화면을 누를 때마다 다음 줄로 넘어가고, 마지막 줄 다음에 누르면 '다시 보기'가 나온다.
+// 대사는 녹음 파일(public/audio/장소id/줄번호.mp3)이 있으면 그것을, 없으면 인물에 맞는 남성/여성 기기 목소리로 읽는다.
+// 읽는 도중에 누르면 읽던 목소리를 멈추고 다음 줄을 읽는다. 장소 분위기에 맞는 배경 음악이 깔린다.
 // '전체 화면'을 누르면 장면이 화면 전체를 채운다. 전체 화면 기능이 없는 기기(아이폰 사파리 등)는
 // 화면을 꽉 채우는 덮개 방식으로 대신한다.
-// 캐릭터는 그림(PNG)이 있으면 그림으로, 아직 없으면 SVG 캐릭터로 보여준다.
+// 캐릭터는 그림(PNG)이 있으면 그림으로, 아직 없으면 SVG 캐릭터로 보여준다. 내 캐릭터는 지금 입은 옷 그림으로 나온다.
 // 등록한 얼굴 사진은 앱에서 이 장면에서만 쓴다.
 export function HistoryScene({
   placeId,
@@ -34,7 +35,10 @@ export function HistoryScene({
 }) {
   const figure = figures[placeId]
   const [index, setIndex] = useState(-1)
+  /** 장면이 진행 중인지 (처음 '만나기'를 누른 뒤부터 마지막 대사 다음을 누를 때까지) */
   const [playing, setPlaying] = useState(false)
+  /** 지금 줄을 읽고 있는지 (말하는 캐릭터가 살짝 움직인다) */
+  const [speaking, setSpeaking] = useState(false)
   const [sound, setSound] = useState(true)
   const runId = useRef(0)
   const bgm = useRef(new Bgm())
@@ -58,7 +62,7 @@ export function HistoryScene({
     if (full !== 'overlay') return
     const previous = document.body.style.overflow
     document.body.style.overflow = 'hidden'
-    const onKey = (event: KeyboardEvent) => event.key === 'Escape' && setFull('off')
+    const onKey = (event: globalThis.KeyboardEvent) => event.key === 'Escape' && setFull('off')
     window.addEventListener('keydown', onKey)
     return () => {
       document.body.style.overflow = previous
@@ -76,33 +80,53 @@ export function HistoryScene({
   }, [])
 
   if (!figure) return null
+  const total = figure.dialogue.length
   const line = index >= 0 ? figure.dialogue[index] : null
-  const me = characterFor(look)
-  const figureTalking = playing && line?.speaker === 'figure'
-  const meTalking = playing && line?.speaker === 'me'
+  // 옷을 입었고 그 옷 그림이 있으면 옷 입은 그림으로 나온다
+  const me = characterFor(look, equipped)
+  const figureTalking = speaking && line?.speaker === 'figure'
+  const meTalking = speaking && line?.speaker === 'me'
 
-  async function play() {
+  /** i번째 대사를 보여주고 읽는다. 읽던 목소리가 있으면 멈추고 새로 읽는다. */
+  function say(i: number) {
     const id = ++runId.current
-    setPlaying(true)
-    if (soundRef.current) bgm.current.start(figure.mood)
-    for (let i = 0; i < figure.dialogue.length; i += 1) {
-      if (runId.current !== id) return
-      setIndex(i)
-      const current = figure.dialogue[i]
-      const voice = current.speaker === 'figure' ? figure.voice : myVoiceFor(look.gender)
-      await speak(current.text, voice, soundRef.current, dialogueAudioUrl(placeId, i))
-      await new Promise((resolve) => window.setTimeout(resolve, 350))
-    }
-    if (runId.current !== id) return
-    setPlaying(false)
-    bgm.current.stop()
+    stopSpeaking()
+    setIndex(i)
+    setSpeaking(true)
+    const current = figure.dialogue[i]
+    const voice = current.speaker === 'figure' ? figure.voice : myVoiceFor(look.gender)
+    void speak(current.text, voice, soundRef.current, dialogueAudioUrl(placeId, i)).then(() => {
+      if (runId.current === id) setSpeaking(false)
+    })
   }
 
-  function stop() {
+  function start() {
+    setPlaying(true)
+    if (soundRef.current) bgm.current.start(figure.mood)
+    say(0)
+  }
+
+  /** 화면을 누르면 다음 대사로. 마지막 대사 다음에 누르면 장면을 마친다. */
+  function next() {
+    if (!playing) return
+    if (index + 1 < total) say(index + 1)
+    else finish()
+  }
+
+  function finish() {
     runId.current += 1
     stopSpeaking()
     bgm.current.stop()
     setPlaying(false)
+    setSpeaking(false)
+  }
+
+  function onStageKey(event: KeyboardEvent) {
+    if (event.target !== event.currentTarget) return
+    if (event.key === 'Enter' || event.key === ' ' || event.key === 'ArrowRight') {
+      event.preventDefault()
+      next()
+    }
   }
 
   async function enterFullscreen() {
@@ -125,11 +149,12 @@ export function HistoryScene({
   }
 
   function toggleSound() {
-    const next = !sound
-    setSound(next)
-    soundRef.current = next
-    if (!next) {
+    const on = !sound
+    setSound(on)
+    soundRef.current = on
+    if (!on) {
       stopSpeaking()
+      setSpeaking(false)
       bgm.current.stop()
     } else if (playing) {
       bgm.current.start(figure.mood)
@@ -143,8 +168,15 @@ export function HistoryScene({
         className={`scene-stage ${full !== 'off' ? 'is-full' : ''} ${full === 'overlay' ? 'is-overlay' : ''}`}
         role={full !== 'off' ? 'dialog' : undefined}
         aria-label={full !== 'off' ? `${figure.name} 영상 장면 전체 화면` : undefined}
+        tabIndex={playing ? 0 : undefined}
+        onClick={next}
+        onKeyDown={onStageKey}
       >
-        <Place3D placeId={placeId} className="scene-3d" speed={0.12} />
+        <div
+          className="scene-bg"
+          style={{ backgroundImage: `url(/images/backgrounds/bg-${placeId}.webp)` }}
+          aria-hidden="true"
+        />
         <div
           className={`scene-actor figure ${line?.speaker === 'figure' ? 'speaking' : ''} ${figureTalking ? 'talking' : ''}`}
         >
@@ -193,16 +225,24 @@ export function HistoryScene({
           <span className="actor-name">{nickname}</span>
         </div>
         {line && (
-          <p className={`scene-bubble ${line.speaker}`} key={index}>
+          <p className={`scene-bubble ${line.speaker}`} key={index} aria-live="polite">
             {line.text}
+            {playing && (
+              <small className="scene-tap">
+                {index + 1}/{total} · {index + 1 < total ? '누르면 다음' : '누르면 끝'}
+              </small>
+            )}
           </p>
         )}
         {!playing && (
           <button
             type="button"
             className="scene-play"
-            onClick={play}
-            aria-label={index >= 0 ? '장면 다시 보기' : '장면 재생'}
+            onClick={(event) => {
+              event.stopPropagation()
+              start()
+            }}
+            aria-label={index >= 0 ? '장면 다시 보기' : '장면 시작'}
           >
             <span>
               <Icon name={index >= 0 ? 'refresh' : 'play'} size={30} />
@@ -214,15 +254,19 @@ export function HistoryScene({
           <button
             type="button"
             className="scene-full-close"
-            onClick={exitFullscreen}
+            onClick={(event) => {
+              event.stopPropagation()
+              exitFullscreen()
+            }}
             aria-label="전체 화면 닫기"
           >
             <Icon name="close" size={18} /> 닫기
           </button>
         )}
-        <div className="scene-controls">
+        {/* 아래 버튼들을 누를 때는 대사가 넘어가지 않게 한다 */}
+        <div className="scene-controls" onClick={(event) => event.stopPropagation()}>
           {playing && (
-            <button type="button" onClick={stop} aria-label="멈춤">
+            <button type="button" onClick={finish} aria-label="장면 끝내기">
               <Icon name="stop" size={15} />
             </button>
           )}
@@ -242,7 +286,7 @@ export function HistoryScene({
         </div>
       </div>
       <figcaption>
-        {figure.title} · {placeName} 3D 장면
+        {figure.title} · {placeName}
         {sound && !canSpeak() ? ' · 이 기기에는 한국어 음성이 없어 자막으로 보여요' : ''}
       </figcaption>
     </figure>

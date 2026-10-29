@@ -2,17 +2,12 @@ import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
 import { buildScene, sceneThemes } from '../three/buildScene'
 
-// 장소별 3D 배경 (three.js). 카메라가 천천히 돌며 장소를 보여준다.
+// 학습 화면 맨 위 배너의 장소별 3D 배경 (three.js). 카메라가 천천히 돌며 장소를 보여준다.
 // WebGL을 쓸 수 없는 환경에서는 그라데이션 배경만 보인다.
-export function Place3D({
-  placeId,
-  className = '',
-  speed = 0.06,
-}: {
-  placeId: string
-  className?: string
-  speed?: number
-}) {
+// (학습 영상 장면은 3D 대신 배경 그림을 쓴다 → HistoryScene)
+const SPEED = 0.06
+
+export function Place3D({ placeId, className = '' }: { placeId: string; className?: string }) {
   const holder = useRef<HTMLDivElement>(null)
   const theme = sceneThemes[placeId] ?? sceneThemes.gyeongbokgung
 
@@ -55,7 +50,7 @@ export function Place3D({
     const start = performance.now()
     function loop(now: number) {
       const t = (now - start) / 1000
-      const angle = 0.6 + (reduceMotion ? 0 : Math.sin(t * speed) * 0.55)
+      const angle = 0.6 + (reduceMotion ? 0 : Math.sin(t * SPEED) * 0.55)
       camera.position.set(
         Math.sin(angle) * theme.orbit.radius,
         theme.orbit.height,
@@ -80,7 +75,7 @@ export function Place3D({
       renderer.dispose()
       renderer.domElement.remove()
     }
-  }, [placeId, speed, theme])
+  }, [placeId, theme])
 
   return (
     <div

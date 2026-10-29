@@ -5433,10 +5433,41 @@ button.settings-row {
   fill: currentColor;
 }
 
-/* 학습 영상 장면 (3D 배경 + 역사 인물 + 내 캐릭터) */
+/* 학습 영상 장면 (장소 배경 그림 + 역사 인물 + 내 캐릭터). 화면을 누르면 다음 대사로 넘어간다. */
 .scene-stage {
   height: 268px;
   background: #dfe8ee;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.scene-stage:focus-visible {
+  outline: 3px solid var(--green, #174e3a);
+  outline-offset: 2px;
+}
+/* 배경 그림: 아래쪽 빈 땅이 보이게 두고, 아주 천천히 조금 확대됐다 돌아온다 */
+.scene-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center 70%;
+  transform-origin: 50% 45%;
+  animation: scene-zoom 26s ease-in-out infinite alternate;
+}
+@keyframes scene-zoom {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.08);
+  }
+}
+.scene-tap {
+  display: block;
+  margin-top: 4px;
+  color: var(--ink-soft);
+  font-size: 9.5px;
+  font-weight: 700;
+  text-align: right;
 }
 .scene-actor {
   position: absolute;
@@ -5638,6 +5669,9 @@ button.settings-row {
 }
 .scene-stage.is-full .scene-play small {
   font-size: 15px;
+}
+.scene-stage.is-full .scene-tap {
+  font-size: 12px;
 }
 .scene-stage.is-full .scene-controls {
   bottom: calc(16px + env(safe-area-inset-bottom, 0px));
