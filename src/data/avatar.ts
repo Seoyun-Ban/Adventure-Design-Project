@@ -189,7 +189,7 @@ export const historyItems: HistoryItem[] = [
     rarity: '전설',
     description: '세종과 집현전 학자들이 훈민정음을 만들던 모습을 떠올리게 하는 붓.',
     stats: { 공격: 30, 방어: 30, 지혜: 99 },
-    art: { kind: 'image', src: '/images/characters/item-brush.png', anchor: { x: 50, y: 72 }, height: 30 },
+    art: { kind: 'image', src: '/images/characters/item-brush.png', anchor: { x: 50, y: 72 }, height: 38 },
   },
   {
     id: 'taegukgi',
