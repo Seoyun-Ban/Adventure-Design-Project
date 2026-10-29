@@ -8,6 +8,13 @@
 // 4) 음성 기능 자체가 없는 브라우저면 소리 없이 글자 수만큼 기다린다 (자막만 보인다).
 import { AUDIO_FILES } from '../data/generated/audioFiles'
 
+/**
+ * 학습 영상 장면의 목소리(녹음 파일 재생 + 기기 목소리)를 켜고 끄는 값.
+ * 지금은 꺼 두었다 (false) → 대사는 말풍선 글자가 한 글자씩 나타나는 효과로만 보여주고, 소리 버튼도 숨긴다.
+ * 다시 켜려면 true로 바꾸면 된다. 녹음 파일 구조와 대본(docs/voice-script.md)은 그대로 있다.
+ */
+export const SCENE_VOICE_ENABLED = false
+
 /** 대사 목소리: 남성/여성 + 높낮이·빠르기 (1이 기본) */
 export type VoiceSpec = { gender: 'male' | 'female'; pitch: number; rate: number }
 

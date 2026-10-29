@@ -5461,6 +5461,17 @@ button.settings-row {
     transform: scale(1.08);
   }
 }
+/* 말풍선 글자 효과: 전체 문장(투명)과 나타난 글자를 같은 자리에 겹친다 → 글자가 늘어도 말풍선 크기가 그대로 */
+.bubble-text {
+  display: grid;
+}
+.bubble-full,
+.bubble-typed {
+  grid-area: 1 / 1;
+}
+.bubble-full {
+  color: transparent;
+}
 .scene-tap {
   display: block;
   margin-top: 4px;

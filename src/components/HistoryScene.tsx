@@ -8,19 +8,26 @@ import {
   dialogueAudioUrl,
   prepareVoices,
   resetFailedVoices,
+  SCENE_VOICE_ENABLED,
   speak,
   stopSpeaking,
 } from '../lib/speech'
 import { withJosa } from '../lib/korean'
 import type { AvatarLook, Equipped } from '../types'
 
+/** 말풍선 글자가 한 글자 나타나는 간격 (밀리초) */
+const TYPE_MS = 35
+
 // 학습 중간에 나오는 영상 장면
 // 장소 배경 그림(public/images/backgrounds/bg-장소id.webp) 위에서 역사 인물과 내 캐릭터(등록한 얼굴)가 함께 대화한다.
 // 배경은 천천히 조금씩 확대되고, 인물과 내 캐릭터는 배경 아래쪽 빈 땅에 선다.
 // 대사는 화면을 누를 때마다 다음 줄로 넘어가고, 마지막 줄 다음에 누르면 '다시 보기'가 나온다.
-// 대사는 녹음 파일(public/audio/장소id/줄번호.mp3)이 있으면 그것을, 없으면 인물에 맞는 남성/여성 기기 목소리로 읽는다.
-// 읽는 도중에 누르면 읽던 목소리를 멈추고 다음 줄을 읽는다. 소리 버튼은 대사 목소리만 켜고 끈다.
-// 브라우저는 사용자가 누른 순간에만 소리를 낼 수 있어서, 첫 대사는 '만나기'를 누른 순간 바로 읽기 시작한다.
+// 말풍선 글자는 한 글자씩 빠르게 나타난다 (말하는 느낌). 나오는 중에 누르면 바로 전체 문장이 보이고,
+// 한 번 더 누르면 다음 대사로 넘어간다. 움직임 줄이기 설정에서는 처음부터 전체 문장이 보인다.
+// 목소리(SCENE_VOICE_ENABLED, lib/speech.ts)는 지금 꺼 두었다. 켜면:
+// - 대사는 녹음 파일(public/audio/장소id/줄번호.mp3)이 있으면 그것을, 없으면 인물에 맞는 남성/여성 기기 목소리로 읽는다.
+// - 다음 대사로 넘기면 읽던 목소리를 멈추고 다음 줄을 읽는다. 소리 버튼이 보이고, 대사 목소리만 켜고 끈다.
+// - 브라우저는 사용자가 누른 순간에만 소리를 낼 수 있어서, 첫 대사는 '만나기'를 누른 순간 바로 읽기 시작한다.
 // '전체 화면'을 누르면 장면이 화면 전체를 채운다. 전체 화면 기능이 없는 기기(아이폰 사파리 등)는
 // 화면을 꽉 채우는 덮개 방식으로 대신한다.
 // 캐릭터는 그림(PNG)이 있으면 그림으로, 아직 없으면 SVG 캐릭터로 보여준다. 내 캐릭터는 지금 입은 옷 그림으로 나온다.
@@ -46,6 +53,10 @@ export function HistoryScene({
   const [playing, setPlaying] = useState(false)
   /** 지금 줄을 읽고 있는지 (말하는 캐릭터가 살짝 움직인다) */
   const [speaking, setSpeaking] = useState(false)
+  /** 말풍선에 지금까지 나타난 글자 수 */
+  const [typed, setTyped] = useState(0)
+  /** 대사를 새로 보여줄 때마다 1씩 늘린다 (같은 줄을 다시 보여줄 때도 글자 효과를 처음부터) */
+  const [lineKey, setLineKey] = useState(0)
   const [sound, setSound] = useState(true)
   const runId = useRef(0)
   const soundRef = useRef(sound)
@@ -78,8 +89,17 @@ export function HistoryScene({
 
   // 목소리 목록을 미리 불러 둔다 ('만나기'를 누른 순간 기다리지 않고 바로 읽기 위해)
   useEffect(() => {
-    void prepareVoices()
+    if (SCENE_VOICE_ENABLED) void prepareVoices()
   }, [])
+
+  // 말풍선 글자를 한 글자씩 나타나게 한다 (다 나오면 typing이 false가 되어 멈춘다)
+  const lineText = index >= 0 ? (figure?.dialogue[index]?.text ?? '') : ''
+  const typing = typed < lineText.length
+  useEffect(() => {
+    if (!typing) return
+    const timer = window.setInterval(() => setTyped((count) => count + 1), TYPE_MS)
+    return () => window.clearInterval(timer)
+  }, [lineKey, typing])
 
   useEffect(() => {
     return () => {
@@ -94,14 +114,21 @@ export function HistoryScene({
   const line = index >= 0 ? figure.dialogue[index] : null
   // 옷을 입었고 그 옷 그림이 있으면 옷 입은 그림으로 나온다
   const me = characterFor(look, equipped)
-  const figureTalking = speaking && line?.speaker === 'figure'
-  const meTalking = speaking && line?.speaker === 'me'
+  // 목소리가 나오거나 글자가 나타나는 동안 말하는 캐릭터가 살짝 움직인다
+  const talking = speaking || (playing && typing)
+  const figureTalking = talking && line?.speaker === 'figure'
+  const meTalking = talking && line?.speaker === 'me'
 
-  /** i번째 대사를 보여주고 읽는다. 읽던 목소리가 있으면 멈추고 새로 읽는다. */
+  /** i번째 대사를 보여준다 (글자 효과). 목소리를 켜 두었으면 읽던 목소리를 멈추고 새로 읽는다. */
   function say(i: number) {
     const id = ++runId.current
-    stopSpeaking()
     setIndex(i)
+    setLineKey((key) => key + 1)
+    // 움직임 줄이기 설정이면 처음부터 전체 문장
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    setTyped(reduceMotion ? figure.dialogue[i].text.length : 0)
+    if (!SCENE_VOICE_ENABLED) return
+    stopSpeaking()
     setSpeaking(true)
     const current = figure.dialogue[i]
     const voice = current.speaker === 'figure' ? figure.voice : myVoiceFor(look.gender)
@@ -125,15 +152,23 @@ export function HistoryScene({
     say(0)
   }
 
-  /** 화면을 누르면 다음 대사로. 마지막 대사 다음에 누르면 장면을 마친다. */
+  /**
+   * 화면을 누르면: 글자가 나오는 중이면 바로 전체 문장을 보여주고, 다 나와 있으면 다음 대사로.
+   * 마지막 대사 다음에 누르면 장면을 마친다.
+   */
   function next() {
     if (!playing) return
+    if (typing) {
+      setTyped(lineText.length)
+      return
+    }
     if (index + 1 < total) say(index + 1)
     else finish()
   }
 
   function finish() {
     runId.current += 1
+    setTyped(lineText.length)
     stopSpeaking()
     // 장면이 끝났으니 이번 장면에서 실패한 목소리도 다음에는 다시 써 본다
     resetFailedVoices()
@@ -247,10 +282,18 @@ export function HistoryScene({
         </div>
         {line && (
           <p className={`scene-bubble ${line.speaker}`} key={index} aria-live="polite">
-            {line.text}
+            {/* 전체 문장을 투명하게 깔아 말풍선 크기를 미리 잡고(화면 읽기 프로그램은 이 문장을 읽는다),
+                그 위에 지금까지 나타난 글자를 겹친다 */}
+            <span className="bubble-text">
+              <span className="bubble-full">{line.text}</span>
+              <span className="bubble-typed" aria-hidden="true">
+                {line.text.slice(0, typed)}
+              </span>
+            </span>
             {playing && (
               <small className="scene-tap">
-                {index + 1}/{total} · {index + 1 < total ? '누르면 다음' : '누르면 끝'}
+                {index + 1}/{total} ·{' '}
+                {typing ? '누르면 바로 보기' : index + 1 < total ? '누르면 다음' : '누르면 끝'}
               </small>
             )}
           </p>
@@ -291,14 +334,17 @@ export function HistoryScene({
               <Icon name="stop" size={15} />
             </button>
           )}
-          <button
-            type="button"
-            onClick={toggleSound}
-            aria-label={sound ? '소리 끄기' : '소리 켜기'}
-            className={sound ? '' : 'muted'}
-          >
-            <Icon name="bell" size={15} />
-          </button>
+          {/* 목소리를 꺼 두었으면(SCENE_VOICE_ENABLED) 소리 버튼을 숨긴다 */}
+          {SCENE_VOICE_ENABLED && (
+            <button
+              type="button"
+              onClick={toggleSound}
+              aria-label={sound ? '소리 끄기' : '소리 켜기'}
+              className={sound ? '' : 'muted'}
+            >
+              <Icon name="bell" size={15} />
+            </button>
+          )}
           {full === 'off' && (
             <button type="button" onClick={enterFullscreen} aria-label="전체 화면">
               <Icon name="expand" size={15} />
@@ -308,7 +354,9 @@ export function HistoryScene({
       </div>
       <figcaption>
         {figure.title} · {placeName}
-        {sound && !canSpeak() ? ' · 이 기기에는 한국어 음성이 없어 자막으로 보여요' : ''}
+        {SCENE_VOICE_ENABLED && sound && !canSpeak()
+          ? ' · 이 기기에는 한국어 음성이 없어 자막으로 보여요'
+          : ''}
       </figcaption>
     </figure>
   )
