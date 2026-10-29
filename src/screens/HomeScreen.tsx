@@ -52,7 +52,7 @@ export function HomeScreen({
   onLocationLater: () => void
   /** 회원 탈퇴 (저장된 기록을 지우고 처음 화면으로) */
   onWithdraw: () => void
-  /** 학습 기록 초기화 (처음 상태로 돌리고 로그인 화면부터 다시) */
+  /** 처음부터 다시 시작하기 (학습 기록·아바타를 처음 상태로 돌리고 로그인 화면부터 다시) */
   onReset: () => void
   onLearn: (place: Place) => void
   onStartQuiz: (place: Place) => void

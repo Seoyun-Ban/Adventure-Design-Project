@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Icon } from '../components/Icon'
 import { ActionButton } from '../components/ActionButton'
 import { SubpageHeader } from '../components/SubpageHeader'
@@ -25,6 +26,7 @@ export function SettingsScreen({
   pushEnabled: boolean
   onDifficultyChange: (difficulty: Difficulty) => void
   onPushChange: (enabled: boolean) => void
+  /** 처음부터 다시 시작하기: 학습 기록·아바타를 처음 상태로 돌리고 로그인 화면부터 다시 */
   onReset: () => void
   /** 개인정보 고치기 화면 열기 (닉네임, 성별, 머리 모양, 얼굴 사진) */
   onEditProfile: () => void
@@ -32,6 +34,7 @@ export function SettingsScreen({
   onLogin: () => void
   onLogout: () => void
 }) {
+  const [confirmReset, setConfirmReset] = useState(false)
   return (
     <section className="utility-screen settings-screen">
       <SubpageHeader title="설정" subtitle="나에게 맞는 학습 환경" onBack={onBack} />
@@ -112,10 +115,28 @@ export function SettingsScreen({
       <ActionButton variant={loggedIn ? 'ghost' : 'primary'} onClick={loggedIn ? onLogout : onLogin}>
         {loggedIn ? '로그아웃' : '로그인'}
       </ActionButton>
-      <ActionButton variant="ghost" onClick={onReset}>
-        학습 기록 초기화
+      <ActionButton variant="ghost" onClick={() => setConfirmReset(true)}>
+        처음부터 다시 시작하기
       </ActionButton>
       <p className="app-version">역사 한걸음 · 버전 1.0.0</p>
+      {confirmReset && (
+        <div className="modal-layer" onClick={() => setConfirmReset(false)}>
+          <section
+            className="confirm-dialog"
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="reset-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h2 id="reset-title">처음부터 다시 시작할까요?</h2>
+            <p>학습 기록과 아바타가 처음 상태로 돌아가고, 처음 화면부터 다시 시작해요.</p>
+            <ActionButton onClick={onReset}>다시 시작하기</ActionButton>
+            <ActionButton variant="ghost" onClick={() => setConfirmReset(false)}>
+              그만두기
+            </ActionButton>
+          </section>
+        </div>
+      )}
     </section>
   )
 }

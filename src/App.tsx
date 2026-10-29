@@ -237,7 +237,7 @@ export default function App() {
   }
 
   /**
-   * 학습 기록 초기화: 처음 실행했을 때 상태로 돌리고 처음 화면(로그인)부터 다시 시작한다
+   * 처음부터 다시 시작하기 (설정): 학습 기록·아바타를 처음 실행했을 때 상태로 돌리고 처음 화면(로그인)부터 다시 시작한다
    * (그래야 아바타 설정 → 지도 → 앱 소개 → 위치 설명 순서가 다시 나온다)
    */
   function resetAll() {
@@ -245,7 +245,7 @@ export default function App() {
     setPretendId(null)
     setHomeTab('map')
     setScreen('login')
-    showToast('학습 기록을 처음 상태로 되돌렸어요.')
+    showToast('처음 상태로 돌아갔어요. 처음 화면부터 다시 시작해요.')
   }
 
   return (

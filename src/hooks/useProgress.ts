@@ -206,7 +206,7 @@ export function useProgress() {
           ...prev.inquiries,
         ],
       })),
-    /** 학습 기록 초기화: 처음 실행했을 때 상태로 (시연용 기록 포함) */
+    /** 처음부터 다시 시작하기: 처음 실행했을 때 상태로 (시연용 기록 포함) */
     resetProgress: () => setProgress(demoProgress()),
     /** 회원 탈퇴: 학습 기록·방문 기록·아바타·얼굴 사진·계정 정보를 모두 비운다 */
     clearAll: () =>
