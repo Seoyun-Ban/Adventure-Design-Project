@@ -9,3 +9,6 @@ dist/
 
 # 간편 로그인 공식 버튼 원본 (보관용, 사용하는 그림만 public/images/login/에 복사)
 art/login/
+
+# 배경 그림 원본 (내 컴퓨터에만 보관)
+art/backgrounds/
