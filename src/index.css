@@ -5435,7 +5435,7 @@ button.settings-row {
 
 /* 학습 영상 장면 (장소 배경 그림 + 역사 인물 + 내 캐릭터). 화면을 누르면 다음 대사로 넘어간다. */
 .scene-stage {
-  height: 268px;
+  height: 300px;
   background: #dfe8ee;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
@@ -5484,11 +5484,23 @@ button.settings-row {
   height: 143px;
   filter: drop-shadow(0 6px 8px rgba(20, 30, 20, 0.25));
 }
+/* 키: 역사 인물은 어른 키, 내 캐릭터는 어린이 키. 둘 다 배경 아래쪽 땅 위에 선다. */
 .scene-actor.figure {
-  left: 8%;
+  left: 6%;
+  width: 130px;
+  --actor-height: 188px;
 }
 .scene-actor.me {
   right: 8%;
+  --actor-height: 128px;
+}
+.scene-actor.figure .avatar-svg {
+  width: 136px;
+  height: 188px;
+}
+.scene-actor.me .avatar-svg {
+  width: 93px;
+  height: 128px;
 }
 .scene-actor.me .avatar-svg {
   transform: scaleX(-1);
@@ -5499,7 +5511,7 @@ button.settings-row {
 /* 캐릭터 그림(PNG). 얼굴 사진은 그림 크기 대비 % 위치에 동그랗게 겹친다. */
 .actor-art {
   position: relative;
-  height: 148px;
+  height: var(--actor-height, 148px);
 }
 .actor-art > img:first-child {
   display: block;
@@ -5649,7 +5661,11 @@ button.settings-row {
 .scene-stage.is-full .actor-art,
 .scene-stage.is-full .scene-actor .avatar-svg {
   width: auto;
-  height: min(55vh, 72vw);
+  height: min(62vh, 80vw);
+}
+.scene-stage.is-full .scene-actor.me .actor-art,
+.scene-stage.is-full .scene-actor.me .avatar-svg {
+  height: min(42vh, 54vw);
 }
 .scene-stage.is-full .actor-name {
   font-size: 13px;
