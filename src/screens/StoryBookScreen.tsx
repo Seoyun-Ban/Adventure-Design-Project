@@ -31,6 +31,10 @@ export function StoryBookScreen({
       ),
   )
 
+  /** 챕터와 연결된 지도 장소 (지도에 없는 장소면 undefined) */
+  const placeOf = (chapter: StoryChapter) =>
+    chapter.placeId ? places.find((item) => item.id === chapter.placeId) : undefined
+
   function openChapter(chapter: StoryChapter) {
     if (!isChapterUnlocked(chapter, visitedIds) || !chapter.placeId) return
     const place = places.find((item) => item.id === chapter.placeId)
@@ -40,6 +44,10 @@ export function StoryBookScreen({
   if (selectedBook) {
     const read = readCount(selectedBook, completedIds)
     const total = selectedBook.chapters.length
+    // 이 책의 이야기를 열 수 있는 지도 장소 (겹치지 않게, 차례 순서대로)
+    const bookPlaces = [
+      ...new Set(selectedBook.chapters.map((chapter) => placeOf(chapter)?.name).filter(Boolean)),
+    ]
     return (
       <section className="content-screen tab-screen story-detail-screen">
         <header className="story-detail-top">
@@ -54,6 +62,11 @@ export function StoryBookScreen({
           <span>이야기책</span>
           <span />
         </header>
+        {bookPlaces.length > 0 && (
+          <p className="book-places">
+            <Icon name="map" size={13} /> 열 수 있는 곳: {bookPlaces.join(', ')}
+          </p>
+        )}
         <div className="story-detail-cover">
           <BookCover book={selectedBook} large />
           <div>
@@ -84,6 +97,7 @@ export function StoryBookScreen({
           {selectedBook.chapters.map((chapter, index) => {
             const unlocked = isChapterUnlocked(chapter, visitedIds)
             const done = Boolean(chapter.placeId && completedIds.includes(chapter.placeId))
+            const place = placeOf(chapter)
             return (
               <button
                 type="button"
@@ -106,8 +120,8 @@ export function StoryBookScreen({
                   <strong>{unlocked ? chapter.title : '아직 발견하지 않은 이야기'}</strong>
                   <span>
                     {!unlocked
-                      ? chapter.placeId
-                        ? '유적지를 방문하면 해금돼요'
+                      ? place
+                        ? `${place.name}에 가면 열려요`
                         : '새로운 이야기가 곧 찾아와요'
                       : done
                         ? '다 읽은 이야기'
