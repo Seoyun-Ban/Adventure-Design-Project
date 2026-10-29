@@ -92,14 +92,36 @@ export function resolveVoice(spec: VoiceSpec) {
 // ---------- 녹음 파일 ----------
 
 let currentAudio: HTMLAudioElement | null = null
-/** stopSpeaking을 부를 때마다 1씩 늘린다. 녹음 파일을 찾는 사이에 멈췄으면 기기 목소리로 넘어가지 않게 한다. */
+/** 지금 읽고 있는 대사 (크롬·엣지는 이 값을 들고 있지 않으면 읽는 도중 사라져 끝 알림이 안 올 수 있다) */
+let currentUtterance: SpeechSynthesisUtterance | null = null
+/** stopSpeaking을 부를 때마다 1씩 늘린다. 기다리는 사이에 멈췄으면 그 줄은 읽지 않는다. */
 let generation = 0
-/** 없다고 확인된 녹음 파일 (같은 파일을 다시 찾지 않는다) */
-const missingAudio = new Set<string>()
+/** 마지막으로 기기 목소리를 끊은 시각. 끊자마자 바로 읽으면 새 줄까지 끊기는 브라우저가 있어 잠깐 기다린다. */
+let lastCancelAt = -Infinity
+const AFTER_CANCEL_MS = 120
+/** 녹음 파일이 있는지 미리 확인한 결과 (true: 있음, false: 없음) */
+const recordingExists = new Map<string, boolean>()
 
-/** 녹음 파일 재생. 끝까지 재생하면 true, 파일이 없거나 재생할 수 없으면 false */
+/**
+ * 장면이 열릴 때 녹음 파일이 있는지 미리 확인해 둔다.
+ * 대사를 읽을 때 파일을 찾느라 기다리지 않아야, '만나기'를 누른 그 순간에 목소리를 시작할 수 있다.
+ * (없는 파일은 서버가 앱 첫 화면(html)을 돌려주기도 해서, 소리 파일인지까지 확인한다)
+ */
+export function checkRecordings(urls: string[]) {
+  for (const url of urls) {
+    if (recordingExists.has(url)) continue
+    recordingExists.set(url, false)
+    fetch(url, { method: 'HEAD' })
+      .then((response) => {
+        const type = response.headers.get('content-type') ?? ''
+        recordingExists.set(url, response.ok && type.startsWith('audio'))
+      })
+      .catch(() => {})
+  }
+}
+
+/** 녹음 파일 재생. 끝까지 재생하면 true, 재생할 수 없으면 false */
 function playRecording(url: string): Promise<boolean> {
-  if (missingAudio.has(url)) return Promise.resolve(false)
   return new Promise((resolve) => {
     const audio = new Audio(url)
     currentAudio = audio
@@ -107,7 +129,6 @@ function playRecording(url: string): Promise<boolean> {
     const done = (played: boolean) => {
       if (settled) return
       settled = true
-      if (!played) missingAudio.add(url)
       if (currentAudio === audio) currentAudio = null
       resolve(played)
     }
@@ -117,26 +138,43 @@ function playRecording(url: string): Promise<boolean> {
   })
 }
 
+/** 개발 중(npm run dev)에만 콘솔에 짧은 기록을 남긴다 */
+function devLog(message: string) {
+  if (import.meta.env.DEV) console.info(`[목소리] ${message}`)
+}
+
 // ---------- 대사 읽기 ----------
 
 /**
  * 대사 한 줄을 읽고, 다 읽으면 끝나는 Promise
- * - audioUrl의 녹음 파일이 있으면 그것을 재생하고, 없으면 기기 목소리로 읽는다
+ * - audioUrl의 녹음 파일이 있으면(checkRecordings로 미리 확인) 그것을 재생하고, 없으면 기기 목소리로 읽는다
  * - enabled가 false(소리 끔)거나 한국어 목소리가 없으면 글자 수에 맞춰 기다리기만 한다
+ * - 기다리지 않고 바로 읽기 시작하므로, 버튼을 누른 순간에 부르면 브라우저가 소리를 막지 않는다
+ * - label: 개발 중 콘솔 기록에 붙일 이름 (예: "대사 3/6 읽기 시작: 세종")
  */
 export async function speak(
   text: string,
   spec: VoiceSpec,
   enabled: boolean,
   audioUrl?: string,
+  label = '대사',
 ): Promise<void> {
   const fallbackMs = 1400 + text.length * 95
-  if (!enabled) return wait(fallbackMs)
+  if (!enabled) {
+    devLog(`${label} / 소리 꺼짐 (자막만)`)
+    return wait(fallbackMs)
+  }
   const started = generation
-  if (audioUrl && (await playRecording(audioUrl))) return
-  if (started !== generation) return
+  if (audioUrl && recordingExists.get(audioUrl)) {
+    devLog(`${label} / 녹음 파일 ${audioUrl}`)
+    if (await playRecording(audioUrl)) return
+    if (started !== generation) return
+  }
   const { voice, pitch, rate } = resolveVoice(spec)
-  if (!voice) return wait(fallbackMs)
+  if (!voice) {
+    devLog(`${label} / 한국어 목소리 없음 (자막만)`)
+    return wait(fallbackMs)
+  }
   return new Promise((resolve) => {
     let done = false
     const finish = () => {
@@ -146,29 +184,53 @@ export async function speak(
     }
     // 일부 브라우저에서 onend가 오지 않는 경우 대비
     window.setTimeout(finish, fallbackMs + 4000)
-    try {
-      const utterance = new SpeechSynthesisUtterance(text)
-      utterance.voice = voice
-      utterance.lang = voice.lang
-      utterance.pitch = pitch
-      utterance.rate = rate
-      utterance.onend = finish
-      utterance.onerror = finish
-      window.speechSynthesis.speak(utterance)
-    } catch {
-      // 목소리 설정에 실패해도 장면이 멈추지 않도록, 자막만 보여주고 글자 수만큼 기다린다
-      window.setTimeout(finish, fallbackMs)
+    const start = () => {
+      // 기다리는 사이에 다음 줄로 넘어갔거나 멈췄으면 이 줄은 읽지 않는다
+      if (started !== generation) return finish()
+      try {
+        const utterance = new SpeechSynthesisUtterance(text)
+        utterance.voice = voice
+        utterance.lang = voice.lang
+        utterance.pitch = pitch
+        utterance.rate = rate
+        utterance.onend = () => {
+          if (currentUtterance === utterance) currentUtterance = null
+          finish()
+        }
+        utterance.onerror = (event) => {
+          // 다음 줄로 넘기며 끊은 것(interrupted·canceled)은 정상
+          if (event.error !== 'interrupted' && event.error !== 'canceled') devLog(`목소리 오류: ${event.error}`)
+          finish()
+        }
+        currentUtterance = utterance
+        devLog(`${label} / ${voice.name}`)
+        window.speechSynthesis.speak(utterance)
+      } catch {
+        // 목소리 설정에 실패해도 장면이 멈추지 않도록, 자막만 보여주고 글자 수만큼 기다린다
+        window.setTimeout(finish, fallbackMs)
+      }
     }
+    // 방금 읽던 목소리를 끊었다면 잠깐 기다렸다 읽는다 (첫 줄은 끊은 게 없으니 누른 순간 바로 읽는다)
+    const sinceCancel = performance.now() - lastCancelAt
+    if (sinceCancel < AFTER_CANCEL_MS) window.setTimeout(start, AFTER_CANCEL_MS - sinceCancel)
+    else start()
   })
 }
 
+/** 읽고 있는 목소리·녹음 파일을 멈춘다. 읽는 중이 아니면 기기 목소리는 건드리지 않는다. */
 export function stopSpeaking() {
   generation += 1
   if (currentAudio) {
     currentAudio.pause()
     currentAudio = null
   }
-  if (typeof window !== 'undefined' && 'speechSynthesis' in window) window.speechSynthesis.cancel()
+  currentUtterance = null
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return
+  const synth = window.speechSynthesis
+  if (synth.speaking || synth.pending) {
+    synth.cancel()
+    lastCancelAt = performance.now()
+  }
 }
 
 /** 대사 녹음 파일 주소 규칙: public/audio/장소id/줄번호.mp3 (줄번호는 1부터) */

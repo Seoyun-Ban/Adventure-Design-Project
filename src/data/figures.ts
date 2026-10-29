@@ -20,8 +20,6 @@ export type HistoricalFigure = {
   beard?: 'mustache' | 'beard'
   /** 목소리: 남성/여성 + 나이·성격에 맞게 살짝 조절한 높낮이·빠르기 */
   voice: VoiceSpec
-  /** 배경 음악 분위기 */
-  mood: 'court' | 'temple' | 'sea' | 'memorial'
   dialogue: DialogueLine[]
 }
 
@@ -36,7 +34,6 @@ export const figures: Record<string, HistoricalFigure> = {
     equipped: { 장비: 'ikseongwan', 의복: 'royal-robe' },
     beard: 'beard',
     voice: { gender: 'male', pitch: 0.92, rate: 0.92 },
-    mood: 'court',
     dialogue: [
       { speaker: 'figure', text: '어서 오너라! 나는 조선을 세운 태조 이성계란다.' },
       {
@@ -55,7 +52,6 @@ export const figures: Record<string, HistoricalFigure> = {
     equipped: { 장비: 'ikseongwan', 의복: 'royal-robe', 무기: 'jeongjo-bow' },
     beard: 'mustache',
     voice: { gender: 'male', pitch: 0.98, rate: 0.96 },
-    mood: 'court',
     dialogue: [
       { speaker: 'figure', text: '반갑구나. 나는 조선의 스물두 번째 임금, 정조다.' },
       { speaker: 'figure', text: '아버지 사도세자의 묘를 이곳 수원으로 옮기며, 새 도시와 성을 쌓았단다.' },
@@ -76,7 +72,6 @@ export const figures: Record<string, HistoricalFigure> = {
     equipped: {},
     beard: 'mustache',
     voice: { gender: 'male', pitch: 0.9, rate: 0.88 },
-    mood: 'memorial',
     dialogue: [
       { speaker: 'figure', text: '반갑소. 나는 중국에서 대한민국 임시정부를 이끌며 독립운동을 한 김구요.' },
       {
@@ -94,7 +89,6 @@ export const figures: Record<string, HistoricalFigure> = {
     look: { gender: '여', body: '마름', hair: '긴 머리', skin: '#f2c9a0' },
     equipped: { 무기: 'declaration' },
     voice: { gender: 'female', pitch: 1.05, rate: 1.0 },
-    mood: 'memorial',
     dialogue: [
       { speaker: 'figure', text: '반가워요. 나는 이화학당 학생 유관순이에요.' },
       {
@@ -116,7 +110,6 @@ export const figures: Record<string, HistoricalFigure> = {
     equipped: { 의복: 'silla-noble' },
     beard: 'mustache',
     voice: { gender: 'male', pitch: 0.96, rate: 0.92 },
-    mood: 'temple',
     dialogue: [
       { speaker: 'figure', text: '나는 신라의 김대성이오. 751년부터 이 절을 짓기 시작했다오.' },
       { speaker: 'figure', text: '부처님의 나라를 이 땅 위에 만들고 싶었지.' },
@@ -132,7 +125,6 @@ export const figures: Record<string, HistoricalFigure> = {
     equipped: { 장비: 'helmet', 의복: 'armor', 무기: 'hwarang-sword' },
     beard: 'beard',
     voice: { gender: 'male', pitch: 0.9, rate: 0.94 },
-    mood: 'sea',
     dialogue: [
       { speaker: 'figure', text: '나는 조선 수군을 이끈 이순신이다.' },
       { speaker: 'figure', text: '1592년 여름, 좁은 견내량에 있던 왜군을 넓은 바다로 끌어냈지.' },
@@ -148,7 +140,6 @@ export const figures: Record<string, HistoricalFigure> = {
     equipped: { 장비: 'ikseongwan', 의복: 'royal-robe', 무기: 'brush' },
     beard: 'beard',
     voice: { gender: 'male', pitch: 0.95, rate: 0.92 },
-    mood: 'court',
     dialogue: [
       { speaker: 'figure', text: '어서 오너라. 나는 조선의 네 번째 임금, 세종이다.' },
       { speaker: 'figure', text: '글을 몰라 억울한 일을 당하는 백성들을 보며 마음이 아팠단다.' },

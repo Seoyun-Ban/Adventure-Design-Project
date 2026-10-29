@@ -3,8 +3,7 @@ import { Icon } from './Icon'
 import { Avatar } from './Avatar'
 import { figures, myVoiceFor } from '../data/figures'
 import { characterFor } from '../data/avatar'
-import { Bgm } from '../lib/bgm'
-import { canSpeak, dialogueAudioUrl, speak, stopSpeaking } from '../lib/speech'
+import { canSpeak, checkRecordings, dialogueAudioUrl, speak, stopSpeaking } from '../lib/speech'
 import { withJosa } from '../lib/korean'
 import type { AvatarLook, Equipped } from '../types'
 
@@ -13,7 +12,8 @@ import type { AvatarLook, Equipped } from '../types'
 // 배경은 천천히 조금씩 확대되고, 인물과 내 캐릭터는 배경 아래쪽 빈 땅에 선다.
 // 대사는 화면을 누를 때마다 다음 줄로 넘어가고, 마지막 줄 다음에 누르면 '다시 보기'가 나온다.
 // 대사는 녹음 파일(public/audio/장소id/줄번호.mp3)이 있으면 그것을, 없으면 인물에 맞는 남성/여성 기기 목소리로 읽는다.
-// 읽는 도중에 누르면 읽던 목소리를 멈추고 다음 줄을 읽는다. 장소 분위기에 맞는 배경 음악이 깔린다.
+// 읽는 도중에 누르면 읽던 목소리를 멈추고 다음 줄을 읽는다. 소리 버튼은 대사 목소리만 켜고 끈다.
+// 브라우저는 사용자가 누른 순간에만 소리를 낼 수 있어서, 첫 대사는 '만나기'를 누른 순간 바로 읽기 시작한다.
 // '전체 화면'을 누르면 장면이 화면 전체를 채운다. 전체 화면 기능이 없는 기기(아이폰 사파리 등)는
 // 화면을 꽉 채우는 덮개 방식으로 대신한다.
 // 캐릭터는 그림(PNG)이 있으면 그림으로, 아직 없으면 SVG 캐릭터로 보여준다. 내 캐릭터는 지금 입은 옷 그림으로 나온다.
@@ -41,7 +41,6 @@ export function HistoryScene({
   const [speaking, setSpeaking] = useState(false)
   const [sound, setSound] = useState(true)
   const runId = useRef(0)
-  const bgm = useRef(new Bgm())
   const soundRef = useRef(sound)
   soundRef.current = sound
   const stageRef = useRef<HTMLDivElement>(null)
@@ -70,12 +69,16 @@ export function HistoryScene({
     }
   }, [full])
 
+  // 녹음 파일이 있는지 미리 확인해 둔다 (누른 순간 기다리지 않고 바로 읽기 위해)
   useEffect(() => {
-    const music = bgm.current
+    const lines = figures[placeId]?.dialogue ?? []
+    checkRecordings(lines.map((_, i) => dialogueAudioUrl(placeId, i)))
+  }, [placeId])
+
+  useEffect(() => {
     return () => {
       runId.current += 1
       stopSpeaking()
-      music.stop()
     }
   }, [])
 
@@ -95,14 +98,21 @@ export function HistoryScene({
     setSpeaking(true)
     const current = figure.dialogue[i]
     const voice = current.speaker === 'figure' ? figure.voice : myVoiceFor(look.gender)
-    void speak(current.text, voice, soundRef.current, dialogueAudioUrl(placeId, i)).then(() => {
+    const who = current.speaker === 'figure' ? figure.name : nickname
+    void speak(
+      current.text,
+      voice,
+      soundRef.current,
+      dialogueAudioUrl(placeId, i),
+      `대사 ${i + 1}/${total} 읽기 시작: ${who}`,
+    ).then(() => {
       if (runId.current === id) setSpeaking(false)
     })
   }
 
+  /** '만나기'·'다시 보기'를 누른 순간 첫 대사를 바로 읽는다 */
   function start() {
     setPlaying(true)
-    if (soundRef.current) bgm.current.start(figure.mood)
     say(0)
   }
 
@@ -116,7 +126,6 @@ export function HistoryScene({
   function finish() {
     runId.current += 1
     stopSpeaking()
-    bgm.current.stop()
     setPlaying(false)
     setSpeaking(false)
   }
@@ -148,16 +157,17 @@ export function HistoryScene({
     setFull('off')
   }
 
+  /** 소리 버튼: 대사 목소리만 켜고 끈다. 켜면 지금 보고 있는 대사부터 다시 읽는다. */
   function toggleSound() {
     const on = !sound
     setSound(on)
     soundRef.current = on
     if (!on) {
+      runId.current += 1
       stopSpeaking()
       setSpeaking(false)
-      bgm.current.stop()
-    } else if (playing) {
-      bgm.current.start(figure.mood)
+    } else if (playing && index >= 0) {
+      say(index)
     }
   }
 
