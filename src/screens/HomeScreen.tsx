@@ -32,6 +32,7 @@ export function HomeScreen({
   onLocationOn,
   onLocationLater,
   onWithdraw,
+  onReset,
   onLearn,
   onStartQuiz,
   onLogin,
@@ -51,6 +52,8 @@ export function HomeScreen({
   onLocationLater: () => void
   /** 회원 탈퇴 (저장된 기록을 지우고 처음 화면으로) */
   onWithdraw: () => void
+  /** 학습 기록 초기화 (처음 상태로 돌리고 로그인 화면부터 다시) */
+  onReset: () => void
   onLearn: (place: Place) => void
   onStartQuiz: (place: Place) => void
   onLogin: () => void
@@ -64,7 +67,6 @@ export function HomeScreen({
     quizDoneIds,
     update,
     equip,
-    resetProgress,
     toggleFavorite,
     recordBattle,
     addInquiry,
@@ -110,7 +112,7 @@ export function HomeScreen({
           pushEnabled={progress.pushEnabled}
           onDifficultyChange={(defaultDifficulty) => update({ defaultDifficulty })}
           onPushChange={(pushEnabled) => update({ pushEnabled })}
-          onReset={resetProgress}
+          onReset={onReset}
           onEditProfile={() => setPage('profile-edit')}
           onBack={back}
           onLogin={onLogin}

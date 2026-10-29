@@ -44,6 +44,7 @@ export default function App() {
     recordBattle,
     visitPlace,
     clearAll,
+    resetProgress,
     addXp,
     equip,
   } = store
@@ -235,6 +236,18 @@ export default function App() {
     showToast('탈퇴했어요. 그동안 함께해 줘서 고마워요.')
   }
 
+  /**
+   * 학습 기록 초기화: 처음 실행했을 때 상태로 돌리고 처음 화면(로그인)부터 다시 시작한다
+   * (그래야 아바타 설정 → 지도 → 앱 소개 → 위치 설명 순서가 다시 나온다)
+   */
+  function resetAll() {
+    resetProgress()
+    setPretendId(null)
+    setHomeTab('map')
+    setScreen('login')
+    showToast('학습 기록을 처음 상태로 되돌렸어요.')
+  }
+
   return (
     <div className="app-frame">
       {/* 컴퓨터 화면에서는 틀 크기가 고정이라 이 안에서 스크롤된다 */}
@@ -285,7 +298,8 @@ export default function App() {
                 loginProvider: signupProvider,
                 accountEmail: email,
               })
-              setScreen('onboarding')
+              // 아직 아바타를 만들지 않았으면 아바타 설정부터. 먼저 둘러보기로 이미 만들었으면 그대로 지도로
+              setScreen(progress.onboarded ? 'home' : 'onboarding')
             }}
           />
         )}
@@ -316,6 +330,7 @@ export default function App() {
             }}
             onLocationLater={() => update({ locationChoice: 'later' })}
             onWithdraw={withdraw}
+            onReset={resetAll}
             onLearn={openLearn}
             onStartQuiz={(place) => startPlaceQuiz(place, progress.defaultDifficulty, 'home')}
             onLogin={() => setScreen('login')}
