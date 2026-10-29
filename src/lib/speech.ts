@@ -2,6 +2,7 @@
 // 1) 녹음 파일(mp3)이 있으면 그 파일을 먼저 재생한다.  예: public/audio/gyeongbokgung/1.mp3
 //    있는 파일 목록은 npm run dev/build 때 scripts/list-audio.mjs가 만든다 (없는 파일은 서버에 요청하지 않는다).
 // 2) 없으면 브라우저 내장 음성(Web Speech API)으로 읽는다. 기기에 있는 한국어 목소리 중 남성/여성을 골라 쓴다.
+//    'Multilingual' 목소리는 빼고, 읽다가 오류가 나면 높낮이·빠르기 1 → ko-KR 기본 목소리 순서로 다시 읽는다.
 // 3) 목소리 목록을 아직 못 받았으면 목소리를 고르지 않고 lang만 'ko-KR'로 정해 기본 목소리로 읽는다.
 // 4) 음성 기능 자체가 없는 브라우저면 소리 없이 글자 수만큼 기다린다 (자막만 보인다).
 import { AUDIO_FILES } from '../data/generated/audioFiles'
@@ -31,9 +32,38 @@ let cache: {
   any: SpeechSynthesisVoice | null
 } | null = null
 
-function koreanVoices() {
+/** 기기에 있는 한국어 목소리 전부 */
+function allKoreanVoices() {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) return []
   return window.speechSynthesis.getVoices().filter((voice) => voice.lang.toLowerCase().startsWith('ko'))
+}
+
+/** 이 장면에서 한 번 실패한 목소리 이름 (장면이 끝날 때까지 다시 고르지 않는다) */
+const failedVoices = new Set<string>()
+
+function markVoiceFailed(voice: SpeechSynthesisVoice) {
+  if (failedVoices.has(voice.name)) return
+  failedVoices.add(voice.name)
+  cache = null
+  debugLog(`${voice.name} → 이 장면이 끝날 때까지 쓰지 않음`)
+}
+
+/** 장면이 끝나면 실패한 목소리 기록을 지운다 (다음 장면에서는 다시 써 본다) */
+export function resetFailedVoices() {
+  if (failedVoices.size === 0) return
+  failedVoices.clear()
+  cache = null
+}
+
+/**
+ * 고를 수 있는 한국어 목소리
+ * - 이름에 'Multilingual'이 들어간 여러 언어용 목소리는 뺀다 (엣지에서 synthesis-failed가 나는 경우가 있음)
+ * - 이 장면에서 한 번 실패한 목소리도 뺀다
+ */
+function koreanVoices() {
+  return allKoreanVoices().filter(
+    (voice) => !/multilingual/i.test(voice.name) && !failedVoices.has(voice.name),
+  )
 }
 
 function genderOf(voice: SpeechSynthesisVoice): VoiceSpec['gender'] | null {
@@ -46,7 +76,10 @@ function genderOf(voice: SpeechSynthesisVoice): VoiceSpec['gender'] | null {
   return null
 }
 
-/** 성별마다 가장 알맞은 한국어 목소리 (자연스러운 'Online (Natural)' 목소리를 우선) */
+/**
+ * 성별마다 가장 알맞은 한국어 전용 목소리
+ * 남성은 InJoon, 여성은 SunHi를 먼저 고르고, 없으면 PREFERRED 순서·'Online (Natural)' 순으로 다른 한국어 목소리를 고른다.
+ */
 function pickVoices() {
   if (cache) return cache
   const voices = koreanVoices()
@@ -93,9 +126,12 @@ export function prepareVoices(): Promise<void> {
       synth.removeEventListener('voiceschanged', finish)
       window.clearTimeout(timer)
       const korean = koreanVoices()
+      const picked = pickVoices()
       debugLog(
-        `목소리 목록 ${synth.getVoices().length}개 (한국어 ${korean.length}개)` +
-          (korean.length ? `: ${korean.map((voice) => voice.name).join(', ')}` : ' → 기본 목소리(ko-KR)로 읽음'),
+        `목소리 목록 ${synth.getVoices().length}개 (한국어 ${allKoreanVoices().length}개, 고를 수 있는 한국어 전용 ${korean.length}개)` +
+          (korean.length
+            ? ` → 남성: ${picked.male?.name ?? '없음'}, 여성: ${picked.female?.name ?? '없음'}`
+            : ' → 기본 목소리(ko-KR)로 읽음'),
       )
       resolve()
     }
@@ -113,7 +149,7 @@ const clamp = (value: number, [min, max]: [number, number]) => Math.min(max, Mat
  */
 export function canSpeak() {
   if (!hasSynth()) return false
-  return window.speechSynthesis.getVoices().length === 0 || pickVoices().any !== null
+  return window.speechSynthesis.getVoices().length === 0 || allKoreanVoices().length > 0
 }
 
 /** 이 목소리로 읽을 때 실제로 쓸 기기 목소리와 높낮이 (디버깅·확인용으로도 쓴다) */
@@ -203,41 +239,68 @@ export async function speak(
   }
   // 목소리 목록을 아직 못 받았으면 voice는 null → 목소리를 고르지 않고 ko-KR 기본 목소리로 읽는다
   const { voice, pitch, rate } = resolveVoice(spec)
+  // 읽다가 오류(synthesis-failed 등)가 나면 차례대로 다시 읽는다
+  // ① 같은 목소리로 높낮이·빠르기 1  ② 목소리를 고르지 않고 ko-KR 기본 목소리
+  const attempts: { voice: SpeechSynthesisVoice | null; pitch: number; rate: number; note: string }[] = voice
+    ? [
+        { voice, pitch, rate, note: '' },
+        { voice, pitch: 1, rate: 1, note: '다시 시도 ① 같은 목소리, 높낮이·빠르기 1' },
+        { voice: null, pitch: 1, rate: 1, note: '다시 시도 ② 기본 목소리(ko-KR)' },
+      ]
+    : [{ voice: null, pitch, rate, note: '' }]
   return new Promise((resolve) => {
     let done = false
+    let timer = 0
     const finish = () => {
       if (done) return
       done = true
+      window.clearTimeout(timer)
       resolve()
     }
-    // 일부 브라우저에서 onend가 오지 않는 경우 대비
-    window.setTimeout(finish, fallbackMs + 4000)
-    const start = () => {
+    const tryAt = (step: number) => {
       // 기다리는 사이에 다음 줄로 넘어갔거나 멈췄으면 이 줄은 읽지 않는다
       if (started !== generation) return finish()
+      const attempt = attempts[step]
+      // 일부 브라우저에서 onend가 오지 않는 경우 대비 (시도할 때마다 새로 잰다)
+      window.clearTimeout(timer)
+      timer = window.setTimeout(finish, fallbackMs + 4000)
+      const name = attempt.voice ? attempt.voice.name : '기본 목소리(ko-KR)'
       try {
         const utterance = new SpeechSynthesisUtterance(text)
-        if (voice) utterance.voice = voice
-        utterance.lang = voice?.lang ?? 'ko-KR'
-        utterance.pitch = pitch
-        utterance.rate = rate
+        if (attempt.voice) utterance.voice = attempt.voice
+        utterance.lang = attempt.voice?.lang ?? 'ko-KR'
+        utterance.pitch = attempt.pitch
+        utterance.rate = attempt.rate
         utterance.onend = () => {
           if (currentUtterance === utterance) currentUtterance = null
           finish()
         }
         utterance.onerror = (event) => {
           // 다음 줄로 넘기며 끊은 것(interrupted·canceled)은 정상
-          if (event.error !== 'interrupted' && event.error !== 'canceled') debugLog(`목소리 오류: ${event.error}`)
-          finish()
+          if (event.error === 'interrupted' || event.error === 'canceled') return finish()
+          debugLog(`목소리 오류: ${event.error} (${name})`)
+          // 한 번 실패한 목소리는 이 장면이 끝날 때까지 다음 대사에서 고르지 않는다
+          if (attempt.voice) markVoiceFailed(attempt.voice)
+          if (step + 1 < attempts.length) tryAt(step + 1)
+          else {
+            debugLog(`${label} / 모든 방법 실패 → 자막만`)
+            finish()
+          }
         }
         currentUtterance = utterance
-        debugLog(`${label} / ${voice ? voice.name : '기본 목소리(ko-KR, 목록을 아직 못 받음)'}`)
+        debugLog(
+          attempt.note
+            ? `${label} / ${attempt.note} / ${name}`
+            : `${label} / ${voice ? name : '기본 목소리(ko-KR, 고를 수 있는 목소리 없음)'}`,
+        )
         window.speechSynthesis.speak(utterance)
       } catch {
         // 목소리 설정에 실패해도 장면이 멈추지 않도록, 자막만 보여주고 글자 수만큼 기다린다
-        window.setTimeout(finish, fallbackMs)
+        window.clearTimeout(timer)
+        timer = window.setTimeout(finish, fallbackMs)
       }
     }
+    const start = () => tryAt(0)
     // 방금 읽던 목소리를 끊었다면 잠깐 기다렸다 읽는다 (첫 줄은 끊은 게 없으니 누른 순간 바로 읽는다)
     const sinceCancel = performance.now() - lastCancelAt
     if (sinceCancel < AFTER_CANCEL_MS) window.setTimeout(start, AFTER_CANCEL_MS - sinceCancel)

@@ -3,7 +3,14 @@ import { Icon } from './Icon'
 import { Avatar } from './Avatar'
 import { figures, myVoiceFor } from '../data/figures'
 import { characterFor } from '../data/avatar'
-import { canSpeak, dialogueAudioUrl, prepareVoices, speak, stopSpeaking } from '../lib/speech'
+import {
+  canSpeak,
+  dialogueAudioUrl,
+  prepareVoices,
+  resetFailedVoices,
+  speak,
+  stopSpeaking,
+} from '../lib/speech'
 import { withJosa } from '../lib/korean'
 import type { AvatarLook, Equipped } from '../types'
 
@@ -78,6 +85,7 @@ export function HistoryScene({
     return () => {
       runId.current += 1
       stopSpeaking()
+      resetFailedVoices()
     }
   }, [])
 
@@ -125,6 +133,8 @@ export function HistoryScene({
   function finish() {
     runId.current += 1
     stopSpeaking()
+    // 장면이 끝났으니 이번 장면에서 실패한 목소리도 다음에는 다시 써 본다
+    resetFailedVoices()
     setPlaying(false)
     setSpeaking(false)
   }
