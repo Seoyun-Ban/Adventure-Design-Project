@@ -161,11 +161,16 @@ export type HistoryItem = {
   stats: { 공격: number; 방어: number; 지혜: number }
   /** 그림 캐릭터에 직접 입히는 그림. 비어 있으면 캐릭터 주변에 작은 원형 배지로 보여준다 */
   art?: ItemArt
+  /**
+   * 그림 옆에 세로로 붙이는 작은 이름표 (예: 두루마리의 '독립선언서').
+   * 아이템 목록·상세 창·획득 카드처럼 그림이 클 때만 보여주고, 아바타 손에 들 때는 작아서 뺀다
+   */
+  tag?: string
 }
 
 /**
  * 아이템 그림을 캐릭터에 겹치는 방법
- * - kind: 'image'는 PNG 그림, 'taegukgi'·'declaration'은 코드로 그린 그림
+ * - kind: 'image'는 PNG 그림, 'taegukgi'는 코드로 그린 그림
  * - anchor: 아이템 그림에서 캐릭터의 자리(머리: 이마선, 손: 손바닥)에 맞출 점 (아이템 너비·높이 대비 %)
  * - width: 머리 아이템 너비 = 캐릭터 머리 너비 × width
  * - height: 손 아이템 높이 = 캐릭터 키 × height(%)
@@ -173,7 +178,7 @@ export type HistoryItem = {
  *   캐릭터 뒤에 그리거나(behind) 그리지 않는다(hide)
  */
 export type ItemArt = {
-  kind: 'image' | 'taegukgi' | 'declaration'
+  kind: 'image' | 'taegukgi'
   src?: string
   anchor: { x: number; y: number }
   width?: number

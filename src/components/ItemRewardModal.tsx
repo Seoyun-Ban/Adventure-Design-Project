@@ -1,6 +1,6 @@
 import { Icon } from './Icon'
 import { ActionButton } from './ActionButton'
-import { ItemArtView } from './ItemArtView'
+import { ItemPicture } from './ItemPicture'
 import { withJosa } from '../lib/korean'
 import type { HistoryItem } from '../types'
 
@@ -31,7 +31,7 @@ export function ItemRewardModal({
             <span className="reward-rays" aria-hidden="true" />
             <div className="reward-art">
               {item.art ? (
-                <ItemArtView art={item.art} label={item.name} style={{}} />
+                <ItemPicture item={item} size="large" />
               ) : (
                 <span className="reward-symbol" aria-hidden="true">
                   {item.symbol}

@@ -1,4 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap');
+/* 아이템 이름표용 붓글씨 글꼴 (쓰는 글자만 받는다) */
+@import url('https://fonts.googleapis.com/css2?family=Nanum+Brush+Script&display=swap&text=%EB%8F%85%EB%A6%BD%EC%84%A0%EC%96%B8%EC%84%9C');
 @import 'tailwindcss';
 
 :root {
@@ -6498,4 +6500,68 @@ button.settings-row {
   from {
     opacity: 0;
   }
+}
+
+/* 아이템을 크게 보여주는 그림 + 세로 종이 이름표 (아이템 목록, 상세 창, 획득 카드) */
+.item-picture {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.item-picture .character-item {
+  position: static;
+  width: auto;
+  max-width: 100%;
+  transform: none;
+}
+.item-picture.small {
+  height: 64px;
+}
+.item-picture.small .character-item {
+  height: 60px;
+}
+.item-picture.large .character-item {
+  height: 100%;
+}
+.item-detail-art .item-picture {
+  height: 96px;
+}
+.reward-art .item-picture {
+  height: 120px;
+}
+.item-picture-symbol {
+  font-family: 'Gowun Batang', serif;
+}
+/* 두루마리 옆에 세로로 붙은 작은 종이 띠 */
+.item-tag {
+  align-self: center;
+  margin-left: -4px;
+  padding: 6px 3px 7px;
+  border: 1px solid #a8452f;
+  border-radius: 2px;
+  color: #3b2a1c;
+  background: linear-gradient(90deg, #f1e3c2, #fbf3df 45%, #efdfbb);
+  box-shadow: 0 2px 4px rgba(80, 50, 20, 0.25);
+  font-family: 'Nanum Brush Script', 'Gowun Batang', serif;
+  line-height: 1;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  writing-mode: vertical-rl;
+  transform: rotate(3deg);
+}
+/* 다섯 글자가 한 줄(세로)로 들어가도록 칸 높이에 맞춘 글자 크기 */
+.item-picture.small .item-tag {
+  font-size: 10px;
+  letter-spacing: 0;
+  padding: 3px 2px 4px;
+}
+.item-detail-art .item-tag {
+  font-size: 14px;
+  letter-spacing: 0;
+}
+.reward-art .item-tag {
+  font-size: 18px;
 }

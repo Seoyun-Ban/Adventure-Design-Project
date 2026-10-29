@@ -1,5 +1,6 @@
 import { Icon } from './Icon'
 import { ActionButton } from './ActionButton'
+import { ItemPicture } from './ItemPicture'
 import { findPlace } from '../data/places'
 import type { HistoryItem } from '../types'
 
@@ -29,7 +30,7 @@ export function ItemDetailModal({
           <Icon name="close" size={19} />
         </button>
         <div className={`item-detail-art ${owned ? 'owned' : 'locked'}`}>
-          <span>{item.symbol}</span>
+          {owned ? <ItemPicture item={item} size="large" /> : <span>{item.symbol}</span>}
           {!owned && (
             <i>
               <Icon name="lock" size={18} />

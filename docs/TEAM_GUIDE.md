@@ -70,8 +70,8 @@ git push
 | 아이템 | 파일 | 상태 |
 | --- | --- | --- |
 | 선비 갓, 장군 투구 (머리) | `item-gat.png`, `item-helmet.png` | ✅ |
-| 정조 활, 화랑 검, 세종 붓 (손) | `item-bow.png`, `item-sword.png`, `item-brush.png` | ✅ |
-| 태극기, 독립선언서 (손) | 코드로 그림 (`components/ItemArtView.tsx`, 태극기는 국기 규격대로 `Taegukgi.tsx`) | ✅ |
+| 정조 활, 화랑 검, 세종 붓, 독립선언서 (손) | `item-bow.png`, `item-sword.png`, `item-brush.png`, `item-declaration.png` | ✅ |
+| 태극기 (손) | 코드로 그림 (`components/ItemArtView.tsx`, 국기 규격대로 `Taegukgi.tsx`) | ✅ |
 | 관복, 화랑 예복, 갑옷 (몸) | 없음 → 배지 | ⬜ |
 
 새 아이템 그림 넣는 법:
@@ -80,6 +80,7 @@ git push
    - `anchor`: 아이템 그림에서 캐릭터에 맞출 점 (모자: 이마에 닿는 아래 테두리, 손 아이템: 쥐는 부분)
    - 모자는 `width`(머리 너비의 몇 배), 손 아이템은 `height`(캐릭터 키의 몇 %)
    - 모자 아래쪽(끈·목가리개)이 얼굴을 가리면 `split`(나눌 높이 %)과 `below`('behind' 뒤에 그리기 / 'hide' 빼기)
+   - 그림 옆에 세로 이름표를 붙이려면 `tag` (예: 독립선언서). 아이템 목록·상세 창·획득 카드에서만 보이고 손에 들 때는 작아서 빠져요
 3. 캐릭터 그림마다 머리·손 자리는 `characterStyles`의 `mounts`에 있다 (그림을 바꾸면 이 값도 다시 맞춘다)
 
 ⚠️ 태극기가 들어간 그림은 꼭 크게 확대해서 확인하세요. AI 그림은 괘 배치나 태극 소용돌이 방향이 틀리는 경우가 많습니다. (`item-flag.png`는 태극 방향이 뒤집혀 있어서 쓰지 않고 코드로 그렸습니다. 원본은 `art/unused/`에 보관 — 이 폴더는 `npm run images`가 처리하지 않아요.)

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Icon } from '../components/Icon'
 import { CharacterAvatar } from '../components/CharacterAvatar'
 import { ItemDetailModal } from '../components/ItemDetailModal'
+import { ItemPicture } from '../components/ItemPicture'
 import { PowerInfoSheet } from '../components/PowerInfoSheet'
 import { BattleRecordCard } from '../components/BattleRecordCard'
 import { ChallengeShareButton } from '../components/ChallengeShareButton'
@@ -218,7 +219,8 @@ export function AvatarScreen({
               onClick={() => setSelectedItem(item)}
             >
               <span className="item-art">
-                <b>{item.symbol}</b>
+                {/* 얻은 아이템은 그림으로, 아직 못 얻은 아이템은 기호로 */}
+                {owned ? <ItemPicture item={item} size="small" /> : <b>{item.symbol}</b>}
                 {!owned && (
                   <i>
                     <Icon name="lock" size={14} />

@@ -187,7 +187,13 @@ export const historyItems: HistoryItem[] = [
     rarity: '전설',
     description: '유관순이 아우내 장터에서 만세를 외친 날을 떠올리게 하는 독립선언서 두루마리.',
     stats: { 공격: 42, 방어: 64, 지혜: 90 },
-    art: { kind: 'declaration', anchor: { x: 50, y: 55 }, height: 20 },
+    art: {
+      kind: 'image',
+      src: '/images/characters/item-declaration.png',
+      anchor: { x: 50, y: 50 },
+      height: 26,
+    },
+    tag: '독립선언서',
   },
   // 의복 (몸)
   {
