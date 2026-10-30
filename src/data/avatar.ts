@@ -163,7 +163,7 @@ export const historyItems: HistoryItem[] = [
     symbol: '弓',
     placeId: 'suwon',
     rarity: '영웅',
-    description: '활쏘기 솜씨가 뛰어났던 정조를 떠올리게 하는 활.',
+    description: '수원화성을 쌓은 정조를 떠올리게 하는 활.',
     stats: { 공격: 87, 방어: 25, 지혜: 62 },
     art: { kind: 'image', src: '/images/characters/item-bow.png', anchor: { x: 30, y: 52 }, height: 46 },
   },
