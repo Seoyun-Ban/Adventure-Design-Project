@@ -192,7 +192,7 @@ export function BossScreen({ onWin, onExit }: { onWin: (xp: number) => void; onE
           <div className="boss-face boss-face-big" style={{ background: BOSS.color }} aria-hidden="true">
             {BOSS.face}
           </div>
-          <h3 className="boss-title">{BOSS.name}가 나타났어요!</h3>
+          <h3 className="boss-title">{BOSS.name}이 나타났어요!</h3>
           <p className="boss-text">
             {BOSS.intro} 함께할 친구 {BOSS_MIN_PLAYERS}~{BOSS_MAX_PLAYERS}명의 이름을 적고, 번갈아 문제를 풀어
             물리쳐요. {BOSS_ROUNDS}라운드 안에 쓰러뜨려야 해요.
