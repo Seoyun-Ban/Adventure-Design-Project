@@ -7111,3 +7111,88 @@ button.settings-row {
   background: var(--green);
   font-size: 12px;
 }
+
+/* 보스전: 하트·제한 시간·반격 흔들림 */
+.boss-hearts {
+  font-size: 15px;
+  letter-spacing: 2px;
+}
+.boss-timer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.boss-timer-track {
+  flex: 1;
+  height: 8px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--green-3);
+}
+.boss-timer-track i {
+  display: block;
+  height: 100%;
+  border-radius: 8px;
+  background: var(--green-2);
+  transition: width 1s linear;
+}
+.boss-timer-track i.low {
+  background: var(--danger);
+}
+.boss-timer strong {
+  min-width: 34px;
+  text-align: right;
+  font-size: 12px;
+}
+/* 같은 흔들림 이름 두 개를 번갈아 써서 반격마다 다시 시작한다 */
+.boss-screen.shake-0 {
+  animation: boss-screen-shake-a 0.45s ease;
+}
+.boss-screen.shake-1 {
+  animation: boss-screen-shake-b 0.45s ease;
+}
+@keyframes boss-screen-shake-a {
+  20% {
+    transform: translateX(-7px);
+  }
+  40% {
+    transform: translateX(6px);
+  }
+  60% {
+    transform: translateX(-4px);
+  }
+  80% {
+    transform: translateX(2px);
+  }
+}
+@keyframes boss-screen-shake-b {
+  20% {
+    transform: translateX(-7px);
+  }
+  40% {
+    transform: translateX(6px);
+  }
+  60% {
+    transform: translateX(-4px);
+  }
+  80% {
+    transform: translateX(2px);
+  }
+}
+/* 움직임 줄이기를 켠 기기: 흔들림을 아주 약하게 */
+@media (prefers-reduced-motion: reduce) {
+  @keyframes boss-screen-shake-a {
+    50% {
+      transform: translateX(-1px);
+    }
+  }
+  @keyframes boss-screen-shake-b {
+    50% {
+      transform: translateX(-1px);
+    }
+  }
+  .boss-timer-track i {
+    transition: none;
+  }
+}

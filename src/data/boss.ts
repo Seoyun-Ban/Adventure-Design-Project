@@ -11,11 +11,15 @@ export const BOSS = {
   color: '#8a6bb8',
   intro: '우리가 배운 역사를 모두 잊게 만들려고 해요!',
   hitLine: '으아악! 기억이 떠올랐어!',
-  missLine: '킥킥, 벌써 다 까먹었지?',
+  /** 틀리거나 시간이 다 됐을 때 괴물의 반격 */
+  counterLine: '까먹기 공격! 기억이 흐려졌어요',
+  timeoutLine: '시간이 다 됐어요!',
   winTitle: '까먹기 괴물을 물리쳤어요!',
   winText: '함께 역사를 기억해 낸 덕분이에요.',
   fledTitle: '까먹기 괴물이 도망갔어요!',
   fledText: '다시 도전해요',
+  loseTitle: '까먹기 괴물에게 졌어요!',
+  loseText: '다시 도전해요',
 } as const
 
 /** 함께할 사람 수 */
@@ -23,6 +27,11 @@ export const BOSS_MIN_PLAYERS = 2
 export const BOSS_MAX_PLAYERS = 4
 /** 이름 최대 글자 수 */
 export const BOSS_NAME_MAX = 6
+
+/** 팀 하트 수: 틀리거나 시간이 다 되면 하나씩 줄고, 0이 되면 진다 */
+export const BOSS_HEARTS = 3
+/** 문제마다 제한 시간 (초) */
+export const BOSS_TIME_LIMIT = 15
 
 /** 한 사람당 보스 체력. 사람이 늘면 체력도 늘어난다 */
 export const BOSS_HP_PER_PLAYER = 80
