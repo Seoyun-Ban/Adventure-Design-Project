@@ -45,6 +45,9 @@ export type IconName =
  * - locked: 아직 방문하지 않아 잠긴 장소
  * 학습 완료(발자국) 여부는 장소 데이터가 아니라 사용자 진행 상황(useProgress)에서 관리한다.
  */
+/** 해금 지점 하나 (이름은 확인용 메모) */
+export type UnlockPoint = { name: string; lat: number; lng: number; radius?: number }
+
 export type Place = {
   id: string
   name: string
@@ -59,6 +62,11 @@ export type Place = {
   lng?: number
   /** 이 거리(m) 안에 들어오면 방문한 것으로 본다. 넓은 장소는 크게 (기본 500m) */
   radius?: number
+  /**
+   * 넓은 장소의 해금 지점 (문, 건물 등). 있으면 lat/lng 대신 이 지점들 중
+   * 하나라도 반경 안에 들어가면 열린다. 지점에 radius가 없으면 장소의 radius(기본 500m)를 쓴다.
+   */
+  unlockPoints?: UnlockPoint[]
   /** 지도 위 마커 위치 (지도 영역 기준 %). site는 lat/lng로 계산한다. event는 학습 기록의 위치를 쓴다 */
   top: string
   left: string

@@ -9,9 +9,8 @@ import { LearnScreen } from './screens/LearnScreen'
 import { QuizScreen } from './screens/QuizScreen'
 import { CompleteModal } from './components/CompleteModal'
 import { ItemRewardModal } from './components/ItemRewardModal'
-import { NEARBY_RADIUS_M, findPlace, isPlaceOpen, places } from './data/places'
+import { findPlace, isInsideUnlockArea, isPlaceOpen, places } from './data/places'
 import { NearbyBanner } from './components/NearbyBanner'
-import { distanceMeters } from './lib/geo'
 import { UNLOCK_ACCURACY_M } from './lib/location'
 import { regionAt } from './lib/regions'
 import { useProgress } from './hooks/useProgress'
@@ -104,10 +103,8 @@ export default function App() {
   useEffect(() => {
     if (!here || here.accuracy > UNLOCK_ACCURACY_M) return
     for (const place of places) {
-      if (place.kind !== 'site' || place.lat === undefined || place.lng === undefined) continue
-      if (progress.visitedIds.includes(place.id)) continue
-      if (distanceMeters(here, { lat: place.lat, lng: place.lng }) > (place.radius ?? NEARBY_RADIUS_M))
-        continue
+      if (place.kind !== 'site' || progress.visitedIds.includes(place.id)) continue
+      if (!isInsideUnlockArea(place, here)) continue
       visitPlace(place.id)
       if (progress.pushEnabled) setNearby(place)
     }

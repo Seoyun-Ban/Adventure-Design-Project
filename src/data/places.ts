@@ -1,10 +1,11 @@
-import { toMapPosition } from '../lib/geo'
+import { distanceMeters, toMapPosition } from '../lib/geo'
 import type { Place } from '../types'
 
 // 지도에 표시되는 역사 장소 목록
 // 새 장소를 추가하려면: 1) 여기에 장소 추가 2) data/contents.ts에 학습 콘텐츠 추가
 // lat/lng는 실제 위치(구글 지도에서 우클릭 → 좌표 복사). 지도 위 위치(top/left)는 자동으로 계산한다.
-// 좌표 확인: OpenStreetMap 검색 (2026-10)
+// 좌표 확인: OpenStreetMap(Nominatim) 검색 (2026-10-30). 확인 결과는 docs/TEAM_GUIDE.md의 '해금 좌표' 표에 정리
+// 넓은 장소는 unlockPoints에 해금 지점을 여러 개 둔다 (하나라도 반경 안이면 열림)
 
 type PlaceInput = Omit<Place, 'top' | 'left'>
 
@@ -14,19 +15,30 @@ const placeList: PlaceInput[] = [
     name: '경복궁',
     region: '서울',
     kind: 'site',
-    lat: 37.5798,
-    lng: 126.9767,
+    // 근정전 기준 (OSM '근정전')
+    lat: 37.5785,
+    lng: 126.977,
+    unlockPoints: [
+      { name: '광화문', lat: 37.5759, lng: 126.9768 },
+      { name: '근정전', lat: 37.5785, lng: 126.977 },
+    ],
     summary: '조선 왕조의 첫 궁궐,\n왕의 하루를 따라가 볼까요?',
   },
   {
-    // 화성행궁 기준. 성곽 둘레가 약 5.7km라 반경을 넓게 잡는다
+    // 화성행궁이 대표 위치. 성곽 둘레가 약 5.7km라 행궁과 네 성문을 해금 지점으로 둔다
     id: 'suwon',
     name: '수원화성',
     region: '수원',
     kind: 'site',
     lat: 37.2822,
     lng: 127.0144,
-    radius: 1000,
+    unlockPoints: [
+      { name: '화성행궁', lat: 37.2822, lng: 127.0144 },
+      { name: '장안문', lat: 37.2888, lng: 127.0142 },
+      { name: '팔달문', lat: 37.2776, lng: 127.0168 },
+      { name: '창룡문', lat: 37.2878, lng: 127.0251 },
+      { name: '화서문', lat: 37.2856, lng: 127.0097 },
+    ],
     summary: '정조의 꿈이 담긴 성곽,\n과학적인 비밀을 만나보세요.',
   },
   {
@@ -100,6 +112,15 @@ export const DEMO_VISITED_IDS = ['gyeongbokgung', 'suwon', 'bulguksa']
  */
 export function isPlaceOpen(place: Place, visitedIds: string[]) {
   return place.kind === 'event' || visitedIds.includes(place.id)
+}
+
+/** 내 위치가 장소의 해금 지점 중 하나라도 반경 안인지 (지점이 없으면 lat/lng 하나만 본다) */
+export function isInsideUnlockArea(place: Place, here: { lat: number; lng: number }) {
+  const radius = place.radius ?? NEARBY_RADIUS_M
+  const points: { lat: number; lng: number; radius?: number }[] =
+    place.unlockPoints ??
+    (place.lat !== undefined && place.lng !== undefined ? [{ lat: place.lat, lng: place.lng }] : [])
+  return points.some((point) => distanceMeters(here, point) <= (point.radius ?? radius))
 }
 
 export function findPlace(id: string) {
