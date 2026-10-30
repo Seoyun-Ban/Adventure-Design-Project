@@ -6767,3 +6767,347 @@ button.settings-row {
   line-height: 1.35;
   word-break: keep-all;
 }
+
+/* ======================================================================
+   함께하기: 보스전(협동) + 대결(경쟁) 버튼
+   ====================================================================== */
+.together {
+  margin: 4px 0 22px;
+}
+.together .section-title {
+  margin: 0 0 8px;
+}
+.together .competition-button {
+  margin: 0 0 8px;
+}
+.together .boss-button {
+  min-height: 84px;
+  background: linear-gradient(135deg, #6c4f9a, #8a6bb8);
+  box-shadow: 0 8px 18px rgba(108, 79, 154, 0.28);
+}
+.together .boss-button .competition-icon {
+  font-size: 26px;
+  background: rgba(255, 255, 255, 0.22);
+}
+.together .boss-button strong {
+  font-size: 18px;
+}
+.together .versus-button {
+  min-height: 56px;
+  color: var(--green);
+  background: var(--cream);
+  border: 1px solid rgba(23, 78, 58, 0.25);
+  box-shadow: none;
+}
+.together .versus-button .competition-icon {
+  background: var(--green-3);
+}
+
+.boss-screen {
+  padding: 16px 15px 105px;
+  background: linear-gradient(#e6def0 0 38%, #f5ecd9 38%);
+}
+.boss-card,
+.boss-panel {
+  position: relative;
+  padding: 18px;
+  border-radius: 22px;
+  background: var(--cream);
+  box-shadow: 0 12px 26px rgba(48, 55, 46, 0.14);
+}
+.boss-card {
+  margin-top: 12px;
+  text-align: center;
+}
+.boss-panel {
+  margin-top: 8px;
+}
+.boss-title {
+  margin: 10px 0 6px;
+  font-family: 'Gowun Batang', serif;
+  font-size: 18px;
+  color: var(--green);
+}
+.boss-text {
+  margin: 0 0 12px;
+  color: var(--ink-soft);
+  font-size: 11px;
+  line-height: 1.6;
+}
+.boss-face {
+  width: 96px;
+  height: 96px;
+  margin: 0 auto;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 54px;
+  box-shadow: inset 0 -8px 14px rgba(0, 0, 0, 0.18);
+  animation: boss-float 2.4s ease-in-out infinite;
+}
+.boss-face-big {
+  width: 120px;
+  height: 120px;
+  font-size: 68px;
+}
+.boss-face.hit {
+  animation: boss-hit 0.5s ease;
+}
+.boss-face.defeated {
+  opacity: 0.4;
+  transform: rotate(90deg) scale(0.8);
+  animation: none;
+  transition: all 0.6s ease;
+}
+@keyframes boss-float {
+  50% {
+    transform: translateY(-6px);
+  }
+}
+@keyframes boss-hit {
+  20% {
+    transform: translateX(-9px) rotate(-6deg);
+    filter: brightness(1.6);
+  }
+  50% {
+    transform: translateX(9px) rotate(6deg);
+  }
+  80% {
+    transform: translateX(-4px);
+  }
+}
+.boss-names {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.boss-name-row {
+  display: flex;
+  gap: 6px;
+}
+.boss-name-row input {
+  flex: 1;
+  min-width: 0;
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: white;
+  font: inherit;
+  font-size: 13px;
+}
+.boss-name-row button,
+.boss-add {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: white;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+.boss-name-row button {
+  width: 42px;
+}
+.boss-add {
+  height: 38px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+}
+.boss-warn {
+  margin: 8px 0 0;
+  color: var(--danger);
+  font-size: 11px;
+}
+.boss-note {
+  margin: 10px 0 12px;
+  color: var(--ink-soft);
+  font-size: 10px;
+}
+.boss-primary {
+  width: 100%;
+  height: 46px;
+  border: 0;
+  border-radius: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  color: white;
+  background: var(--green);
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.boss-primary:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.boss-stage {
+  margin-top: 10px;
+  text-align: center;
+}
+.boss-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 24px;
+  color: var(--ink-soft);
+  font-size: 11px;
+  font-weight: 800;
+}
+.boss-combo {
+  padding: 3px 9px;
+  border-radius: 999px;
+  color: white;
+  background: var(--gold);
+  font-size: 11px;
+}
+.boss-name {
+  margin: 8px 0 6px;
+  font-size: 13px;
+  font-weight: 800;
+}
+.boss-hp {
+  max-width: 260px;
+  margin: 0 auto;
+}
+.boss-hp-text {
+  display: block;
+  margin-top: 4px;
+  color: var(--ink-soft);
+  font-size: 10px;
+}
+.boss-turn {
+  margin: 0 0 6px;
+  font-family: 'Gowun Batang', serif;
+  font-size: 30px;
+  text-align: center;
+  color: #6c4f9a;
+}
+.boss-turn.small {
+  margin: 0 0 8px;
+  font-size: 15px;
+  text-align: left;
+}
+.boss-panel > .boss-text {
+  text-align: center;
+}
+.boss-levels {
+  display: grid;
+  gap: 8px;
+}
+.boss-levels button {
+  min-height: 54px;
+  border: 1px solid rgba(54, 64, 54, 0.11);
+  border-radius: 14px;
+  display: grid;
+  grid-template-columns: 62px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #f8f3e8;
+  text-align: left;
+  cursor: pointer;
+}
+.boss-levels strong {
+  color: var(--green);
+  font-size: 15px;
+}
+.boss-levels span {
+  color: var(--ink-soft);
+  font-size: 11px;
+}
+.boss-levels em {
+  color: #6c4f9a;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 800;
+}
+.boss-feedback {
+  margin-top: 12px;
+}
+.boss-feedback p {
+  margin: 0 0 6px;
+  padding: 9px 11px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+.boss-feedback p.good {
+  color: var(--green);
+  background: var(--green-3);
+}
+.boss-feedback p.bad {
+  color: #8b4839;
+  background: #f2dbd3;
+}
+.boss-feedback small {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--ink-soft);
+  font-size: 10px;
+  line-height: 1.5;
+}
+.boss-end {
+  text-align: center;
+}
+.boss-end h3 {
+  margin: 4px 0 8px;
+  font-family: 'Gowun Batang', serif;
+  font-size: 19px;
+  color: var(--green);
+}
+.boss-end-emoji {
+  margin: 0;
+  font-size: 38px;
+}
+.boss-crew {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 7px;
+  margin: 4px 0 12px;
+}
+.boss-crew span {
+  padding: 7px 14px;
+  border-radius: 999px;
+  color: var(--green);
+  background: var(--green-3);
+  font-size: 14px;
+  font-weight: 800;
+}
+.boss-reward {
+  margin: 0 0 12px;
+  color: var(--gold);
+  font-size: 12px;
+  font-weight: 800;
+}
+.boss-end-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.boss-end-actions button {
+  height: 44px;
+  border: 1px solid rgba(23, 78, 58, 0.25);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  color: var(--green);
+  background: white;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.boss-end-actions button.boss-primary {
+  width: auto;
+  border-color: transparent;
+  color: white;
+  background: var(--green);
+  font-size: 12px;
+}

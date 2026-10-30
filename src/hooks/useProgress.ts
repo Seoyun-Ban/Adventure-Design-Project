@@ -38,6 +38,8 @@ export type Progress = {
   /** 관심 장소로 표시한 장소 id */
   favorites: string[]
   battle: BattleRecord
+  /** 보스전(협동)에서 괴물을 물리친 횟수 */
+  bossWins: number
   /** 내 문의 내역 (최신이 앞) */
   inquiries: Inquiry[]
 }
@@ -89,6 +91,7 @@ function demoProgress(): Progress {
     pushEnabled: true,
     favorites: ['bulguksa'],
     battle: { played: 0, wins: 0, recent: [] },
+    bossWins: 0,
     // 시연용: 운영팀 답변이 달린 문의 한 건 (답변 내용은 학습 글의 사실과 맞춘다)
     inquiries: [
       {
@@ -197,6 +200,9 @@ export function useProgress() {
           ),
         },
       })),
+    /** 보스전에서 이기면: 물리친 횟수를 올리고 경험치를 준다 */
+    recordBossWin: (xp: number) =>
+      setProgress((prev) => ({ ...prev, bossWins: prev.bossWins + 1, xp: prev.xp + Math.max(0, xp) })),
     /** 문의 보내기: 내 문의 내역 맨 앞에 '답변 대기 중'으로 쌓는다 */
     addInquiry: (inquiry: Pick<Inquiry, 'kind' | 'title' | 'body'>) =>
       setProgress((prev) => ({

@@ -85,7 +85,7 @@ const STEPS: Step[] = [
     tab: 'avatar',
     spots: [{ selector: '.equip-slots, .competition-button', all: true }, tabSpot('avatar')],
     title: '아바타',
-    body: '학습하면 역사 아이템을 얻고 입혀 볼 수 있어요. 친구와 경쟁도 여기서 해요!',
+    body: '학습하면 역사 아이템을 얻고 입혀 볼 수 있어요. 친구와 함께하는 보스전과 대결도 여기서 해요!',
   },
   {
     tab: 'profile',

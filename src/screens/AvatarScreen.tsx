@@ -8,6 +8,8 @@ import { BattleRecordCard } from '../components/BattleRecordCard'
 import { ChallengeShareButton } from '../components/ChallengeShareButton'
 import { historyItems, battleFriends, findItem, levelFor, powerOf } from '../data/avatar'
 import { BattleScreen } from './BattleScreen'
+import { BossScreen } from './BossScreen'
+import { BOSS } from '../data/boss'
 import type { BattleRecord } from '../hooks/useProgress'
 import type { AvatarLook, Equipped, HistoryItem, ItemCategory } from '../types'
 
@@ -23,6 +25,7 @@ export function AvatarScreen({
   battle,
   onEquip,
   onBattleEnd,
+  onBossWin,
   onNotice,
 }: {
   nickname: string
@@ -34,6 +37,8 @@ export function AvatarScreen({
   battle: BattleRecord
   onEquip: (category: ItemCategory, itemId?: string) => void
   onBattleEnd: (opponent: string, won: boolean) => void
+  /** 보스전에서 이겼을 때 (경험치를 받는다) */
+  onBossWin: (xp: number) => void
   onNotice: (message: string) => void
 }) {
   const isOwned = (item: HistoryItem) => completedIds.includes(item.placeId)
@@ -42,7 +47,7 @@ export function AvatarScreen({
   const power = powerOf(equipped, level)
   const [category, setCategory] = useState<ItemCategory>('장비')
   const [selectedItem, setSelectedItem] = useState<HistoryItem | null>(null)
-  const [view, setView] = useState<'inventory' | 'friends' | 'battle'>('inventory')
+  const [view, setView] = useState<'inventory' | 'friends' | 'battle' | 'boss'>('inventory')
   const [opponent, setOpponent] = useState(battleFriends[0])
   const [powerInfo, setPowerInfo] = useState(false)
   /** '다시 도전'을 누를 때마다 바꿔서 대결 화면을 처음부터 다시 시작한다 */
@@ -53,6 +58,10 @@ export function AvatarScreen({
     setOpponent(friend)
     setBattleRound((round) => round + 1)
     setView('battle')
+  }
+
+  if (view === 'boss') {
+    return <BossScreen onWin={onBossWin} onExit={() => setView('inventory')} />
   }
 
   if (view === 'friends') {
@@ -179,16 +188,31 @@ export function AvatarScreen({
           )
         })}
       </div>
-      <button type="button" className="competition-button" onClick={() => setView('friends')}>
-        <span className="competition-icon">
-          <Icon name="quiz" size={24} />
-        </span>
-        <span>
-          <strong>경쟁</strong>
-          <small>친구와 역사 대결 · 기록 보기</small>
-        </span>
-        <Icon name="chevron" size={20} />
-      </button>
+      <div className="together">
+        <h3 className="section-title">함께하기</h3>
+        <button type="button" className="competition-button boss-button" onClick={() => setView('boss')}>
+          <span className="competition-icon">{BOSS.face}</span>
+          <span>
+            <strong>보스전 (협동)</strong>
+            <small>친구들과 힘을 모아 {BOSS.name}를 물리쳐요</small>
+          </span>
+          <Icon name="chevron" size={20} />
+        </button>
+        <button
+          type="button"
+          className="competition-button versus-button"
+          onClick={() => setView('friends')}
+        >
+          <span className="competition-icon">
+            <Icon name="quiz" size={24} />
+          </span>
+          <span>
+            <strong>대결 (경쟁)</strong>
+            <small>친구와 역사 대결 · 기록 보기</small>
+          </span>
+          <Icon name="chevron" size={20} />
+        </button>
+      </div>
       <div className="inventory-heading">
         <h3 className="section-title">수집한 역사 아이템</h3>
         <span>

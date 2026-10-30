@@ -207,3 +207,16 @@ export function randomBattleQuestion(previous?: string): QuizItem {
   }
   return shuffleOptions(questionPool('gyeongbokgung', '쉬움')[0])
 }
+
+/** 보스전용: 모든 장소의 문제를 난이도별로 한 번만 모은 묶음 (같은 판에서 문제가 겹치지 않게 질문 글로 중복을 없앤다) */
+export function bossQuestionPools(): Record<Difficulty, QuizItem[]> {
+  const placeIds = Object.keys(facts)
+  const pools = {} as Record<Difficulty, QuizItem[]>
+  for (const level of ['쉬움', '보통', '어려움'] as Difficulty[]) {
+    const seen = new Set<string>()
+    pools[level] = placeIds
+      .flatMap((placeId) => questionPool(placeId, level))
+      .filter((item) => !seen.has(item.question) && !!seen.add(item.question))
+  }
+  return pools
+}

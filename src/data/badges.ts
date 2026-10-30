@@ -9,6 +9,8 @@ export type BadgeStats = {
   booksCaughtUp: number
   wins: number
   battles: number
+  /** 보스전에서 괴물을 물리친 횟수 */
+  bossWins: number
   equippedCount: number
   totalPlaces: number
 }
@@ -78,6 +80,13 @@ export const badges: Badge[] = [
     name: '첫 승리',
     how: '친구와의 대결에서 이기기',
     earned: (s) => s.wins >= 1,
+  },
+  {
+    id: 'boss-together',
+    icon: '🤝',
+    name: '함께 물리친 괴물',
+    how: '친구들과 보스전에서 까먹기 괴물 물리치기',
+    earned: (s) => s.bossWins >= 1,
   },
   {
     id: 'dressed-up',

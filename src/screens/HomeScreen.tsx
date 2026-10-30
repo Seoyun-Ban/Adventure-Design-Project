@@ -69,6 +69,7 @@ export function HomeScreen({
     equip,
     toggleFavorite,
     recordBattle,
+    recordBossWin,
     addInquiry,
   } = store
   const [tab, setTab] = useState<Tab>(initialTab)
@@ -215,6 +216,7 @@ export function HomeScreen({
           battle={progress.battle}
           onEquip={equip}
           onBattleEnd={recordBattle}
+          onBossWin={recordBossWin}
           onNotice={onNotice}
         />
       )}
@@ -232,6 +234,7 @@ export function HomeScreen({
             ).length,
             wins: progress.battle.wins,
             battles: progress.battle.played,
+            bossWins: progress.bossWins,
             equippedCount: Object.values(progress.equipped).filter(Boolean).length,
             totalPlaces: places.length,
           }}
