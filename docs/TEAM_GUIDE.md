@@ -72,7 +72,7 @@ git push
 | 선비 갓, 장군 투구 (머리) | `item-gat.png`, `item-helmet.png` | ✅ |
 | 정조 활, 화랑 검, 세종 붓, 독립선언서 (손) | `item-bow.png`, `item-sword.png`, `item-brush.png`, `item-declaration.png` | ✅ |
 | 태극기 (손) | 코드로 그림 (`components/ItemArtView.tsx`, 국기 규격대로 `Taegukgi.tsx`) | ✅ |
-| 관복, 화랑 예복, 갑옷 (몸) | 옷을 입은 캐릭터 그림 `me-{머리모양}-{옷}.png` (옷: robe·hwarang·armor) | 짧은 머리·땋은 머리 ✅ / 상투·단발·장발 ⬜ (배지) |
+| 관복, 화랑 예복, 갑옷 (몸) | 옷을 입은 캐릭터 그림 `me-{머리모양}-{옷}.png` (옷: robe·hwarang·armor) | 머리 모양 5종 모두 ✅ (15장) |
 
 옷 그림 넣는 법: 기본 캐릭터와 **같은 자세·같은 크기**로 옷만 바꾼 투명 PNG를 `art/characters/me-{머리모양}-{옷}.png`로 넣고 `npm run images`만 실행하면 앱이 자동으로 그 그림을 써요 (모자·손 위치가 어긋나면 `src/data/avatar.ts`의 `OUTFIT_FIT`에서 맞춰요).
 
