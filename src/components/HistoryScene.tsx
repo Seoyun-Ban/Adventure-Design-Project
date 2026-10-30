@@ -327,6 +327,8 @@ export function HistoryScene({
             <Icon name="close" size={18} /> 닫기
           </button>
         )}
+        {/* 전체 화면에서는 아래 설명 줄이 안 보여서 왼쪽 위에 같은 표시를 둔다 */}
+        {full !== 'off' && <span className="scene-imagined scene-imagined-full">역사 인물 상상 대화</span>}
         {/* 아래 버튼들을 누를 때는 대사가 넘어가지 않게 한다 */}
         <div className="scene-controls" onClick={(event) => event.stopPropagation()}>
           {playing && (
@@ -353,7 +355,7 @@ export function HistoryScene({
         </div>
       </div>
       <figcaption>
-        {figure.title} · {placeName}
+        <span className="scene-imagined">역사 인물 상상 대화</span> {figure.title} · {placeName}
         {SCENE_VOICE_ENABLED && sound && !canSpeak()
           ? ' · 이 기기에는 한국어 음성이 없어 자막으로 보여요'
           : ''}

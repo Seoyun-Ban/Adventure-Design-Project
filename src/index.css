@@ -5668,6 +5668,27 @@ button.settings-row {
   background: rgba(20, 31, 25, 0.5);
   cursor: pointer;
 }
+/* '역사 인물 상상 대화' 표시: 장면 아래 설명 줄, 전체 화면에서는 왼쪽 위 */
+.scene-imagined {
+  display: inline-block;
+  margin-right: 4px;
+  padding: 2px 7px;
+  border-radius: 99px;
+  color: var(--green);
+  background: var(--green-3);
+  font-weight: 800;
+}
+.scene-imagined-full {
+  position: absolute;
+  z-index: 6;
+  top: calc(18px + env(safe-area-inset-top, 0px));
+  left: calc(12px + env(safe-area-inset-left, 0px));
+  margin: 0;
+  padding: 5px 11px;
+  color: white;
+  background: rgba(20, 31, 25, 0.55);
+  font-size: 12px;
+}
 /* 영상 장면 전체 화면 (브라우저 전체 화면 또는 화면을 덮는 방식) */
 .scene-stage.is-full {
   width: 100%;

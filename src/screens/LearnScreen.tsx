@@ -101,7 +101,9 @@ export function LearnScreen({
           </figure>
         )}
         <h3>{content.sectionTitle}</h3>
-        <p>{text.detail}</p>
+        {text.detail.split('\n').map((paragraph) => (
+          <p key={paragraph}>{paragraph}</p>
+        ))}
         <div className="mini-quiz">
           <Icon name="sparkle" size={22} />
           <div>
