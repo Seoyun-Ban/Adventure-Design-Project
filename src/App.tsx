@@ -9,7 +9,7 @@ import { LearnScreen } from './screens/LearnScreen'
 import { QuizScreen } from './screens/QuizScreen'
 import { CompleteModal } from './components/CompleteModal'
 import { ItemRewardModal } from './components/ItemRewardModal'
-import { findPlace, isInsideUnlockArea, isPlaceOpen, places } from './data/places'
+import { findPlace, isInsideUnlockArea, isPlaceOpen, places, pretendSpot } from './data/places'
 import { NearbyBanner } from './components/NearbyBanner'
 import { UNLOCK_ACCURACY_M } from './lib/location'
 import { regionAt } from './lib/regions'
@@ -86,14 +86,12 @@ export default function App() {
    * 고르지 않았으면 null → 실제 내 위치를 쓴다.
    */
   const [pretendId, setPretendId] = useState<string | null>(null)
-  const pretendPlace = pretendId ? findPlace(pretendId) : undefined
+  const pretendSpotNow = pretendId ? pretendSpot(pretendId) : undefined
   /** 지금 내가 있는 곳 (위치를 받고 있을 때). 위치는 이 메모리 안에만 있고 저장하지 않는다 */
   const here = useMemo(
     () =>
-      pretendPlace?.lat !== undefined && pretendPlace.lng !== undefined
-        ? { lat: pretendPlace.lat, lng: pretendPlace.lng, accuracy: 0 }
-        : myLocation.position,
-    [pretendPlace, myLocation.position],
+      pretendSpotNow ? { ...pretendSpotNow, accuracy: 0 } : myLocation.position,
+    [pretendSpotNow, myLocation.position],
   )
   /** 방금 반경 안에 들어와 열린 장소 (근처 알림) */
   const [nearby, setNearby] = useState<Place | null>(null)
@@ -318,7 +316,7 @@ export default function App() {
             key={homeKey}
             initialTab={homeTab}
             store={store}
-            location={{ ...myLocation, position: here, status: pretendPlace ? 'on' : myLocation.status }}
+            location={{ ...myLocation, position: here, status: pretendSpotNow ? 'on' : myLocation.status }}
             pretendId={pretendId}
             onPretend={setPretendId}
             onLocationOn={() => {

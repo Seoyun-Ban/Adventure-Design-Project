@@ -10,13 +10,24 @@ export function LocationPicker({
   onUseReal,
   onClose,
 }: {
-  /** 지금 고른 장소 (실제 위치를 쓰고 있으면 없음) */
+  /** 지금 고른 곳: 장소 id 또는 '장소id#지점이름' (실제 위치를 쓰고 있으면 없음) */
   currentId?: string
-  onPick: (placeId: string) => void
+  onPick: (key: string) => void
   onUseReal: () => void
   onClose: () => void
 }) {
-  const sites = places.filter((place) => place.kind === 'site')
+  // 해금 지점이 여러 개인 장소는 지점마다 한 줄 ("경복궁 · 광화문")
+  const options = places
+    .filter((place) => place.kind === 'site')
+    .flatMap((place) =>
+      place.unlockPoints && place.unlockPoints.length > 1
+        ? place.unlockPoints.map((point) => ({
+            key: `${place.id}#${point.name}`,
+            label: `${place.name} · ${point.name}`,
+            region: place.region,
+          }))
+        : [{ key: place.id, label: place.name, region: place.region }],
+    )
   return (
     <BottomSheet title="어디에 있나요?" onClose={onClose}>
       <div className="location-picker">
@@ -27,17 +38,17 @@ export function LocationPicker({
             <small>휴대폰 위치를 그대로 써요</small>
           </span>
         </button>
-        {sites.map((place) => (
+        {options.map((option) => (
           <button
             type="button"
-            key={place.id}
-            className={currentId === place.id ? 'active' : ''}
-            onClick={() => onPick(place.id)}
+            key={option.key}
+            className={currentId === option.key ? 'active' : ''}
+            onClick={() => onPick(option.key)}
           >
             <Icon name="map" size={18} />
             <span>
-              <strong>{place.name}</strong>
-              <small>{place.region}</small>
+              <strong>{option.label}</strong>
+              <small>{option.region}</small>
             </span>
           </button>
         ))}

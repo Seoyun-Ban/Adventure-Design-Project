@@ -123,6 +123,18 @@ export function isInsideUnlockArea(place: Place, here: { lat: number; lng: numbe
   return points.some((point) => distanceMeters(here, point) <= (point.radius ?? radius))
 }
 
+/**
+ * 위치 고르기 창에서 고른 곳의 실제 좌표. 값은 장소 id, 또는 해금 지점까지 고른 '장소id#지점이름'.
+ * 지점을 안 고르면 장소의 대표 위치(lat/lng)를 쓴다.
+ */
+export function pretendSpot(key: string) {
+  const [id, pointName] = key.split('#')
+  const place = findPlace(id)
+  const point = place?.unlockPoints?.find((item) => item.name === pointName)
+  const spot = point ?? place
+  return spot?.lat !== undefined && spot.lng !== undefined ? { lat: spot.lat, lng: spot.lng } : undefined
+}
+
 export function findPlace(id: string) {
   return places.find((place) => place.id === id)
 }
