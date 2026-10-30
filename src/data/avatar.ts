@@ -211,7 +211,8 @@ export const historyItems: HistoryItem[] = [
     symbol: '書',
     placeId: 'aunae',
     rarity: '전설',
-    description: '유관순이 아우내 장터에서 만세를 외친 날을 떠올리게 하는 독립선언서 두루마리.',
+    description:
+      '유관순이 숨겨 와 마을 어른들과 만세 운동을 계획할 때 내놓은 독립선언서를 떠올리게 하는 두루마리.',
     stats: { 공격: 42, 방어: 64, 지혜: 90 },
     art: {
       kind: 'image',

@@ -90,6 +90,8 @@ export type PlaceContent = {
   detailImage: string
   detailCaption: string
   remember: string
+  /** 학습 화면 맨 아래 '참고 자료'. 확인된 링크(url)만 연결하고, 없으면 자료 이름만 보여준다 */
+  references: { name: string; url?: string }[]
   /** 퀴즈 난이도는 학습 글 난이도와 같다 */
   quiz: Record<Difficulty, QuizItem[]>
 }

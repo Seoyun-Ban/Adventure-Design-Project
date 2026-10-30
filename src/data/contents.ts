@@ -39,6 +39,11 @@ export const placeContents: Record<string, PlaceContent> = {
     detailImage: '',
     detailCaption: '시간을 품은 경복궁의 붉은 회랑',
     remember: '일삼구오(1395) 큰 복 경복궁, 태조가 세우고 고종 때 다시 섰네!',
+    references: [
+      { name: '한국민족문화대백과사전 「경복궁」 (한국학중앙연구원)' },
+      { name: '궁능유적본부 「경복궁 소개·역사」 (국가유산청)' },
+      { name: '국가기록원 「기록으로 만나는 대한민국: 경복궁」' },
+    ],
     quiz: {
       쉬움: bank.EASY_gyeongbokgung,
       보통: [
@@ -52,13 +57,13 @@ export const placeContents: Record<string, PlaceContent> = {
           question: '경복궁이라는 이름에 담긴 뜻은 무엇일까요?',
           options: ['큰 복을 누리다', '빛나는 별', '백성을 품다', '새 아침을 열다'],
           answer: 0,
-          note: '경복은 “큰 복을 누리라”는 뜻을 담고 있어요.',
+          note: '‘경복’은 『시경』에 나오는 ‘큰 복’이라는 말에서 따온 이름이에요.',
         },
         {
-          question: '경복궁의 중심이 되는 정전은 어디일까요?',
-          options: ['경회루', '근정전', '향원정', '광화문'],
+          question: '경복궁에서 연못 위에 있고, 잔치를 열거나 외국 사신을 맞던 곳은?',
+          options: ['근정전', '경회루', '광화문', '집현전'],
           answer: 1,
-          note: '근정전은 왕이 중요한 의식을 치르던 경복궁의 중심 건물이에요.',
+          note: '연못 위의 경회루에서는 잔치를 열거나 외국 사신을 맞았어요.',
         },
       ],
       어려움: bank.HARD_gyeongbokgung,
@@ -98,26 +103,36 @@ export const placeContents: Record<string, PlaceContent> = {
     detailImage: '',
     detailCaption: '',
     remember: '거중기로 번쩍, 의궤로 다시! 1796년 완성 수원화성!',
+    references: [
+      { name: '국가유산포털 「수원 화성」 (국가유산청)' },
+      { name: '한국민족문화대백과사전 「수원 화성」' },
+      { name: '우리역사넷 「화성」 (국사편찬위원회)' },
+    ],
     quiz: {
       쉬움: bank.EASY_suwon,
       보통: [
         {
-          question: '수원화성을 쌓도록 한 조선의 임금은 누구일까요?',
-          options: ['세종', '정조', '영조', '태조'],
-          answer: 1,
-          note: '정조는 아버지 사도세자의 묘를 옮기며 수원화성을 쌓았어요.',
+          question: '수원화성은 언제부터 언제까지 쌓았을까요?',
+          options: [
+            '1794년부터 1796년까지',
+            '1392년부터 1395년까지',
+            '1592년부터 1598년까지',
+            '1443년부터 1446년까지',
+          ],
+          answer: 0,
+          note: '정조가 1794년부터 1796년까지 쌓은 성곽이에요.',
         },
         {
-          question: '수원화성 공사에 쓰인 거중기를 고안한 사람은?',
+          question: '수원화성의 설계안과 거중기를 제안한 사람은?',
           options: ['장영실', '정약용', '김정호', '허준'],
           answer: 1,
-          note: '정약용은 도르래 원리를 이용한 거중기를 만들었어요.',
+          note: '정약용은 성의 설계안과 무거운 돌을 들어 올리는 거중기 등을 제안했어요.',
         },
         {
           question: '수원화성 공사 과정을 자세히 기록한 책은?',
           options: ['화성성역의궤', '조선왕조실록', '동의보감', '대동여지도'],
           answer: 0,
-          note: '『화성성역의궤』 덕분에 수원화성을 원래 모습에 가깝게 복원할 수 있었어요.',
+          note: '공사 과정은 『화성성역의궤』에 꼼꼼하게 기록되었어요.',
         },
       ],
       어려움: bank.HARD_suwon,
@@ -127,7 +142,7 @@ export const placeContents: Record<string, PlaceContent> = {
   independence: {
     placeId: 'independence',
     heroImage: '',
-    heroAlt: '독립기념관 겨레의 집',
+    heroAlt: '독립기념관 전경',
     tagline: '천안 · 국민이 함께 세운 기념관',
     readMinutes: 5,
     headline: '잊지 않기 위해,\n모두가 함께 세운 곳',
@@ -156,6 +171,14 @@ export const placeContents: Record<string, PlaceContent> = {
     detailImage: '',
     detailCaption: '',
     remember: '팔칠(1987) 광복절, 국민이 마음 모아 세운 독립기념관!',
+    references: [
+      {
+        name: '국가기록원 「기록으로 만나는 대한민국: 독립기념관」',
+        url: 'https://theme.archives.go.kr/next/koreaOfRecord/hollKorea.do',
+      },
+      { name: '독립기념관 누리집' },
+      { name: '한국민족문화대백과사전 「김구」' },
+    ],
     quiz: {
       쉬움: bank.EASY_independence,
       보통: [
@@ -166,10 +189,10 @@ export const placeContents: Record<string, PlaceContent> = {
           note: '독립기념관은 1987년 8월 15일 광복절에 개관했어요.',
         },
         {
-          question: '독립기념관 건립 모금 운동이 시작된 계기는?',
+          question: '독립기념관을 세우는 일이 본격적으로 추진되는 계기가 된 사건은?',
           options: ['올림픽 개최', '일본 역사 교과서 왜곡', '남북 정상회담', '월드컵 개최'],
           answer: 1,
-          note: '1982년 일본 역사 교과서 왜곡 문제가 계기가 되었어요.',
+          note: '1982년 일본의 역사 교과서가 우리 역사를 잘못 적은 일이 알려지면서 본격적으로 추진되었어요.',
         },
         {
           question: '독립기념관이 있는 도시는 어디일까요?',
@@ -215,6 +238,9 @@ export const placeContents: Record<string, PlaceContent> = {
     detailImage: '',
     detailCaption: '',
     remember: '사월 일일 아우내 장날, 태극기 만들어 앞장선 유관순!',
+    references: [
+      { name: '한국민족문화대백과사전 「유관순」', url: 'https://encykorea.aks.ac.kr/Article/E0041268' },
+    ],
     quiz: {
       쉬움: bank.EASY_aunae,
       보통: [
@@ -222,16 +248,16 @@ export const placeContents: Record<string, PlaceContent> = {
           question: '아우내 장터에서 만세 운동이 일어난 날은 언제일까요?',
           options: ['1919년 3월 1일', '1919년 4월 1일', '1920년 3월 1일', '1945년 8월 15일'],
           answer: 1,
-          note: '음력 3월 1일 장날이던 1919년 4월 1일이에요.',
+          note: '1919년 4월 1일 아우내 장날에 수천 명이 장터에 모였어요.',
         },
         {
-          question: '학교가 휴교하자 유관순이 고향으로 가지고 내려온 것은?',
+          question: '고향에 돌아온 유관순이 마을 어른들께 보여 주며 만세 운동을 함께 계획한 것은?',
           options: ['독립선언서', '훈민정음', '대동여지도', '화성성역의궤'],
           answer: 0,
-          note: '유관순은 독립선언서를 가지고 고향 천안 병천으로 내려왔어요.',
+          note: '유관순은 숨겨 온 독립선언서를 보여 주며 만세 운동을 함께 계획했어요.',
         },
         {
-          question: '만세 운동 뒤 체포된 유관순이 갇혔던 곳은?',
+          question: '시위를 이끌다 붙잡힌 유관순이 갇혔던 곳은?',
           options: ['서대문형무소', '경복궁', '수원화성', '덕수궁'],
           answer: 0,
           note: '유관순은 서대문형무소에 갇혀서도 만세를 외쳤어요.',
@@ -272,6 +298,7 @@ export const placeContents: Record<string, PlaceContent> = {
     detailImage: '',
     detailCaption: '',
     remember: '칠오일(751) 김대성, 다보탑은 화려하게 석가탑은 단정하게!',
+    references: [{ name: '국가유산청 「불국사」 해설' }, { name: '문화체육관광부 「석굴암ㆍ불국사」' }],
     quiz: {
       쉬움: bank.EASY_bulguksa,
       보통: [
@@ -279,7 +306,7 @@ export const placeContents: Record<string, PlaceContent> = {
           question: '불국사가 지어진 나라는 어디일까요?',
           options: ['백제', '고구려', '신라', '조선'],
           answer: 2,
-          note: '불국사는 신라 때 경주에 지어졌어요.',
+          note: '불국사는 경주 토함산에 있는 신라의 절이에요.',
         },
         {
           question: '불국사 대웅전 앞에 나란히 선 두 탑은?',
@@ -290,7 +317,7 @@ export const placeContents: Record<string, PlaceContent> = {
             '분황사 탑과 감은사지 탑',
           ],
           answer: 0,
-          note: '다보탑과 석가탑이 대웅전 앞마당에 마주 서 있어요.',
+          note: '다보탑과 석가탑(경주 불국사 삼층석탑)이 대웅전 앞마당에 서 있어요.',
         },
         {
           question: '불국사와 함께 세계유산으로 등재된 곳은?',
@@ -334,6 +361,11 @@ export const placeContents: Record<string, PlaceContent> = {
     detailImage: '',
     detailCaption: '',
     remember: '좁은 견내량 피해 넓은 바다로! 학처럼 날개 펼쳐 한산도 대첩!',
+    references: [
+      { name: '『선조실록』 권27, 선조 25년 6월 21일 기사 (국사편찬위원회 조선왕조실록)' },
+      { name: '한국민족문화대백과사전 「통영 삼도수군통제영」' },
+      { name: '한국민족문화대백과사전 「한산도대첩」' },
+    ],
     quiz: {
       쉬움: bank.EASY_hansando,
       보통: [
@@ -350,10 +382,10 @@ export const placeContents: Record<string, PlaceContent> = {
           note: '학이 날개를 펼친 모양으로 적을 둘러싸는 학익진이에요.',
         },
         {
-          question: '임진왜란 3대 대첩이 아닌 것은?',
-          options: ['한산도 대첩', '행주 대첩', '진주 대첩', '귀주 대첩'],
-          answer: 3,
-          note: '귀주 대첩은 고려 때 강감찬이 거란을 물리친 전투예요.',
+          question: '이순신은 좁은 견내량에 있던 적을 어디로 끌어냈을까요?',
+          options: ['넓은 한산도 앞바다', '옥포 앞바다', '한강', '압록강'],
+          answer: 0,
+          note: '좁은 견내량에서 싸우는 불리함을 피하려고 적을 넓은 한산도 앞바다로 끌어냈어요.',
         },
       ],
       어려움: bank.HARD_hansando,
@@ -391,6 +423,14 @@ export const placeContents: Record<string, PlaceContent> = {
     detailImage: '',
     detailCaption: '',
     remember: '사삼(1443) 만들고 사육(1446) 책으로 알렸네, 스물여덟 자 훈민정음!',
+    references: [
+      {
+        name: '국가기록원 「기록으로 만나는 대한민국: 한글」',
+        url: 'https://theme.archives.go.kr/next/koreaOfRecord/hangul.do',
+      },
+      { name: '국립한글박물관' },
+      { name: '한국민족문화대백과사전 「훈민정음」' },
+    ],
     quiz: {
       쉬움: [
         {
@@ -403,7 +443,7 @@ export const placeContents: Record<string, PlaceContent> = {
           question: '한글날은 언제일까요?',
           options: ['3월 1일', '5월 5일', '8월 15일', '10월 9일'],
           answer: 3,
-          note: '10월 9일은 훈민정음 반포를 기념하는 한글날이에요.',
+          note: '10월 9일 한글날은 훈민정음을 만들고 알린 일을 기념하는 날이에요.',
         },
         {
           question: '처음 만들었을 때 글자는 몇 개였을까요?',
@@ -414,10 +454,10 @@ export const placeContents: Record<string, PlaceContent> = {
       ],
       보통: [
         {
-          question: '훈민정음이 반포된 해는?',
+          question: '『훈민정음』 해례본을 펴낸 해는?',
           options: ['1392년', '1443년', '1446년', '1592년'],
           answer: 2,
-          note: '1443년에 만들고 1446년에 반포했어요.',
+          note: '1443년에 28자를 만들고, 1446년에 해례본을 펴냈어요.',
         },
         {
           question: '‘훈민정음’의 뜻은?',
@@ -434,22 +474,22 @@ export const placeContents: Record<string, PlaceContent> = {
       ],
       어려움: [
         {
-          question: '훈민정음 모음의 기본이 된 세 가지는?',
-          options: ['하늘·땅·사람', '해·달·별', '물·불·흙', '산·강·바다'],
+          question: '처음 만든 28자 가운데 쓰이지 않게 된 글자는 몇 개일까요?',
+          options: ['4자', '2자', '8자', '10자'],
           answer: 0,
-          note: '·(하늘), ㅡ(땅), ㅣ(사람)을 본떴어요.',
+          note: '28자 가운데 4자는 쓰이지 않게 되어 지금은 24자를 써요.',
         },
         {
-          question: '훈민정음 창제에 반대하는 상소를 올린 인물은?',
-          options: ['최만리', '정인지', '성삼문', '신숙주'],
+          question: '『훈민정음』 해례본의 서문을 직접 쓴 사람은?',
+          options: ['세종', '정인지', '정도전', '흥선대원군'],
           answer: 0,
-          note: '최만리 등이 반대 상소를 올렸어요.',
+          note: '해례본은 세종이 직접 서문을 쓰고, 정인지 등 신하들이 글자에 대한 설명을 적은 책이에요.',
         },
         {
-          question: '훈민정음 자음은 무엇을 본떠 만들었을까요?',
-          options: ['발음 기관의 모양', '한자의 획', '동물의 모양', '별자리'],
+          question: '오랫동안 자취를 감췄던 『훈민정음』 해례본이 1940년에 발견된 곳은?',
+          options: ['경북 안동', '서울 경복궁', '경남 통영', '충남 천안'],
           answer: 0,
-          note: '소리를 낼 때 발음 기관의 모양을 본떴어요.',
+          note: '1940년 경북 안동에서 발견되어, 한글이 어떤 원리로 만들어졌는지 알 수 있게 되었어요.',
         },
       ],
     },

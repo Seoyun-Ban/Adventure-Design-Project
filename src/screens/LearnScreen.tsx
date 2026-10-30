@@ -111,6 +111,22 @@ export function LearnScreen({
             <span>{content.remember}</span>
           </div>
         </div>
+        <section className="learn-references">
+          <h4>참고 자료</h4>
+          <ul>
+            {content.references.map((reference) => (
+              <li key={reference.name}>
+                {reference.url ? (
+                  <a href={reference.url} target="_blank" rel="noopener noreferrer">
+                    {reference.name}
+                  </a>
+                ) : (
+                  reference.name
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
       </article>
       <div className="learn-actions">
         <ActionButton variant="secondary" onClick={() => onComplete(difficulty)}>
