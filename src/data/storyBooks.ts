@@ -3,7 +3,8 @@ import type { StoryBookData, StoryChapter } from '../types'
 
 // 이야기책: 학습 내용을 주제별로 묶은 책
 // - 챕터에 placeId가 있으면 그 장소가 열릴 때(직접 방문, 사건은 처음부터) 챕터도 열린다.
-// - 한 챕터라도 해금된 책만 책장에 나타나고, 나머지는 '총 권 수'에만 포함된다.
+// - 지도에 있는 장소가 챕터에 하나라도 있는 책은 책장에 꽂힌다 (전부 잠겼으면 표지에 자물쇠 + 열 수 있는 장소).
+//   지도에 장소가 하나도 없는 책은 '발견하지 않은 책'으로 숨겨지고 '총 권 수'에만 포함된다.
 // - cover: 표지 색, emblem: 표지 가운데 한자
 
 const soon = (title: string, location: string): StoryChapter => ({ title, location, unlocked: false })
@@ -144,9 +145,18 @@ export function isChapterUnlocked(chapter: StoryChapter, visitedIds: string[]): 
   return chapter.unlocked ?? false
 }
 
-/** 책장에 보이는 책 (한 챕터라도 해금된 책) */
-export function isBookDiscovered(book: StoryBookData, visitedIds: string[]) {
-  return book.chapters.some((chapter) => isChapterUnlocked(chapter, visitedIds))
+/** 책장에 꽂히는 책인지: 지도에 있는 장소가 챕터에 하나라도 들어 있어야 한다 (없으면 '발견하지 않은 책') */
+export function isOnShelf(book: StoryBookData) {
+  return book.chapters.some((chapter) => chapter.placeId && findPlace(chapter.placeId))
+}
+
+/** 아직 잠긴 챕터를 열 수 있는 지도 장소 이름들 (겹치지 않게, 차례 순서대로) */
+export function lockedPlaceNames(book: StoryBookData, visitedIds: string[]): string[] {
+  const names = book.chapters
+    .filter((chapter) => !isChapterUnlocked(chapter, visitedIds))
+    .map((chapter) => (chapter.placeId ? findPlace(chapter.placeId)?.name : undefined))
+    .filter((name): name is string => Boolean(name))
+  return [...new Set(names)]
 }
 
 /** 학습을 마친 챕터 수 */

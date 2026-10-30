@@ -1,7 +1,7 @@
 import { useState, type CSSProperties } from 'react'
 import { Icon } from '../components/Icon'
 import { places } from '../data/places'
-import { storyBooks, isChapterUnlocked, isBookDiscovered, readCount } from '../data/storyBooks'
+import { storyBooks, isChapterUnlocked, isOnShelf, lockedPlaceNames, readCount } from '../data/storyBooks'
 import type { Place, StoryBookData, StoryChapter } from '../types'
 
 // 이야기책 탭: 주제마다 책 한 권으로 꽂힌 책장
@@ -17,7 +17,10 @@ export function StoryBookScreen({
 }) {
   const [query, setQuery] = useState('')
   const [selectedBook, setSelectedBook] = useState<StoryBookData | null>(null)
-  const discovered = storyBooks.filter((book) => isBookDiscovered(book, visitedIds))
+  /** 책장에 꽂힌 책 (지도에 장소가 있는 책). 열렸는지와 상관없이 보인다 */
+  const discovered = storyBooks.filter(isOnShelf)
+  const isLockedBook = (book: StoryBookData) =>
+    !book.chapters.some((chapter) => isChapterUnlocked(chapter, visitedIds))
   /** 책장에 꽂아 둘 ? 책 수(최대 3권)와, 그 밖에 더 숨겨진 책 수 */
   const unknownCount = storyBooks.length - discovered.length
   const unknownShown = Math.min(3, unknownCount)
@@ -68,7 +71,7 @@ export function StoryBookScreen({
           </p>
         )}
         <div className="story-detail-cover">
-          <BookCover book={selectedBook} large />
+          <BookCover book={selectedBook} large locked={isLockedBook(selectedBook)} />
           <div>
             <small>{selectedBook.tags.slice(0, 3).join(' · ')}</small>
             <h2>{selectedBook.title}</h2>
@@ -174,16 +177,26 @@ export function StoryBookScreen({
       <div className="bookshelf">
         {visibleBooks.map((book) => {
           const read = readCount(book, completedIds)
+          const locked = isLockedBook(book)
           return (
-            <button type="button" key={book.id} className="shelf-book" onClick={() => setSelectedBook(book)}>
-              <BookCover book={book} />
+            <button
+              type="button"
+              key={book.id}
+              className={`shelf-book ${locked ? 'locked' : ''}`}
+              onClick={() => setSelectedBook(book)}
+            >
+              <BookCover book={book} locked={locked} />
               <strong>{book.title}</strong>
-              <span className="shelf-progress">
-                <i>
-                  <em style={{ width: `${(read / book.chapters.length) * 100}%` }} />
-                </i>
-                {read}/{book.chapters.length}
-              </span>
+              {locked ? (
+                <span className="shelf-hint">{lockedPlaceNames(book, visitedIds).join(', ')}에 가면 열려요</span>
+              ) : (
+                <span className="shelf-progress">
+                  <i>
+                    <em style={{ width: `${(read / book.chapters.length) * 100}%` }} />
+                  </i>
+                  {read}/{book.chapters.length}
+                </span>
+              )}
             </button>
           )
         })}
@@ -213,13 +226,26 @@ export function StoryBookScreen({
 }
 
 /** 책 모양 표지 (등 + 앞표지 + 종이 단면) */
-function BookCover({ book, large = false }: { book: StoryBookData; large?: boolean }) {
+function BookCover({
+  book,
+  large = false,
+  locked = false,
+}: {
+  book: StoryBookData
+  large?: boolean
+  locked?: boolean
+}) {
   return (
-    <span className={`book3d ${large ? 'large' : ''}`} style={{ '--cover': book.cover } as CSSProperties}>
+    <span className={`book3d ${large ? 'large' : ''} ${locked ? 'locked' : ''}`} style={{ '--cover': book.cover } as CSSProperties}>
       <span className="book-face">
         <i className="book-band" />
         <b>{book.emblem}</b>
         <small>{book.title}</small>
+        {locked && (
+          <span className="book-lock" aria-label="잠긴 책">
+            <Icon name="lock" size={large ? 20 : 15} />
+          </span>
+        )}
       </span>
     </span>
   )

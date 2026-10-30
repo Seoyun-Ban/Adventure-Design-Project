@@ -6737,3 +6737,33 @@ button.settings-row {
 .text-link {
   white-space: nowrap;
 }
+
+/* 전부 잠긴 책: 표지를 어둡게 하고 자물쇠 + 열 수 있는 장소 */
+.book3d.locked .book-face > :not(.book-lock) {
+  opacity: 0.55;
+}
+.book-lock {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #fbf3df;
+  background: rgba(40, 30, 20, 0.72);
+}
+.book3d.large .book-lock {
+  width: 34px;
+  height: 34px;
+}
+.shelf-hint {
+  order: 3;
+  width: 100%;
+  color: var(--ink-soft);
+  font-size: 8.5px;
+  font-weight: 700;
+  line-height: 1.35;
+  word-break: keep-all;
+}
