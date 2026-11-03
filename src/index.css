@@ -7009,11 +7009,11 @@ button.settings-row {
 .boss-panel > .boss-text {
   text-align: center;
 }
-.boss-levels {
+.level-picker {
   display: grid;
   gap: 8px;
 }
-.boss-levels button {
+.level-picker button {
   min-height: 54px;
   border: 1px solid rgba(54, 64, 54, 0.11);
   border-radius: 14px;
@@ -7026,15 +7026,15 @@ button.settings-row {
   text-align: left;
   cursor: pointer;
 }
-.boss-levels strong {
+.level-picker strong {
   color: var(--green);
   font-size: 15px;
 }
-.boss-levels span {
+.level-picker span {
   color: var(--ink-soft);
   font-size: 11px;
 }
-.boss-levels em {
+.level-picker em {
   color: #6c4f9a;
   font-size: 12px;
   font-style: normal;
@@ -7210,4 +7210,11 @@ button.settings-row {
   .boss-timer-track i {
     transition: none;
   }
+}
+
+.battle-pick-help {
+  margin: 8px 0 10px;
+  color: var(--ink-soft);
+  font-size: 10px;
+  line-height: 1.5;
 }

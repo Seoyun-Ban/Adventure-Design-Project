@@ -194,13 +194,13 @@ export async function generateQuiz(
   }
 }
 
-/** 친구 대결용: 모든 장소·난이도에서 완전 무작위 한 문제 */
-export function randomBattleQuestion(previous?: string): QuizItem {
+/** 친구 대결용: 모든 장소에서 무작위 한 문제 (난이도를 고르면 그 난이도에서) */
+export function randomBattleQuestion(previous?: string, chosen?: Difficulty): QuizItem {
   const placeIds = Object.keys(facts)
   const levels: Difficulty[] = ['쉬움', '보통', '어려움']
   for (let tries = 0; tries < 10; tries += 1) {
     const placeId = placeIds[Math.floor(Math.random() * placeIds.length)]
-    const level = levels[Math.floor(Math.random() * levels.length)]
+    const level = chosen ?? levels[Math.floor(Math.random() * levels.length)]
     const pool = questionPool(placeId, level)
     const item = pool[Math.floor(Math.random() * pool.length)]
     if (item && item.question !== previous) return shuffleOptions(item)

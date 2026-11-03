@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Icon } from '../components/Icon'
+import { LevelPicker } from '../components/LevelPicker'
 import {
   BOSS,
   BOSS_DAMAGE,
@@ -270,15 +271,14 @@ export function BossScreen({ onWin, onExit }: { onWin: (xp: number) => void; onE
               <>
                 <h3 className="boss-turn">{current} 차례!</h3>
                 <p className="boss-text">도전할 난이도를 골라요. 어려울수록 피해가 커요.</p>
-                <div className="boss-levels">
-                  {LEVELS.map(({ level: l, hint }) => (
-                    <button type="button" key={l} onClick={() => chooseLevel(l)}>
-                      <strong>{l}</strong>
-                      <span>{hint}</span>
-                      <em>피해 {BOSS_DAMAGE[l]}</em>
-                    </button>
-                  ))}
-                </div>
+                <LevelPicker
+                  onPick={chooseLevel}
+                  items={LEVELS.map(({ level: l, hint }) => ({
+                    level: l,
+                    hint,
+                    tag: `피해 ${BOSS_DAMAGE[l]}`,
+                  }))}
+                />
               </>
             )}
 
