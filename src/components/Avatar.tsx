@@ -411,14 +411,6 @@ function HandItem({ id, x, y }: { id?: string; x: number; y: number }) {
       </g>
     )
   }
-  if (id === 'brush') {
-    return (
-      <g transform={`rotate(-25 ${x} ${y})`} stroke={OL} strokeWidth="1.2">
-        <rect x={x - 2.5} y={y - 46} width="5" height="52" rx="2" fill="#a0703f" />
-        <path d={`M${x - 4.5} ${y - 46} Q${x} ${y - 66} ${x + 4.5} ${y - 46} Z`} fill="#1f1f1f" />
-      </g>
-    )
-  }
   return null
 }
 

@@ -12,7 +12,6 @@ import { ItemRewardModal } from './components/ItemRewardModal'
 import { findPlace, isInsideUnlockArea, isPlaceOpen, places, pretendSpot } from './data/places'
 import { NearbyBanner } from './components/NearbyBanner'
 import { UNLOCK_ACCURACY_M } from './lib/location'
-import { regionAt } from './lib/regions'
 import { useProgress } from './hooks/useProgress'
 import { TOGETHER_MIN_PLACES } from './data/battle'
 import { learnedPlaceIds } from './lib/quizGenerator'
@@ -103,16 +102,13 @@ export default function App() {
   useEffect(() => {
     if (!here || here.accuracy > UNLOCK_ACCURACY_M) return
     for (const place of places) {
-      if (place.kind !== 'site' || progress.visitedIds.includes(place.id)) continue
+      if (progress.visitedIds.includes(place.id)) continue
       if (!isInsideUnlockArea(place, here)) continue
       visitPlace(place.id)
       if (progress.pushEnabled) setNearby(place)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [here, progress.visitedIds, progress.pushEnabled])
-
-  /** 위치가 없는 사건(event)은 학습할 때 내가 있던 시·도에 발자국을 남긴다 (위치를 모르면 기본 시·도) */
-  const regionFor = (place: Place) => (place.kind === 'event' && here ? regionAt(here) : undefined)
 
   function showToast(message: string) {
     setToast(message)
@@ -208,8 +204,8 @@ export default function App() {
     const items = quiz ? newItemsFor(quiz.place) : []
     if (items.length > 0) setReward({ items, index: 0, then: 'home' })
     if (quiz) {
-      if (passed) completeQuiz(quiz.place.id, regionFor(quiz.place))
-      else completeLearning(quiz.place.id, regionFor(quiz.place))
+      if (passed) completeQuiz(quiz.place.id)
+      else completeLearning(quiz.place.id)
     }
     setScreen('home')
   }
@@ -364,7 +360,7 @@ export default function App() {
             onComplete={(difficulty) => {
               setLearnDifficulty(difficulty)
               const items = newItemsFor(selectedPlace)
-              completeLearning(selectedPlace.id, regionFor(selectedPlace))
+              completeLearning(selectedPlace.id)
               // 처음 학습을 마쳤으면 아이템 카드 → 발자국 획득 창, 아니면 바로 발자국 획득 창
               if (items.length > 0) setReward({ items, index: 0, then: 'complete' })
               else setShowComplete(true)

@@ -14,7 +14,6 @@ const placeList: PlaceInput[] = [
     id: 'gyeongbokgung',
     name: '경복궁',
     region: '서울',
-    kind: 'site',
     // 근정전 기준 (OSM '근정전')
     lat: 37.5785,
     lng: 126.977,
@@ -29,7 +28,6 @@ const placeList: PlaceInput[] = [
     id: 'suwon',
     name: '수원화성',
     region: '수원',
-    kind: 'site',
     lat: 37.2822,
     lng: 127.0144,
     unlockPoints: [
@@ -46,7 +44,6 @@ const placeList: PlaceInput[] = [
     id: 'independence',
     name: '독립기념관',
     region: '천안',
-    kind: 'site',
     // 겨레의집 (구글 지도 플러스 코드 8Q89Q6MF+665)
     lat: 36.78301,
     lng: 127.22311,
@@ -58,7 +55,6 @@ const placeList: PlaceInput[] = [
     id: 'aunae',
     name: '아우내 장터',
     region: '천안 병천',
-    kind: 'site',
     lat: 36.76114,
     lng: 127.29864,
     summary: '태극기를 들고 외친 만세,\n유관순의 이야기를 만나보세요.',
@@ -67,7 +63,6 @@ const placeList: PlaceInput[] = [
     id: 'bulguksa',
     name: '불국사',
     region: '경주',
-    kind: 'site',
     // 대웅전 (구글 지도 플러스 코드 8Q7FQ8RJ+2RP)
     lat: 35.79009,
     lng: 129.33208,
@@ -78,27 +73,16 @@ const placeList: PlaceInput[] = [
     id: 'hansando',
     name: '한산도',
     region: '통영',
-    kind: 'site',
     lat: 34.7943,
     lng: 128.4719,
     radius: 1000,
     summary: '학이 날개를 펴듯 적을 에워싼,\n바다 위의 큰 승리를 만나보세요.',
   },
-  {
-    // 위치가 분명하지 않은 사건: 어디서나 학습 가능, 학습한 곳에 발자국이 남는다
-    id: 'hunminjeongeum',
-    name: '훈민정음 반포',
-    region: '어디서나',
-    kind: 'event',
-    summary: '백성을 위해 만든 스물여덟 글자,\n지금 있는 곳에서 만나보세요.',
-  },
 ]
 
 export const places: Place[] = placeList.map((place) => ({
   ...place,
-  ...(place.lat !== undefined && place.lng !== undefined
-    ? toMapPosition({ lat: place.lat, lng: place.lng })
-    : { top: '0%', left: '0%' }),
+  ...toMapPosition({ lat: place.lat, lng: place.lng }),
 }))
 
 /** 근처 장소 알림·방문 판정 기본 반경 (기획서 기준 500m) */
@@ -107,21 +91,16 @@ export const NEARBY_RADIUS_M = 500
 /** 처음 시작할 때 이미 방문한 장소 (경복궁·수원화성은 학습까지 마친 상태로, 불국사는 열리기만 한 상태로 시작) */
 export const DEMO_VISITED_IDS = ['gyeongbokgung', 'suwon', 'bulguksa']
 
-/**
- * 장소가 열렸는지 (학습할 수 있는지)
- * - site: 직접 가서 반경 안에 들어간 적이 있어야 열린다 (방문한 장소 id만 저장)
- * - event: 위치가 없는 사건이라 어디서나 열린다
- */
+/** 장소가 열렸는지 (학습할 수 있는지): 직접 가서 반경 안에 들어간 적이 있어야 한다 (방문한 장소 id만 저장) */
 export function isPlaceOpen(place: Place, visitedIds: string[]) {
-  return place.kind === 'event' || visitedIds.includes(place.id)
+  return visitedIds.includes(place.id)
 }
 
 /** 내 위치가 장소의 해금 지점 중 하나라도 반경 안인지 (지점이 없으면 lat/lng 하나만 본다) */
 export function isInsideUnlockArea(place: Place, here: { lat: number; lng: number }) {
   const radius = place.radius ?? NEARBY_RADIUS_M
   const points: { lat: number; lng: number; radius?: number }[] =
-    place.unlockPoints ??
-    (place.lat !== undefined && place.lng !== undefined ? [{ lat: place.lat, lng: place.lng }] : [])
+    place.unlockPoints ?? [{ lat: place.lat, lng: place.lng }]
   return points.some((point) => distanceMeters(here, point) <= (point.radius ?? radius))
 }
 
@@ -134,7 +113,7 @@ export function pretendSpot(key: string) {
   const place = findPlace(id)
   const point = place?.unlockPoints?.find((item) => item.name === pointName)
   const spot = point ?? place
-  return spot?.lat !== undefined && spot.lng !== undefined ? { lat: spot.lat, lng: spot.lng } : undefined
+  return spot ? { lat: spot.lat, lng: spot.lng } : undefined
 }
 
 export function findPlace(id: string) {

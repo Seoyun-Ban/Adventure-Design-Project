@@ -2,7 +2,7 @@ import { findPlace, isPlaceOpen } from './places'
 import type { StoryBookData, StoryChapter } from '../types'
 
 // 이야기책: 학습 내용을 주제별로 묶은 책
-// - 챕터에 placeId가 있으면 그 장소가 열릴 때(직접 방문, 사건은 처음부터) 챕터도 열린다.
+// - 챕터에 placeId가 있으면 그 장소가 열릴 때(직접 방문) 챕터도 열린다.
 // - 지도에 있는 장소가 챕터에 하나라도 있는 책은 책장에 꽂힌다 (전부 잠겼으면 표지에 자물쇠 + 열 수 있는 장소).
 //   지도에 장소가 하나도 없는 책은 '발견하지 않은 책'으로 숨겨지고 '총 권 수'에만 포함된다.
 // - cover: 표지 색, emblem: 표지 가운데 한자
@@ -23,19 +23,6 @@ export const storyBooks: StoryBookData[] = [
       soon('자연을 품은 창덕궁', '서울 · 창덕궁'),
       soon('대한제국의 황궁, 덕수궁', '서울 · 덕수궁'),
       soon('왕실의 마지막 이야기', '서울 · 운현궁'),
-    ],
-  },
-  {
-    id: 'sejong',
-    title: '세종 시대의 빛',
-    subtitle: '백성을 위한 발명과 글자',
-    cover: '#3f5f8f',
-    emblem: '訓',
-    tags: ['세종', '훈민정음', '한글', '과학'],
-    chapters: [
-      { title: '스물여덟 글자의 탄생', location: '어디서나 · 훈민정음 반포', placeId: 'hunminjeongeum' },
-      soon('비의 양을 재다, 측우기', '서울 · 국립고궁박물관'),
-      soon('해시계 앙부일구', '서울 · 종묘 앞'),
     ],
   },
   {

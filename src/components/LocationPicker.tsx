@@ -3,7 +3,7 @@ import { BottomSheet } from './BottomSheet'
 import { places } from '../data/places'
 
 // 지도 제목을 5번 빠르게 누르면 열리는 위치 고르기 창
-// 고른 장소에 서 있는 것처럼 동작한다 (해금·근처 알림·사건 발자국 시·도까지). 고른 위치는 저장하지 않는다.
+// 고른 장소에 서 있는 것처럼 동작한다 (해금·근처 알림까지). 고른 위치는 저장하지 않는다.
 export function LocationPicker({
   currentId,
   onPick,
@@ -18,7 +18,6 @@ export function LocationPicker({
 }) {
   // 해금 지점이 여러 개인 장소는 지점마다 한 줄 ("경복궁 · 광화문")
   const options = places
-    .filter((place) => place.kind === 'site')
     .flatMap((place) =>
       place.unlockPoints && place.unlockPoints.length > 1
         ? place.unlockPoints.map((point) => ({

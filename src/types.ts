@@ -52,14 +52,9 @@ export type Place = {
   id: string
   name: string
   region: string
-  /**
-   * site: 위치가 정해진 유적지
-   * event: 위치가 분명하지 않은 역사적 사건 → 학습한 순간 사용자의 위치에 발자국이 찍힌다
-   */
-  kind: 'site' | 'event'
-  /** 실제 위치 (site만). 지도 위 위치와 '근처에 왔는지' 판단에 쓴다 */
-  lat?: number
-  lng?: number
+  /** 실제 위치. 지도 위 위치와 '근처에 왔는지' 판단에 쓴다 */
+  lat: number
+  lng: number
   /** 이 거리(m) 안에 들어오면 방문한 것으로 본다. 넓은 장소는 크게 (기본 500m) */
   radius?: number
   /**
@@ -67,7 +62,7 @@ export type Place = {
    * 하나라도 반경 안에 들어가면 열린다. 지점에 radius가 없으면 장소의 radius(기본 500m)를 쓴다.
    */
   unlockPoints?: UnlockPoint[]
-  /** 지도 위 마커 위치 (지도 영역 기준 %). site는 lat/lng로 계산한다. event는 학습 기록의 위치를 쓴다 */
+  /** 지도 위 마커 위치 (지도 영역 기준 %). lat/lng로 계산한다 */
   top: string
   left: string
   /** 지도에서 발자국을 눌렀을 때 보이는 두 줄 요약 */
@@ -109,14 +104,6 @@ export type LearningRecord = {
   placeId: string
   learnedAt: string
   quizAt?: string
-  /**
-   * event 장소의 발자국을 찍을 시·도 (지도 그림의 지역 id, 예: 'seoul').
-   * 정확한 위치는 저장하지 않고, 학습한 순간 내가 있던 시·도만 남긴다.
-   */
-  region?: string
-  /** 예전 기록의 발자국 위치 (지도 영역 기준 %). 새 기록은 region을 쓴다 */
-  top?: string
-  left?: string
 }
 
 /** 그림 캐릭터의 머리 모양 (성별마다 고를 수 있는 것이 다르다. data/avatar.ts의 characterStyles) */

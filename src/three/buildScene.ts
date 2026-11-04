@@ -3,7 +3,7 @@ import * as THREE from 'three'
 // 장소별 3D 배경을 코드로 만드는 함수 모음 (로우폴리 스타일)
 // 외부 모델 파일 없이 기본 도형을 조합해서 만들기 때문에 인터넷 연결 없이도 보인다.
 
-export type SceneKind = 'palace' | 'fortress' | 'memorial' | 'market' | 'temple' | 'sea' | 'hall'
+export type SceneKind = 'palace' | 'fortress' | 'memorial' | 'market' | 'temple' | 'sea'
 
 export type SceneTheme = {
   kind: SceneKind
@@ -56,13 +56,6 @@ export const sceneThemes: Record<string, SceneTheme> = {
     skyBottom: '#e8d7b6',
     ground: '#2f6f8f',
     orbit: { radius: 30, height: 9, target: [0, 1, 0] },
-  },
-  hunminjeongeum: {
-    kind: 'hall',
-    skyTop: '#a7c4dc',
-    skyBottom: '#f3ead6',
-    ground: '#cdbf9f',
-    orbit: { radius: 22, height: 8, target: [0, 3, 0] },
   },
 }
 
@@ -411,26 +404,6 @@ export function buildScene(scene: THREE.Scene, theme: SceneTheme): (time: number
       ships.push(enemy)
     }
     animated.push((t) => ships.forEach((s, i) => (s.position.y = Math.sin(t * 1.6 + i) * 0.18)))
-  }
-
-  if (theme.kind === 'hall') {
-    scene.add(mountains('#88a27a'))
-    const yard = box(16, 0.3, 12, '#d8cfb8')
-    yard.position.y = 0.15
-    scene.add(yard)
-    const hall = hanok(9, 5, 2.8)
-    hall.position.set(0, 0.3, -4)
-    scene.add(hall)
-    // 바닥에 펼쳐진 한지와 글자 판
-    for (let i = 0; i < 4; i += 1) {
-      const paper = box(1.6, 0.05, 2.2, '#f8f1dc')
-      paper.position.set(-3 + i * 2, 0.35, 3)
-      scene.add(paper)
-      const ink = box(0.9, 0.06, 0.12, '#222')
-      ink.position.set(-3 + i * 2, 0.4, 2.6)
-      scene.add(ink)
-    }
-    for (let i = 0; i < 5; i += 1) scene.add(tree(-16 + i * 8, -12, 1.1))
   }
 
   return (time: number) => animated.forEach((fn) => fn(time))

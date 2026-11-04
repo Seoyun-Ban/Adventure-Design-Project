@@ -159,32 +159,6 @@ export const figures: Record<string, HistoricalFigure> = {
       { speaker: 'me', text: '이 승리는 지금도 한산도 대첩이라는 이름으로 기억되고 있어요!' },
     ],
   },
-  hunminjeongeum: {
-    name: '세종',
-    title: '훈민정음을 만든 임금',
-    image: '/images/characters/sejong.png',
-    look: king,
-    equipped: { 장비: 'ikseongwan', 의복: 'royal-robe', 무기: 'brush' },
-    beard: 'beard',
-    voice: { gender: 'male', pitch: 0.95, rate: 0.92 },
-    dialogue: [
-      { speaker: 'figure', text: '어서 오너라. 나는 조선의 임금 세종이다.' },
-      {
-        speaker: 'figure',
-        text: '우리말과 한자가 달라, 백성들이 자기 뜻을 글로 나타내기 어려운 것이 안타까웠단다.',
-      },
-      { speaker: 'me', text: '그래서 새 글자를 만드신 거예요?' },
-      {
-        speaker: 'figure',
-        text: '그렇지. 1443년 스물여덟 자를 만들고, 1446년 그 원리를 담은 책을 펴냈단다.',
-      },
-      {
-        speaker: 'me',
-        text: '지금 우리가 쓰는 한글이 바로 그 글자예요. 10월 9일은 한글날로 기념하고 있어요!',
-      },
-      { speaker: 'figure', text: '오늘날 모두가 그 글자를 쓴다니, 이보다 기쁜 일이 없구나.' },
-    ],
-  },
 }
 
 /** 내 캐릭터 목소리: 남자아이는 남성 목소리, 여자아이는 여성 목소리를 조금 높게 */

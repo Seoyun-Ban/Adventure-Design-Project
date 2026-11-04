@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { defaultLook, migrateEquipped } from '../data/avatar'
-import { DEMO_VISITED_IDS } from '../data/places'
+import { DEMO_VISITED_IDS, findPlace } from '../data/places'
 import type { AvatarLook, Difficulty, Equipped, LearningRecord, SocialProvider } from '../types'
 
 // 사용자 진행 상황 (학습 기록, 아바타, 설정)
@@ -117,16 +117,20 @@ function load(): Progress {
       // 예전 기록의 틀린 문제 목록(없어진 복습 퀴즈용)은 버린다
       const { wrongAnswers: _removed, ...parsed } = JSON.parse(saved)
       // 예전에 저장한 기록에는 최근 대결 목록이 없을 수 있어 기본값과 합친다
-      // 없어진 아이템(군모, 만세 태극기)을 착용하던 기록은 새 아이템으로 바꾼다
+      // 없어진 아이템(군모, 만세 태극기, 세종 붓)을 착용하던 기록은 새 아이템으로 바꾸거나 벗긴다
       const equipped = migrateEquipped(parsed.equipped ?? demo.equipped)
       // 방문 기록이 없던 예전 기록은 처음 상태의 방문 장소로 시작하고, 학습한 장소는 방문한 것으로 본다
-      const records: LearningRecord[] = parsed.records ?? demo.records
+      // 앱에서 없어진 장소(훈민정음 반포)의 학습 기록·방문 기록·관심 표시는 여기서 정리한다
+      const records: LearningRecord[] = (parsed.records ?? demo.records)
+        .filter((record: LearningRecord) => findPlace(record.placeId))
+        .map(({ placeId, learnedAt, quizAt }: LearningRecord) => ({ placeId, learnedAt, quizAt }))
       const visitedIds = [
         ...new Set([...(parsed.visitedIds ?? demo.visitedIds), ...records.map((record) => record.placeId)]),
-      ]
+      ].filter((id) => findPlace(id))
+      const favorites: string[] = (parsed.favorites ?? demo.favorites).filter((id: string) => findPlace(id))
       // 경험치가 없던 예전 기록은 예전 레벨(1 + 학습한 장소 수)과 같아지도록 채운다
       const xp: number = typeof parsed.xp === 'number' ? parsed.xp : records.length * 100
-      return { ...demo, ...parsed, equipped, visitedIds, xp, battle: { ...demo.battle, ...parsed.battle } }
+      return { ...demo, ...parsed, equipped, records, visitedIds, favorites, xp, battle: { ...demo.battle, ...parsed.battle } }
     }
   } catch {
     // 저장소를 쓸 수 없는 환경이면 기본값 사용
@@ -167,10 +171,9 @@ export function useProgress() {
     completedIds,
     quizDoneIds,
     update,
-    /** 학습 완료: 기록 추가 (event 장소는 학습할 때 있던 시·도를 함께 저장) */
-    completeLearning: (placeId: string, region?: string) => upsertRecord(placeId, region ? { region } : {}),
-    completeQuiz: (placeId: string, region?: string) =>
-      upsertRecord(placeId, { ...(region ? { region } : {}), quizAt: new Date().toISOString() }),
+    /** 학습 완료: 기록 추가 */
+    completeLearning: (placeId: string) => upsertRecord(placeId, {}),
+    completeQuiz: (placeId: string) => upsertRecord(placeId, { quizAt: new Date().toISOString() }),
     /** 퀴즈에서 얻은 경험치를 더한다 */
     addXp: (amount: number) => setProgress((prev) => ({ ...prev, xp: prev.xp + Math.max(0, amount) })),
     /** 장소 반경 안에 들어왔을 때: 방문한 장소로 기억한다 (위치는 저장하지 않는다) */

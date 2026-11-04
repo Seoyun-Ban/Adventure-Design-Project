@@ -9,7 +9,6 @@ import southKoreaMap from '@svg-maps/south-korea'
 import { Icon } from './Icon'
 import { MapMarker } from './MapMarker'
 import { isPlaceOpen, places } from '../data/places'
-import { regionMapPosition } from '../lib/regions'
 import { toMapPosition, toMapXY, type LatLng } from '../lib/geo'
 import { frameScale } from '../lib/frameScale'
 import type { LearningRecord, Place } from '../types'
@@ -210,14 +209,7 @@ export function KoreaMap({
   const markers = spreadMarkers(
     places.flatMap((place) => {
       const record = records.find((item) => item.placeId === place.id)
-      // 위치가 없는 사건(event)은 학습한 시·도에 발자국을 찍고, 학습 전에는 지도에 표시하지 않는다
-      if (place.kind === 'event' && !record) return []
-      const position =
-        place.kind === 'event'
-          ? record?.top && record.left && !record.region
-            ? { top: record.top, left: record.left }
-            : regionMapPosition(record?.region)
-          : place
+      const position = place
       const completed = Boolean(record)
       const open = isPlaceOpen(place, visitedIds)
       // 버튼으로 꺼 둔 표시는 밀어내기 계산에서도 뺀다 (MapMarker의 보이기 규칙과 같다)

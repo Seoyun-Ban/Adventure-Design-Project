@@ -180,18 +180,6 @@ export const historyItems: HistoryItem[] = [
     art: { kind: 'image', src: '/images/characters/item-sword.png', anchor: { x: 50, y: 84 }, height: 38 },
   },
   {
-    id: 'brush',
-    name: '세종을 기리는 붓',
-    shortName: '세종 붓',
-    category: '무기',
-    symbol: '筆',
-    placeId: 'hunminjeongeum',
-    rarity: '전설',
-    description: '세종과 집현전 학자들이 훈민정음을 만들던 모습을 떠올리게 하는 붓.',
-    stats: { 공격: 30, 방어: 30, 지혜: 99 },
-    art: { kind: 'image', src: '/images/characters/item-brush.png', anchor: { x: 50, y: 72 }, height: 38 },
-  },
-  {
     id: 'taegukgi',
     name: '독립의 태극기',
     shortName: '태극기',
@@ -275,7 +263,7 @@ export const battleFriends = [
     title: '궁궐 박사',
     color: 'red',
     look: { gender: '여', style: 'girl-long', body: '보통', hair: '긴 머리', skin: '#f2c9a0' },
-    equipped: { 장비: 'gat', 무기: 'brush', 의복: 'official-robe' },
+    equipped: { 장비: 'gat', 무기: 'taegukgi', 의복: 'official-robe' },
   },
   {
     id: 'jiho',
@@ -314,10 +302,12 @@ export function findItem(id?: string) {
  * 없어진 아이템을 새 아이템으로 바꾼다 (예전에 저장한 기록·예전 도전장 링크용)
  * - 만세 태극기(manse-flag, 손) → 독립선언서(declaration, 손)
  * - 독립군 군모(liberation-cap, 머리) → 태극기(taegukgi, 손). 손에 이미 다른 아이템이 있으면 그대로 두고 군모만 벗는다.
+ * - 세종을 기리는 붓(brush, 손) → 없어진 훈민정음 장소의 아이템이라 그냥 벗는다.
  */
 export function migrateEquipped(equipped: Equipped): Equipped {
   const next: Equipped = { ...equipped }
   if (next.무기 === 'manse-flag') next.무기 = 'declaration'
+  if (next.무기 === 'brush') delete next.무기
   if (next.장비 === 'liberation-cap') {
     delete next.장비
     if (!next.무기) next.무기 = 'taegukgi'

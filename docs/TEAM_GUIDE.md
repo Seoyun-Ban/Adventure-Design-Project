@@ -45,7 +45,6 @@ git push
 
 | 인물 | 파일 이름 | 상태 |
 | --- | --- | --- |
-| 세종 | `sejong.png` | ✅ |
 | 태조 이성계 | `taejo.png` | ✅ |
 | 정조 | `jeongjo.png` | ✅ |
 | 이순신 | `yisunsin.png` | ✅ |
@@ -69,7 +68,7 @@ git push
 | 아이템 | 파일 | 상태 |
 | --- | --- | --- |
 | 선비 갓, 장군 투구 (머리) | `item-gat.png`, `item-helmet.png` | ✅ |
-| 정조 활, 화랑 검, 세종 붓, 독립선언서 (손) | `item-bow.png`, `item-sword.png`, `item-brush.png`, `item-declaration.png` | ✅ |
+| 정조 활, 화랑 검, 독립선언서 (손) | `item-bow.png`, `item-sword.png`, `item-declaration.png` | ✅ |
 | 태극기 (손) | 코드로 그림 (`components/ItemArtView.tsx`, 국기 규격대로 `Taegukgi.tsx`) | ✅ |
 | 관복, 화랑 예복, 갑옷 (몸) | 옷을 입은 캐릭터 그림 `me-{머리모양}-{옷}.png` (옷: robe·hwarang·armor) | 머리 모양 5종 모두 ✅ (15장) |
 
