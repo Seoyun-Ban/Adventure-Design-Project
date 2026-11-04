@@ -87,30 +87,14 @@ git push
 
 ⚠️ 태극기가 들어간 그림은 꼭 크게 확대해서 확인하세요. AI 그림은 괘 배치나 태극 소용돌이 방향이 틀리는 경우가 많습니다. (`item-flag.png`는 태극 방향이 뒤집혀 있어서 쓰지 않고 코드로 그렸습니다. 원본은 `art/unused/`에 보관 — 이 폴더는 `npm run images`가 처리하지 않아요.)
 
-### 영상 장면 목소리 (지금은 꺼 둠, 녹음 파일 넣기)
+### 영상 장면 목소리 (현재 꺼 둠)
 
-> **지금은 목소리를 꺼 두었습니다.** 대사는 말풍선 글자가 한 글자씩 나타나는 효과로만 보여주고, 소리 버튼도 숨겨져 있어요.
-> 녹음 재생·기기 목소리 코드와 대본은 지우지 않고 그대로 두었습니다.
->
-> **다시 켜는 법**
-> 1. `src/lib/speech.ts` 파일 위쪽의 `export const SCENE_VOICE_ENABLED = false` 를 `true` 로 바꿉니다.
-> 2. `npm run build`가 되는지 확인하고 커밋·push합니다.
-> 3. 켜면 소리 버튼이 다시 보이고, 아래 규칙대로 녹음 파일(없으면 기기 목소리)을 재생해요. 글자 효과는 켜도 그대로 나와요.
+녹음 파일을 넣으면 재생할 수 있는 구조를 갖춰 두었고, 현재는 꺼 둔 상태입니다. 대사는 말풍선 글자가 한 글자씩 나타나는 효과로만 보여주고, 소리 버튼도 숨겨져 있어요.
 
-시간이 남으면 대사를 **전부 녹음 파일로 바꾸려고 합니다.** 켜 두면 녹음 파일이 있는 줄은 녹음만 재생하고, 없는 줄만 기기 목소리로 대신 읽습니다.
-대본·읽는 법·파일 이름은 **[docs/voice-script.md](voice-script.md)** 에 모두 있어요 (55개 파일).
-
-- [ ] (보류) 대사 녹음 55개 — `docs/voice-script.md`의 '녹음 완료' 칸 채우기 (담당: )
-- 위치와 이름: `public/audio/장소id/줄번호.mp3` (줄번호는 1부터, `src/data/figures.ts`의 대사 순서)
-  - 예: 경복궁 첫 대사 → `public/audio/gyeongbokgung/1.mp3`, 넷째 대사 → `public/audio/gyeongbokgung/4.mp3`
-  - 장소 id: gyeongbokgung(경복궁), suwon(수원화성), independence(독립기념관), aunae(아우내 장터), bulguksa(불국사), hansando(한산도), hunminjeongeum(훈민정음 반포)
-- 내 캐릭터 대사('me')는 남자아이·여자아이 두 파일: `줄번호-boy.mp3`, `줄번호-girl.mp3` (예: `gyeongbokgung/3-boy.mp3`). 아바타 성별에 맞는 파일이 나와요.
-- 일부 줄만 녹음해도 됩니다. 없는 줄은 기기 목소리로 읽어요.
-- 대사 글자를 바꾸면 그 줄의 녹음도 다시 해야 합니다. `docs/voice-script.md`도 같이 고치고 그 줄에 **다시 녹음 필요**라고 적어 주세요.
-- 파일을 넣은 뒤 `npm run dev`나 `npm run build`를 하면 녹음 파일 목록(`src/data/generated/audioFiles.ts`)이 저절로 바뀝니다. 앱은 이 목록에 있는 파일만 재생해요. 목록 파일도 같이 커밋하세요.
-- 목소리가 안 나오면 주소 뒤에 `?debug`를 붙여 열고(예: `https://adventure-design-project.vercel.app/?debug`) F12 → 콘솔에서 `[목소리]` 줄을 보세요. 어떤 목소리로 읽었는지 나옵니다.
-
-녹음이 없는 줄의 기기 목소리는 엣지의 Microsoft InJoon(인준, 남성)·SunHi(선히, 여성) 같은 목소리를 먼저 고릅니다. 크롬·아이폰처럼 남성 한국어 목소리가 없는 기기는 있는 목소리로 대신 읽습니다(높낮이는 조금만 바꿈). 기기에 따라 'Online (Natural)' 목소리가 전부 실패하기도 해서, 한 번 실패하면 앱을 다시 열 때까지 Online 목소리는 건너뛰고 기본 목소리로 읽어요. 녹음을 다 넣으면 기기와 상관없이 같은 소리가 나옵니다.
+- 켜고 끄는 값: `src/lib/speech.ts` 위쪽의 `SCENE_VOICE_ENABLED` (지금은 `false`)
+- 녹음 파일 위치: `public/audio/장소id/줄번호.mp3` (줄번호는 1부터, `src/data/figures.ts`의 대사 순서). 내 캐릭터 대사는 `줄번호-boy.mp3`, `줄번호-girl.mp3`
+- 파일 목록(`src/data/generated/audioFiles.ts`)은 `npm run dev`나 `npm run build`를 할 때 자동으로 만들어집니다. 앱은 이 목록에 있는 파일만 재생해요.
+- 녹음 파일이 없는 줄은 기기의 한국어 목소리로 읽습니다.
 
 ### 사진
 
