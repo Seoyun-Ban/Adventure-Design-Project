@@ -194,29 +194,44 @@ export async function generateQuiz(
   }
 }
 
-/** 친구 대결용: 모든 장소에서 무작위 한 문제 (난이도를 고르면 그 난이도에서) */
-export function randomBattleQuestion(previous?: string, chosen?: Difficulty): QuizItem {
-  const placeIds = Object.keys(facts)
+/**
+ * 대결·보스전용 문제 뽑기: 주어진 장소(학습을 마친 장소)의 문제만 난이도별로 모은다.
+ * - 고른 난이도에서 아직 안 나온 문제를 먼저 낸다
+ * - 그 난이도 문제가 바닥나면 나온 기록을 지우고 다시 섞어서 낸다 (바로 앞 문제는 되도록 피함)
+ * - 그 난이도에 문제가 하나도 없으면 다른 난이도에서, 그래도 없으면 모든 장소에서 낸다 (멈추지 않는다)
+ */
+export function createQuestionDeck(placeIds: string[]) {
   const levels: Difficulty[] = ['쉬움', '보통', '어려움']
-  for (let tries = 0; tries < 10; tries += 1) {
-    const placeId = placeIds[Math.floor(Math.random() * placeIds.length)]
-    const level = chosen ?? levels[Math.floor(Math.random() * levels.length)]
-    const pool = questionPool(placeId, level)
-    const item = pool[Math.floor(Math.random() * pool.length)]
-    if (item && item.question !== previous) return shuffleOptions(item)
-  }
-  return shuffleOptions(questionPool('gyeongbokgung', '쉬움')[0])
-}
-
-/** 보스전용: 모든 장소의 문제를 난이도별로 한 번만 모은 묶음 (같은 판에서 문제가 겹치지 않게 질문 글로 중복을 없앤다) */
-export function bossQuestionPools(): Record<Difficulty, QuizItem[]> {
-  const placeIds = Object.keys(facts)
-  const pools = {} as Record<Difficulty, QuizItem[]>
-  for (const level of ['쉬움', '보통', '어려움'] as Difficulty[]) {
+  const collect = (ids: string[], level: Difficulty) => {
     const seen = new Set<string>()
-    pools[level] = placeIds
+    return ids
       .flatMap((placeId) => questionPool(placeId, level))
       .filter((item) => !seen.has(item.question) && !!seen.add(item.question))
   }
-  return pools
+  const pools = {} as Record<Difficulty, QuizItem[]>
+  for (const level of levels) pools[level] = collect(placeIds, level)
+  const everywhere = () => collect(Object.keys(facts), '쉬움')
+  const used: Record<Difficulty, Set<string>> = { 쉬움: new Set(), 보통: new Set(), 어려움: new Set() }
+  let last = ''
+
+  return {
+    pools,
+    draw(chosen: Difficulty): QuizItem {
+      const level = [chosen, ...levels.filter((l) => l !== chosen)].find((l) => pools[l].length > 0)
+      const pool = level ? pools[level] : everywhere()
+      const key = level ?? '쉬움'
+      let fresh = pool.filter((item) => !used[key].has(item.question))
+      if (fresh.length === 0) {
+        used[key].clear()
+        fresh = pool.length > 1 ? pool.filter((item) => item.question !== last) : pool
+      }
+      const item = fresh[Math.floor(Math.random() * fresh.length)]
+      used[key].add(item.question)
+      last = item.question
+      return shuffleOptions(item)
+    },
+  }
 }
+
+/** 학습을 마친 장소 id만 골라 낸다 (모르는 id는 버린다) */
+export const learnedPlaceIds = (completedIds: string[]) => Object.keys(facts).filter((id) => completedIds.includes(id))

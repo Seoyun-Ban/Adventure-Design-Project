@@ -9,6 +9,7 @@ import {
 } from 'react'
 import { Icon } from './Icon'
 import { CharacterAvatar } from './CharacterAvatar'
+import { TOGETHER_MIN_PLACES } from '../data/battle'
 import type { AvatarLook, Tab } from '../types'
 
 // 앱 소개 안내 (처음 지도에 들어왔을 때 한 번, 도움말의 '앱 소개 다시 보기'로 언제든)
@@ -85,7 +86,7 @@ const STEPS: Step[] = [
     tab: 'avatar',
     spots: [{ selector: '.equip-slots, .competition-button', all: true }, tabSpot('avatar')],
     title: '아바타',
-    body: '학습하면 역사 아이템을 얻고 입혀 볼 수 있어요. 친구와 함께하는 보스전과 대결도 여기서 해요!',
+    body: `학습하면 역사 아이템을 얻고 입혀 볼 수 있어요. 장소 ${TOGETHER_MIN_PLACES}곳을 학습하면 친구와 함께하는 보스전과 대결도 열려요. 문제는 배운 장소에서만 나와요!`,
   },
   {
     tab: 'profile',

@@ -4,12 +4,12 @@ import { LevelPicker } from '../components/LevelPicker'
 import { CharacterAvatar } from '../components/CharacterAvatar'
 import { powerOf } from '../data/avatar'
 import { BATTLE_LEVELS } from '../data/battle'
-import { randomBattleQuestion } from '../lib/quizGenerator'
+import { createQuestionDeck } from '../lib/quizGenerator'
 import { withJosa } from '../lib/korean'
 import type { AvatarLook, Difficulty, Equipped, QuizItem } from '../types'
 
 // 친구와 역사 지식 대결 (턴제)
-// 1) 내 차례: 난이도(쉬움/보통/어려움)를 고르고 무작위 문제를 맞히면 '공격' 또는 '방어'를 고른다. 어려운 문제일수록 공격이 세고 방어도 많이 막는다(data/battle.ts). 틀리면 아무것도 못 한다.
+// 1) 내 차례: 난이도(쉬움/보통/어려움)를 고르고, 학습을 마친 장소의 문제를 맞히면 '공격' 또는 '방어'를 고른다. 어려운 문제일수록 공격이 세고 방어도 많이 막는다(data/battle.ts). 틀리면 아무것도 못 한다.
 // 2) 상대 차례: 상대가 공격한다. 공격력은 상대의 의상(아이템)과 레벨(학습량)로 정해진다.
 // 3) 먼저 체력이 0이 되는 쪽이 진다. 끝나면 승패 모션을 보여주고 결과를 한 번만 기록한다.
 
@@ -30,6 +30,7 @@ const attackDamage = (p: number, mult = 1) => Math.round((12 + p / 45 + Math.ran
 export function BattleScreen({
   me,
   opponent,
+  placeIds,
   onFinish,
   onRetry,
   onExit,
@@ -38,6 +39,8 @@ export function BattleScreen({
 }: {
   me: Fighter
   opponent: Opponent
+  /** 문제를 낼 장소 (학습을 마친 장소) */
+  placeIds: string[]
   /** 끝난 뒤 나가기 버튼 이름 */
   exitLabel?: string
   /** 끝난 뒤 버튼 아래에 더 보여줄 것 (예: 답장 도전장 보내기) */
@@ -55,7 +58,8 @@ export function BattleScreen({
   const [turn, setTurn] = useState(1)
   const [phase, setPhase] = useState<Phase>('pick')
   const [level, setLevel] = useState<Difficulty>('보통')
-  const [question, setQuestion] = useState<QuizItem>(() => randomBattleQuestion())
+  const [deck] = useState(() => createQuestionDeck(placeIds))
+  const [question, setQuestion] = useState<QuizItem | null>(null)
   const [picked, setPicked] = useState<number | null>(null)
   /** 방어 중이면 다음 공격을 막는 비율 (0이면 방어 안 함) */
   const [guard, setGuardState] = useState(0)
@@ -89,14 +93,14 @@ export function BattleScreen({
   function chooseLevel(chosen: Difficulty) {
     if (phase !== 'pick') return
     setLevel(chosen)
-    setQuestion((prev) => randomBattleQuestion(prev.question, chosen))
+    setQuestion(deck.draw(chosen))
     setPicked(null)
     setLog('문제를 맞혀 공격하거나 방어하세요!')
     setPhase('question')
   }
 
   function answer(option: number) {
-    if (phase !== 'question' || picked !== null) return
+    if (phase !== 'question' || picked !== null || !question) return
     setPicked(option)
     if (option === question.answer) {
       setLog('정답! 공격할까요, 방어할까요?')
@@ -257,7 +261,7 @@ export function BattleScreen({
             />
           </>
         )}
-        {phase === 'question' && (
+        {phase === 'question' && question && (
           <>
             <span className="battle-question-label">{level} 문제</span>
             <h3>{question.question}</h3>

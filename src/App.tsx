@@ -14,6 +14,8 @@ import { NearbyBanner } from './components/NearbyBanner'
 import { UNLOCK_ACCURACY_M } from './lib/location'
 import { regionAt } from './lib/regions'
 import { useProgress } from './hooks/useProgress'
+import { TOGETHER_MIN_PLACES } from './data/battle'
+import { learnedPlaceIds } from './lib/quizGenerator'
 import { useLocation } from './hooks/useLocation'
 import { itemsForPlace, levelFor } from './data/avatar'
 import { clearChallengeHash, readChallenge } from './lib/challenge'
@@ -146,6 +148,13 @@ export default function App() {
       }
     : null
 
+  /** 도전장 대결의 문제 장소: 학습한 장소가 충분하면 그 장소, 아직 부족한 사람(처음 받은 사람 포함)은 모든 장소 */
+  const learnedForChallenge = learnedPlaceIds(completedIds)
+  const challengePlaceIds =
+    meAsChallenger && learnedForChallenge.length >= TOGETHER_MIN_PLACES
+      ? learnedForChallenge
+      : places.map((place) => place.id)
+
   /** 이 장소를 처음 학습하면 얻는 아이템 (이미 학습한 장소면 없음) */
   const newItemsFor = (place: Place) => (completedIds.includes(place.id) ? [] : itemsForPlace(place.id))
 
@@ -251,6 +260,7 @@ export default function App() {
           <ChallengeScreen
             challenge={challenge}
             me={meAsChallenger}
+            placeIds={challengePlaceIds}
             onFinish={recordBattle}
             onStart={() => leaveChallenge('login')}
             onClose={() => leaveChallenge('home')}

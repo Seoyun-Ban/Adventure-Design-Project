@@ -14,14 +14,14 @@ import {
   bossMaxHp,
   comboBonus,
 } from '../data/boss'
-import { bossQuestionPools, shuffleOptions } from '../lib/quizGenerator'
+import { createQuestionDeck } from '../lib/quizGenerator'
 import type { Difficulty, QuizItem } from '../types'
 
 // 함께하기 > 보스전(협동): 한 기기에서 2~4명이 번갈아 문제를 풀어 '까먹기 괴물'을 물리친다.
 // - 차례마다 난이도를 고르고(어려울수록 큰 피해), 맞히면 보스에게 피해, 연속으로 맞히면 콤보로 더 큰 피해
 // - 틀리거나 문제당 제한 시간이 다 되면 괴물이 반격해 팀 하트가 하나 줄고(화면이 흔들림), 하트가 0이면 진다
 // - 피해 없이 다음 사람 차례. 모두가 한 번씩 풀면 1라운드, BOSS_ROUNDS 안에 쓰러뜨려야 한다
-// - 문제는 앱의 퀴즈 문제만 쓰고, 한 판에서는 같은 문제가 다시 나오지 않는다
+// - 문제는 학습을 마친 장소의 퀴즈에서만 내고, 한 판에서는 같은 문제를 되도록 반복하지 않는다 (바닥나면 다시 섞는다)
 // - 이긴 뒤에는 함께한 사람 이름만 보여주고 순위는 매기지 않는다
 
 type Phase = 'setup' | 'pick' | 'question' | 'feedback' | 'win' | 'fled' | 'lost'
@@ -32,7 +32,16 @@ const LEVELS: { level: Difficulty; hint: string }[] = [
   { level: '어려움', hint: '가장 큰 피해' },
 ]
 
-export function BossScreen({ onWin, onExit }: { onWin: (xp: number) => void; onExit: () => void }) {
+export function BossScreen({
+  placeIds,
+  onWin,
+  onExit,
+}: {
+  /** 문제를 낼 장소 (학습을 마친 장소) */
+  placeIds: string[]
+  onWin: (xp: number) => void
+  onExit: () => void
+}) {
   const [phase, setPhase] = useState<Phase>('setup')
   const [names, setNames] = useState<string[]>(['', ''])
   const [players, setPlayers] = useState<string[]>([])
@@ -50,9 +59,8 @@ export function BossScreen({ onWin, onExit }: { onWin: (xp: number) => void; onE
   /** 반격을 맞을 때마다 늘려서 흔들림을 다시 시작한다 */
   const [shakeKey, setShakeKey] = useState(0)
   const [hitKey, setHitKey] = useState(0)
-  /** 이미 낸 문제 (같은 판에서 반복 금지) */
-  const used = useRef(new Set<string>())
-  const pools = useRef<ReturnType<typeof bossQuestionPools> | null>(null)
+  /** 문제 뽑기 (같은 판에서는 안 나온 문제부터, 판을 새로 시작하면 다시 만든다) */
+  const deck = useRef<ReturnType<typeof createQuestionDeck> | null>(null)
 
   const maxHp = bossMaxHp(players.length || names.length)
   const round = Math.floor(turn / Math.max(players.length, 1)) + 1
@@ -68,8 +76,7 @@ export function BossScreen({ onWin, onExit }: { onWin: (xp: number) => void; onE
 
   function start() {
     if (!canStart) return
-    used.current = new Set()
-    pools.current = bossQuestionPools()
+    deck.current = createQuestionDeck(placeIds)
     setPlayers(cleaned)
     setHp(bossMaxHp(cleaned.length))
     setHearts(BOSS_HEARTS)
@@ -79,26 +86,9 @@ export function BossScreen({ onWin, onExit }: { onWin: (xp: number) => void; onE
     setPhase('pick')
   }
 
-  /** 고른 난이도에서 아직 안 나온 문제를 뽑는다 (모자라면 다른 난이도에서 채운다) */
-  function draw(chosen: Difficulty) {
-    const all = pools.current ?? bossQuestionPools()
-    const order: Difficulty[] = [chosen, ...(['보통', '쉬움', '어려움'] as Difficulty[]).filter((l) => l !== chosen)]
-    for (const l of order) {
-      const fresh = all[l].filter((item) => !used.current.has(item.question))
-      if (fresh.length > 0) {
-        const item = fresh[Math.floor(Math.random() * fresh.length)]
-        used.current.add(item.question)
-        return shuffleOptions(item)
-      }
-    }
-    // 모든 문제를 다 썼다면 처음부터 다시 쓴다
-    used.current = new Set()
-    return draw(chosen)
-  }
-
   function chooseLevel(chosen: Difficulty) {
     setLevel(chosen)
-    setQuestion(draw(chosen))
+    setQuestion(deck.current?.draw(chosen) ?? null)
     setPicked(null)
     setTimedOut(false)
     setTimeLeft(BOSS_TIME_LIMIT)

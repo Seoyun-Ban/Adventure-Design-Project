@@ -10,6 +10,8 @@ import { historyItems, battleFriends, findItem, levelFor, powerOf } from '../dat
 import { BattleScreen } from './BattleScreen'
 import { BossScreen } from './BossScreen'
 import { BOSS } from '../data/boss'
+import { TOGETHER_MIN_PLACES } from '../data/battle'
+import { learnedPlaceIds } from '../lib/quizGenerator'
 import type { BattleRecord } from '../hooks/useProgress'
 import type { AvatarLook, Equipped, HistoryItem, ItemCategory } from '../types'
 
@@ -50,6 +52,14 @@ export function AvatarScreen({
   const [view, setView] = useState<'inventory' | 'friends' | 'battle' | 'boss'>('inventory')
   const [opponent, setOpponent] = useState(battleFriends[0])
   const [powerInfo, setPowerInfo] = useState(false)
+  // 함께하기(대결·보스전)는 학습을 마친 장소가 TOGETHER_MIN_PLACES곳 이상이어야 열린다. 문제도 그 장소에서만 낸다.
+  const learned = learnedPlaceIds(completedIds)
+  const togetherOpen = learned.length >= TOGETHER_MIN_PLACES
+  const lockedText = `장소 ${TOGETHER_MIN_PLACES}곳을 학습하면 열려요 (지금 ${Math.min(learned.length, TOGETHER_MIN_PLACES)}/${TOGETHER_MIN_PLACES})`
+  function openTogether(next: 'boss' | 'friends') {
+    if (togetherOpen) setView(next)
+    else onNotice(`역사 장소 ${TOGETHER_MIN_PLACES}곳을 학습하면 친구와 함께할 수 있어요`)
+  }
   /** '다시 도전'을 누를 때마다 바꿔서 대결 화면을 처음부터 다시 시작한다 */
   const [battleRound, setBattleRound] = useState(0)
   const filteredItems = historyItems.filter((item) => item.category === category)
@@ -60,11 +70,11 @@ export function AvatarScreen({
     setView('battle')
   }
 
-  if (view === 'boss') {
-    return <BossScreen onWin={onBossWin} onExit={() => setView('inventory')} />
+  if (view === 'boss' && togetherOpen) {
+    return <BossScreen placeIds={learned} onWin={onBossWin} onExit={() => setView('inventory')} />
   }
 
-  if (view === 'friends') {
+  if (view === 'friends' && togetherOpen) {
     return (
       <section className="content-screen tab-screen avatar-screen competition-screen">
         <header className="avatar-subhead">
@@ -118,10 +128,11 @@ export function AvatarScreen({
     )
   }
 
-  if (view === 'battle') {
+  if (view === 'battle' && togetherOpen) {
     return (
       <BattleScreen
         key={battleRound}
+        placeIds={learned}
         me={{ nickname, look, equipped, level }}
         opponent={opponent}
         onFinish={(won) => onBattleEnd(opponent.name, won)}
@@ -190,27 +201,33 @@ export function AvatarScreen({
       </div>
       <div className="together">
         <h3 className="section-title">함께하기</h3>
-        <button type="button" className="competition-button boss-button" onClick={() => setView('boss')}>
+        <button
+          type="button"
+          className={`competition-button boss-button ${togetherOpen ? '' : 'together-locked'}`}
+          aria-disabled={!togetherOpen}
+          onClick={() => openTogether('boss')}
+        >
           <span className="competition-icon">{BOSS.face}</span>
           <span>
             <strong>보스전 (협동)</strong>
-            <small>친구들과 힘을 모아 {BOSS.name}를 물리쳐요</small>
+            <small>{togetherOpen ? `친구들과 힘을 모아 ${BOSS.name}를 물리쳐요` : lockedText}</small>
           </span>
-          <Icon name="chevron" size={20} />
+          <Icon name={togetherOpen ? 'chevron' : 'lock'} size={20} />
         </button>
         <button
           type="button"
-          className="competition-button versus-button"
-          onClick={() => setView('friends')}
+          className={`competition-button versus-button ${togetherOpen ? '' : 'together-locked'}`}
+          aria-disabled={!togetherOpen}
+          onClick={() => openTogether('friends')}
         >
           <span className="competition-icon">
             <Icon name="quiz" size={24} />
           </span>
           <span>
             <strong>대결 (경쟁)</strong>
-            <small>친구와 역사 대결 · 기록 보기</small>
+            <small>{togetherOpen ? '친구와 역사 대결 · 기록 보기' : lockedText}</small>
           </span>
-          <Icon name="chevron" size={20} />
+          <Icon name={togetherOpen ? 'chevron' : 'lock'} size={20} />
         </button>
       </div>
       <div className="inventory-heading">

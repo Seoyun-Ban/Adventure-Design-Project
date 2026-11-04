@@ -9,3 +9,6 @@ export const BATTLE_LEVELS: Record<Difficulty, { attack: number; heal: number; b
   보통: { attack: 1, heal: 8, block: 0.7 },
   어려움: { attack: 1.4, heal: 12, block: 0.9 },
 }
+
+// 함께하기(대결·보스전)가 열리는 조건: 학습을 마친 장소가 이 수 이상이어야 한다 (여기만 고치면 안내 글도 같이 바뀐다)
+export const TOGETHER_MIN_PLACES = 3

@@ -13,6 +13,7 @@ import { BattleScreen } from './BattleScreen'
 export function ChallengeScreen({
   challenge,
   me,
+  placeIds,
   onFinish,
   onStart,
   onClose,
@@ -22,6 +23,8 @@ export function ChallengeScreen({
   challenge: { ok: true; challenger: Challenger } | { ok: false }
   /** 링크를 연 사람의 아바타. 아직 만들지 않았으면 null */
   me: Challenger | null
+  /** 문제를 낼 장소 */
+  placeIds: string[]
   onFinish: (opponent: string, won: boolean) => void
   /** 시작하기 (로그인·온보딩으로) */
   onStart: () => void
@@ -63,6 +66,7 @@ export function ChallengeScreen({
           key={round}
           me={fighter}
           opponent={opponent}
+          placeIds={placeIds}
           onFinish={(won) => onFinish(`${challenger.nickname} (도전장)`, won)}
           onRetry={() => setRound((value) => value + 1)}
           onExit={leave}
