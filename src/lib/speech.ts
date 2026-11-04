@@ -11,7 +11,7 @@ import { AUDIO_FILES } from '../data/generated/audioFiles'
 /**
  * 학습 영상 장면의 목소리(녹음 파일 재생 + 기기 목소리)를 켜고 끄는 값.
  * 지금은 꺼 두었다 (false) → 대사는 말풍선 글자가 한 글자씩 나타나는 효과로만 보여주고, 소리 버튼도 숨긴다.
- * 다시 켜려면 true로 바꾸면 된다. 녹음 파일 구조와 대본(docs/voice-script.md)은 그대로 있다.
+ * 다시 켜려면 true로 바꾸면 된다. 녹음 파일 재생 구조는 그대로 있다.
  */
 export const SCENE_VOICE_ENABLED = false
 
@@ -431,7 +431,7 @@ export function stopSpeaking() {
 }
 
 /**
- * 대사 녹음 파일 주소 규칙 (줄번호는 1부터, 대본: docs/voice-script.md)
+ * 대사 녹음 파일 주소 규칙 (줄번호는 1부터)
  * - 역사 인물 대사: public/audio/장소id/줄번호.mp3
  * - 내 캐릭터 대사: public/audio/장소id/줄번호-boy.mp3, 줄번호-girl.mp3 (아바타 성별에 맞는 파일)
  */
