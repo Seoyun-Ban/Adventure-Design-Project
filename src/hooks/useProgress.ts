@@ -71,7 +71,10 @@ function daysAgo(days: number) {
   return date.toISOString()
 }
 
-/** 처음 실행 시 시연용 기록: 경복궁·수원화성 학습 완료(경복궁은 퀴즈도 완료), 불국사는 열리기만 함 */
+/**
+ * 처음 실행 시 시연용 기록: 수원화성만 학습 완료, 경복궁·불국사는 열리기만 함.
+ * 아이템은 수원화성 것만 갖고 있고, 입고 있는 것은 없다 (착용은 사용자가 직접 한다)
+ */
 function demoProgress(): Progress {
   return {
     loggedIn: false,
@@ -79,14 +82,11 @@ function demoProgress(): Progress {
     onboarded: false,
     nickname: '작은 탐험가',
     look: defaultLook,
-    equipped: { 장비: 'gat', 의복: 'official-robe' },
-    records: [
-      { placeId: 'gyeongbokgung', learnedAt: daysAgo(9), quizAt: daysAgo(9) },
-      { placeId: 'suwon', learnedAt: daysAgo(3) },
-    ],
+    equipped: {},
+    records: [{ placeId: 'suwon', learnedAt: daysAgo(3) }],
     visitedIds: DEMO_VISITED_IDS,
-    // 처음 시작할 때 Lv.3 (경험치 100마다 레벨 1)
-    xp: 200,
+    // 처음 시작할 때 Lv.2 (경험치 100마다 레벨 1)
+    xp: 100,
     defaultDifficulty: '보통',
     pushEnabled: true,
     favorites: ['bulguksa'],

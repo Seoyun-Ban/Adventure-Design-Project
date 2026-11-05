@@ -88,7 +88,7 @@ export const places: Place[] = placeList.map((place) => ({
 /** 근처 장소 알림·방문 판정 기본 반경 (기획서 기준 500m) */
 export const NEARBY_RADIUS_M = 500
 
-/** 처음 시작할 때 이미 방문한 장소 (경복궁·수원화성은 학습까지 마친 상태로, 불국사는 열리기만 한 상태로 시작) */
+/** 처음 시작할 때 이미 방문한 장소 (수원화성은 학습까지 마친 상태로, 경복궁·불국사는 열리기만 한 상태로 시작) */
 export const DEMO_VISITED_IDS = ['gyeongbokgung', 'suwon', 'bulguksa']
 
 /** 장소가 열렸는지 (학습할 수 있는지): 직접 가서 반경 안에 들어간 적이 있어야 한다 (방문한 장소 id만 저장) */
