@@ -2631,6 +2631,33 @@ button {
   font-family: 'Gowun Batang', serif;
   font-size: 9px;
 }
+.place-item-shadow {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px 2px 3px;
+  border-radius: 99px;
+  color: var(--ink-soft);
+  background: rgba(0, 0, 0, 0.07);
+  font-weight: 800;
+}
+.shadow-art {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.shadow-art .item-picture {
+  width: 64px;
+  transform: scale(0.35);
+  filter: brightness(0);
+  opacity: 0.8;
+  flex: none;
+}
+.shadow-art .item-tag {
+  display: none;
+}
 .place-items-done {
   padding: 2px 7px;
   border-radius: 99px;

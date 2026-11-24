@@ -8,6 +8,9 @@ import { isPlaceOpen } from '../data/places'
 import type { LocationStatus, MyPosition } from '../hooks/useLocation'
 import type { LearningRecord, Place } from '../types'
 
+/** 학습 글(쉬움)의 첫 문장 */
+const firstSentence = (text: string) => text.match(/^.*?[.!?](?=\s|$)/)?.[0] ?? text
+
 export function MapScreen({
   records,
   visitedIds,
@@ -142,10 +145,9 @@ export function MapScreen({
               <p>
                 {selectedOpen
                   ? selected.summary
-                  : `아직 안개에 가려진 이야기예요.
-${selected.name}에 직접 가면 열려요.`}
+                  : firstSentence(placeContents[selected.id]?.body.쉬움.intro ?? '')}
               </p>
-              <PlaceItems placeId={selected.id} owned={selectedDone} />
+              <PlaceItems placeId={selected.id} owned={selectedDone} silhouette={!selectedOpen} />
             </div>
             {selectedOpen && (
               <span className="card-arrow">

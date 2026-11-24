@@ -1,18 +1,39 @@
 import { itemsForPlace } from '../data/avatar'
+import { ItemPicture } from './ItemPicture'
 
 // 이 장소를 학습하면 얻는 아이템 (지도 장소 카드, 학습 화면 위쪽)
 // 아이템은 장소 학습을 마치면 얻으므로, 학습을 마친 장소면 '획득 완료'로 보여준다.
 export function PlaceItems({
   placeId,
   owned,
+  silhouette = false,
   className = '',
 }: {
   placeId: string
   owned: boolean
+  /** 아직 열리지 않은 장소: 아이템을 검은 실루엣과 '???'로 보여준다 */
+  silhouette?: boolean
   className?: string
 }) {
   const items = itemsForPlace(placeId)
   if (items.length === 0) return null
+  if (silhouette) {
+    return (
+      <div className={`place-items silhouette ${className}`}>
+        <span className="place-items-label">이곳에서 얻는 아이템</span>
+        <span className="place-items-names">
+          {items.map((item) => (
+            <span key={item.id} className="place-item-shadow">
+              <span className="shadow-art" aria-hidden="true">
+                <ItemPicture item={item} size="small" />
+              </span>
+              ???
+            </span>
+          ))}
+        </span>
+      </div>
+    )
+  }
   return (
     <div className={`place-items ${owned ? 'owned' : ''} ${className}`}>
       <span className="place-items-label">이곳에서 얻는 아이템</span>
