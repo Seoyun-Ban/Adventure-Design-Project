@@ -233,7 +233,7 @@ export function AvatarScreen({
       <div className="inventory-heading">
         <h3 className="section-title">수집한 역사 아이템</h3>
         <span>
-          {ownedCount} / {historyItems.length}
+          모은 아이템 {ownedCount} / {historyItems.length}
         </span>
       </div>
       <div className="item-category-tabs">
