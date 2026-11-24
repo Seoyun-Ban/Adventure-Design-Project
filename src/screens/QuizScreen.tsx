@@ -2,10 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Icon } from '../components/Icon'
 import { ActionButton } from '../components/ActionButton'
 import { levelFor, XP_PER_CORRECT } from '../data/avatar'
-import type { GeneratedQuiz } from '../lib/quizGenerator'
-
-/** 이 비율 이상 맞히면 '퀴즈 완료'로 기록 */
-const PASS_RATIO = 2 / 3
+import { passScore, type GeneratedQuiz } from '../lib/quizGenerator'
 
 /** retried: 쉬움 단계에서 힌트를 보고 다시 골라 맞혔는지 (경험치 절반) */
 type QuizResult = { placeId: string; item: GeneratedQuiz; correct: boolean; retried: boolean }
@@ -116,7 +113,7 @@ export function QuizScreen({
   }
 
   if (finished) {
-    const passed = score >= Math.ceil(quizItems.length * PASS_RATIO)
+    const passed = score >= passScore(quizItems.length)
     const gained = results.reduce((sum, result) => sum + xpOf(result), 0)
     const levelBefore = levelFor(startXp.current)
     const levelAfter = levelFor(startXp.current + gained)

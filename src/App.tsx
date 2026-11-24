@@ -19,7 +19,7 @@ import { useLocation } from './hooks/useLocation'
 import { itemsForPlace, levelFor } from './data/avatar'
 import { clearChallengeHash, readChallenge } from './lib/challenge'
 import { scrollAppToTop } from './lib/frameScale'
-import { generateQuiz, type GeneratedQuiz } from './lib/quizGenerator'
+import { generateQuiz, QUIZ_COUNT, type GeneratedQuiz } from './lib/quizGenerator'
 import type { Difficulty, HistoryItem, Place, Screen, SocialProvider, Tab } from './types'
 
 /** 장소 퀴즈 한 번 (통과하면 그 장소의 퀴즈 완료) */
@@ -193,7 +193,7 @@ export default function App() {
     setSelectedPlace(place)
     startQuiz({
       title: `${place.name} 퀴즈 · ${difficulty}`,
-      load: () => generateQuiz(place.id, difficulty),
+      load: () => generateQuiz(place.id, difficulty, QUIZ_COUNT[difficulty]),
       place,
       from,
     })

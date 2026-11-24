@@ -21,6 +21,12 @@ export type GeneratedQuiz = QuizItem & {
   hint?: string
 }
 
+/** 장소 퀴즈 한 번에 내는 문제 수 (절반 이상 맞히면 퀴즈 완료) */
+export const QUIZ_COUNT: Record<Difficulty, number> = { 쉬움: 2, 보통: 3, 어려움: 5 }
+
+/** 퀴즈 완료 기준: 절반 이상 (쉬움 1/2, 보통 2/3, 어려움 3/5) */
+export const passScore = (total: number) => Math.ceil(total / 2)
+
 /** 쉬움 단계 보기 수 (O/X는 2개) */
 const EASY_OPTIONS = 3
 
