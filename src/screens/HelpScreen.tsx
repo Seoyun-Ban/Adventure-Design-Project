@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Icon } from '../components/Icon'
 import { ActionButton } from '../components/ActionButton'
 import { SubpageHeader } from '../components/SubpageHeader'
-import { LEVEL_POWER, XP_PER_CORRECT, XP_PER_LEVEL } from '../data/avatar'
+import { LEVEL_POWER, XP_PER_LEVEL, XP_PER_QUIZ_PASS, XP_PER_VISIT } from '../data/avatar'
 import { TOGETHER_MIN_PLACES } from '../data/battle'
 import type { Inquiry, InquiryKind } from '../hooks/useProgress'
 
@@ -73,7 +73,7 @@ const guide: HelpItem[] = [
     q: '전투력 올리는 법',
     a: [
       `전투력은 '착용한 아이템 능력치'에 '레벨 × ${LEVEL_POWER}점'을 더한 값이에요.`,
-      `퀴즈를 맞힐 때마다 경험치를 얻어요 (쉬움 ${XP_PER_CORRECT.쉬움}, 보통 ${XP_PER_CORRECT.보통}, 어려움 ${XP_PER_CORRECT.어려움}). 경험치 ${XP_PER_LEVEL}마다 레벨이 1씩 올라요.`,
+      `장소를 방문해서 이야기가 열리면 경험치 ${XP_PER_VISIT}을 얻어요 (같은 장소는 한 번만). 퀴즈를 통과하면 경험치도 얻어요 (쉬움 ${XP_PER_QUIZ_PASS.쉬움}, 보통 ${XP_PER_QUIZ_PASS.보통}, 어려움 ${XP_PER_QUIZ_PASS.어려움}). 경험치 ${XP_PER_LEVEL}마다 레벨이 1씩 올라요.`,
       '공부해서 얻은 아이템을 착용하면 전투력이 더 올라가요. 아바타 탭의 ⓘ 버튼에서 내 전투력 계산을 볼 수 있어요.',
     ],
   },

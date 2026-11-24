@@ -325,11 +325,16 @@ export function itemsForPlace(placeId: string) {
 /** 레벨 1당 더해지는 전투력 */
 export const LEVEL_POWER = 60
 
-/** 레벨 하나에 필요한 경험치 */
+// 경험치 얻는 방법과 숫자 (바꾸려면 여기 세 줄만 고치면 된다. 보스전 승리 경험치는 data/boss.ts)
+
+/** 레벨 하나에 필요한 경험치. 장소 방문 경험치와 같게 맞춰 장소 하나를 방문하면 레벨이 1 오른다 */
 export const XP_PER_LEVEL = 100
 
-/** 퀴즈에서 맞힌 문제 하나마다 얻는 경험치 (쉬움 단계에서 힌트를 보고 맞히면 절반) */
-export const XP_PER_CORRECT: Record<Difficulty, number> = { 쉬움: 10, 보통: 20, 어려움: 30 }
+/** 장소를 방문해서 처음 열릴 때 얻는 경험치 (같은 장소는 한 번만) */
+export const XP_PER_VISIT = 100
+
+/** 퀴즈를 통과(절반 이상 정답)할 때 얻는 경험치 */
+export const XP_PER_QUIZ_PASS: Record<Difficulty, number> = { 쉬움: 10, 보통: 20, 어려움: 30 }
 
 /** 레벨 = 1 + 경험치 100마다 1 */
 export function levelFor(xp: number) {

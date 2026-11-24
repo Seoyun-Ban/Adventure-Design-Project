@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { LoginScreen } from './screens/LoginScreen'
 import { ChallengeScreen } from './screens/ChallengeScreen'
 import { SignupScreen } from './screens/SignupScreen'
@@ -69,6 +69,9 @@ export default function App() {
   const [homeTab, setHomeTab] = useState<Tab>('map')
   const [homeKey, setHomeKey] = useState(0)
   const [toast, setToast] = useState<string | null>(null)
+  /** 레벨이 오르면 잠깐 보여주는 '레벨 업!' 알림 (오른 레벨) */
+  const [levelUp, setLevelUp] = useState<number | null>(null)
+  const lastLevel = useRef(levelFor(progress.xp))
   const [resetEmail, setResetEmail] = useState('')
   /** 간편 로그인으로 처음 가입할 때 그 회사 (없으면 이메일 가입) */
   const [signupProvider, setSignupProvider] = useState<SocialProvider>()
@@ -109,6 +112,18 @@ export default function App() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [here, progress.visitedIds, progress.pushEnabled])
+
+  // 레벨이 오르면 '레벨 업!'을 보여준다. 처음으로 돌아가기 등으로 레벨이 내려간 경우는 조용히 기준만 바꾼다
+  useEffect(() => {
+    const now = levelFor(progress.xp)
+    if (now > lastLevel.current) {
+      setLevelUp(now)
+      const timer = window.setTimeout(() => setLevelUp(null), 2800)
+      lastLevel.current = now
+      return () => window.clearTimeout(timer)
+    }
+    lastLevel.current = now
+  }, [progress.xp])
 
   function showToast(message: string) {
     setToast(message)
@@ -405,6 +420,12 @@ export default function App() {
             startPlaceQuiz(selectedPlace, learnDifficulty, 'learn')
           }}
         />
+      )}
+      {levelUp !== null && (
+        <div className="level-up" role="status">
+          <strong>레벨 업!</strong>
+          <span>Lv. {levelUp}이 되었어요</span>
+        </div>
       )}
       {toast && (
         <div className="app-toast" role="status">

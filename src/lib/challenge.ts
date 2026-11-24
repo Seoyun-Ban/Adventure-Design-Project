@@ -1,5 +1,4 @@
 import { characterStyles, findItem, migrateEquipped } from '../data/avatar'
-import { places } from '../data/places'
 import type { AvatarLook, CharacterStyleId, Equipped, ItemCategory } from '../types'
 
 // 친구에게 보내는 도전장 링크 (서버 없이 링크 안에 정보를 담는다)
@@ -12,8 +11,8 @@ import type { AvatarLook, CharacterStyleId, Equipped, ItemCategory } from '../ty
 const VERSION = 1
 const HASH_KEY = 'challenge'
 const NICKNAME_MAX = 10
-/** 앱에서 나올 수 있는 가장 높은 레벨 (= 1 + 장소 수) */
-const MAX_LEVEL = 1 + places.length
+/** 도전장에 담을 수 있는 가장 높은 레벨 (경험치는 퀴즈·보스전으로 계속 쌓이므로 넉넉하게) */
+const MAX_LEVEL = 99
 const SLOTS: ItemCategory[] = ['장비', '무기', '의복']
 
 /** 도전장을 보낸 사람의 아바타 */
