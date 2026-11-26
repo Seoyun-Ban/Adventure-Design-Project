@@ -5,6 +5,8 @@ export type PlacePhoto = {
   credit: string
   url?: string
   crop?: 'top' | 'center' | 'bottom' | 'left' | 'right'
+  /** 변경금지(공공누리 제3·4유형): 원본 그대로, 자르기·크기 조절 없이 보여 준다 */
+  locked?: true
 }
 export const PLACE_PHOTOS: Record<string, PlacePhoto[]> = {
   "gyeongbokgung": [
@@ -69,6 +71,15 @@ export const PLACE_PHOTOS: Record<string, PlacePhoto[]> = {
       "caption": "한산도 제승당의 수루",
       "credit": "국가유산청, 공공누리 제1유형",
       "url": "https://www.heritage.go.kr/heri/cul/culSelectDetail.do?pageNo=1_1_1_1&sngl=Y&ccbaCpno=1333801130000"
+    }
+  ],
+  "aunae": [
+    {
+      "src": "/images/photos/aunae/yugwansun-yujeok.jpg",
+      "caption": "천안 유관순 열사 유적",
+      "credit": "국가유산청, 공공누리 제4유형",
+      "url": "https://www.heritage.go.kr/heri/cul/culSelectDetail.do?pageNo=1_1_1_1&sngl=Y&ccbaCpno=1333402300000",
+      "locked": true
     }
   ]
 }

@@ -7394,3 +7394,16 @@ button.settings-row {
   font-size: 26px;
   line-height: 1;
 }
+
+/* 변경금지(공공누리 제3·4유형) 사진: 자르지 않고 원래 비율 그대로, 사진 위에는 아무것도 겹치지 않는다 */
+.learn-article figure.learn-photo-locked img {
+  height: auto;
+  max-height: none;
+  aspect-ratio: auto;
+  object-fit: fill;
+}
+.learn-article figure.learn-photo figcaption small a,
+.photo-viewer p small a {
+  color: inherit;
+  text-decoration: underline;
+}

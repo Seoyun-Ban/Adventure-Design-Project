@@ -2,7 +2,7 @@
 // art/characters/ 의 원본 PNG를 읽어서 → 투명 여백을 잘라내고 → 높이를 줄이고 → 색 수를 줄여 압축한 뒤
 // public/images/characters/ 에 같은 이름으로 저장한다. (실행: npm run images)
 // 원본은 그대로 두므로 몇 번을 다시 실행해도 화질이 나빠지지 않는다.
-import { mkdir, readdir, stat, writeFile } from 'node:fs/promises'
+import { copyFile, mkdir, readdir, stat, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import sharp from 'sharp'
 import { PHOTO_DIR, placeIdOf, readPlaces, readSources } from './lib/photoSources.mjs'
@@ -68,7 +68,9 @@ for (const name of bgFiles) {
     .resize({ width: BG_WIDTH, withoutEnlargement: true })
     .webp({ quality: 78, effort: 6 })
     .toFile(output)
-  console.log(`${name}: ${kb((await stat(input)).size)} → ${kb(result.size)} (${result.width}×${result.height})`)
+  console.log(
+    `${name}: ${kb((await stat(input)).size)} → ${kb(result.size)} (${result.width}×${result.height})`,
+  )
 }
 if (bgFiles.length === 0) console.log('배경 원본(art/backgrounds/)이 없어 배경 그림은 건너뜀')
 
@@ -97,20 +99,32 @@ for (const entry of sources) {
     console.log(`⚠ 사진 건너뜀: 출처가 비어 있음 (${input}) — 출처를 적어야 앱에 나옵니다`)
     continue
   }
-  const outName = entry.file.replace(/\.[^.]+$/, '') + '.webp'
   await mkdir(path.join(PHOTO_OUT, placeId), { recursive: true })
-  const result = await sharp(input)
-    .rotate()
-    .resize({ width: PHOTO_WIDTH, height: PHOTO_WIDTH, fit: 'inside', withoutEnlargement: true })
-    .webp({ quality: 78, effort: 6 })
-    .toFile(path.join(PHOTO_OUT, placeId, outName))
-  console.log(`사진 ${placeId}/${entry.file}: ${kb((await stat(input)).size)} → ${kb(result.size)} (${result.width}×${result.height})`)
+  let outName
+  if (entry.locked) {
+    // 변경금지(공공누리 제3·4유형): 자르기·크기 조절·형식 바꾸기 없이 원본 파일을 그대로 복사만 한다
+    outName = entry.file
+    await copyFile(input, path.join(PHOTO_OUT, placeId, outName))
+    console.log(
+      `사진 ${placeId}/${entry.file}: 변경금지 → 원본 그대로 복사 (${kb((await stat(input)).size)})`,
+    )
+  } else {
+    outName = entry.file.replace(/\.[^.]+$/, '') + '.webp'
+    const result = await sharp(input)
+      .rotate()
+      .resize({ width: PHOTO_WIDTH, height: PHOTO_WIDTH, fit: 'inside', withoutEnlargement: true })
+      .webp({ quality: 78, effort: 6 })
+      .toFile(path.join(PHOTO_OUT, placeId, outName))
+    console.log(
+      `사진 ${placeId}/${entry.file}: ${kb((await stat(input)).size)} → ${kb(result.size)} (${result.width}×${result.height})`,
+    )
+  }
   ;(photos[placeId] ??= []).push({
     src: `/images/photos/${placeId}/${outName}`,
     caption: entry.caption,
     credit: entry.credit,
     ...(entry.url ? { url: entry.url } : {}),
-    ...(CROPS[entry.crop] ? { crop: CROPS[entry.crop] } : {}),
+    ...(entry.locked ? { locked: true } : CROPS[entry.crop] ? { crop: CROPS[entry.crop] } : {}),
   })
   photoCount++
 }
@@ -125,6 +139,8 @@ await writeFile(
   credit: string
   url?: string
   crop?: 'top' | 'center' | 'bottom' | 'left' | 'right'
+  /** 변경금지(공공누리 제3·4유형): 원본 그대로, 자르기·크기 조절 없이 보여 준다 */
+  locked?: true
 }
 ` +
     `export const PLACE_PHOTOS: Record<string, PlacePhoto[]> = ${JSON.stringify(photos, null, 2)}

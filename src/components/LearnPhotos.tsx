@@ -24,21 +24,43 @@ export function spreadPhotos(photos: PlacePhoto[], slotCount: number): PlacePhot
   return slots
 }
 
+/** 출처 글씨 + 원본 페이지 링크 (링크를 눌러도 크게 보기가 열리거나 닫히지 않게 한다) */
+function Credit({ photo }: { photo: PlacePhoto }) {
+  return (
+    <small>
+      출처: {photo.credit}
+      {photo.url && (
+        <>
+          {' · '}
+          <a
+            href={photo.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(event) => event.stopPropagation()}
+          >
+            원본 페이지
+          </a>
+        </>
+      )}
+    </small>
+  )
+}
+
 /** 사진 + 설명 + 작은 글씨 출처. 누르면 크게 본다 */
 export function PhotoFigure({ photo, onOpen }: { photo: PlacePhoto; onOpen: (photo: PlacePhoto) => void }) {
   return (
-    <figure className="learn-photo">
+    <figure className={`learn-photo${photo.locked ? ' learn-photo-locked' : ''}`}>
       <button type="button" onClick={() => onOpen(photo)} aria-label={`${photo.caption} 크게 보기`}>
         <img
           src={photo.src}
           alt={photo.caption}
           loading="lazy"
-          style={photo.crop ? { objectPosition: photo.crop } : undefined}
+          style={!photo.locked && photo.crop ? { objectPosition: photo.crop } : undefined}
         />
       </button>
       <figcaption>
         {photo.caption}
-        <small>출처: {photo.credit}</small>
+        <Credit photo={photo} />
       </figcaption>
     </figure>
   )
@@ -59,7 +81,7 @@ export function PhotoViewer({ photo, onClose }: { photo: PlacePhoto; onClose: ()
       <img src={photo.src} alt={photo.caption} />
       <p>
         {photo.caption}
-        <small>출처: {photo.credit}</small>
+        <Credit photo={photo} />
       </p>
     </div>
   )
