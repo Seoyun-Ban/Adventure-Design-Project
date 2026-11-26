@@ -12,7 +12,7 @@ import { ItemRewardModal } from './components/ItemRewardModal'
 import { findPlace, isInsideUnlockArea, isPlaceOpen, places, pretendSpot } from './data/places'
 import { NearbyBanner } from './components/NearbyBanner'
 import { UNLOCK_ACCURACY_M } from './lib/location'
-import { quizClaimKey, useProgress } from './hooks/useProgress'
+import { useProgress } from './hooks/useProgress'
 import { TOGETHER_MIN_PLACES } from './data/battle'
 import { learnedPlaceIds } from './lib/quizGenerator'
 import { useLocation } from './hooks/useLocation'
@@ -46,7 +46,7 @@ export default function App() {
     visitPlace,
     clearAll,
     resetProgress,
-    claimQuizXp,
+    addXp,
     equip,
   } = store
   /** 친구가 보낸 도전장 링크로 들어왔으면 그 도전장 (망가진 링크면 ok: false) */
@@ -392,8 +392,7 @@ export default function App() {
             title={quiz.title}
             load={quiz.load}
             xp={progress.xp}
-            isXpClaimed={(level) => progress.quizXpClaimed.includes(quizClaimKey(quiz.place.id, level))}
-            onXp={(level) => claimQuizXp(quiz.place.id, level)}
+            onXp={addXp}
             onBack={() => setScreen(quiz.from === 'learn' && findPlace(quiz.place.id) ? 'learn' : 'home')}
             onDone={finishQuiz}
           />

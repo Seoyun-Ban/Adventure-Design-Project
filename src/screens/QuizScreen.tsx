@@ -3,7 +3,6 @@ import { Icon } from '../components/Icon'
 import { ActionButton } from '../components/ActionButton'
 import { levelFor, XP_PER_QUIZ_PASS } from '../data/avatar'
 import { passScore, type GeneratedQuiz } from '../lib/quizGenerator'
-import type { Difficulty } from '../types'
 
 /** retried: 쉬움 단계에서 힌트를 보고 다시 골라 맞혔는지 */
 type QuizResult = { placeId: string; item: GeneratedQuiz; correct: boolean; retried: boolean }
@@ -15,7 +14,6 @@ export function QuizScreen({
   title,
   load,
   xp,
-  isXpClaimed,
   onXp,
   onBack,
   onDone,
@@ -24,10 +22,8 @@ export function QuizScreen({
   load: () => Promise<GeneratedQuiz[]>
   /** 지금 경험치 (결과 화면에서 레벨이 올랐는지 보여준다) */
   xp: number
-  /** 이 장소·난이도에서 통과 경험치를 이미 받았는지 */
-  isXpClaimed: (level: Difficulty) => boolean
-  /** 퀴즈를 통과했을 때 알린다 (경험치는 처음 통과할 때만 들어간다) */
-  onXp: (level: Difficulty) => void
+  /** 퀴즈를 다 풀면 얻은 경험치를 한 번 알린다 */
+  onXp: (amount: number) => void
   onBack: () => void
   /** passed: 기준 이상 맞혔는지 여부 */
   onDone: (passed: boolean) => void
@@ -42,10 +38,16 @@ export function QuizScreen({
   const [selected, setSelected] = useState<number | null>(null)
   const [results, setResults] = useState<QuizResult[]>([])
   const [finished, setFinished] = useState(false)
-  /** 이번 판에서 받은 경험치와, 이미 받았던 퀴즈라서 못 받았는지 */
-  const [payout, setPayout] = useState({ gained: 0, already: false })
-  /** 이 화면에서 경험치를 받은 난이도 (다시 풀어도 또 받지 않게) */
-  const paidLevels = useRef(new Set<Difficulty>())
+
+  // 퀴즈를 통과하면(절반 이상 정답) 난이도별 경험치를 한 번만 더한다
+  useEffect(() => {
+    if (finished && results.length > 0) {
+      const level = results[0].item.level
+      const right = results.filter((result) => result.correct).length
+      if (right >= passScore(results.length)) onXp(XP_PER_QUIZ_PASS[level])
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [finished])
 
   useEffect(() => {
     let alive = true
@@ -102,16 +104,6 @@ export function QuizScreen({
 
   function next() {
     if (index === items.length - 1) {
-      // 퀴즈를 통과하면(절반 이상 정답) 이 장소·난이도에서 처음일 때만 경험치를 받는다
-      const level = items[0].level
-      const passed = score >= passScore(items.length)
-      if (!passed) setPayout({ gained: 0, already: false })
-      else if (paidLevels.current.has(level) || isXpClaimed(level)) setPayout({ gained: 0, already: true })
-      else {
-        paidLevels.current.add(level)
-        setPayout({ gained: XP_PER_QUIZ_PASS[level], already: false })
-        onXp(level)
-      }
       setFinished(true)
       return
     }
@@ -122,7 +114,7 @@ export function QuizScreen({
 
   if (finished) {
     const passed = score >= passScore(quizItems.length)
-    const gained = payout.gained
+    const gained = passed ? XP_PER_QUIZ_PASS[quizItems[0].level] : 0
     const levelBefore = levelFor(startXp.current)
     const levelAfter = levelFor(startXp.current + gained)
     return (
@@ -149,9 +141,7 @@ export function QuizScreen({
         <div className="result-card">
           <div>
             <span>얻은 경험치</span>
-            <strong>
-              + {gained} XP{payout.already ? ' (이미 받았어요)' : ''}
-            </strong>
+            <strong>+ {gained} XP</strong>
           </div>
           <div>
             <span>정답률</span>
@@ -161,9 +151,7 @@ export function QuizScreen({
         <p className="result-level">
           {levelAfter > levelBefore
             ? `레벨이 올랐어요! Lv. ${levelBefore} → Lv. ${levelAfter}`
-            : payout.already
-              ? `지금 Lv. ${levelAfter} · 이 퀴즈의 경험치는 이미 받았어요`
-              : `지금 Lv. ${levelAfter} · 이 장소의 ${quizItems[0].level} 퀴즈를 처음 통과하면 ${XP_PER_QUIZ_PASS[quizItems[0].level]} XP를 받아요`}
+            : `지금 Lv. ${levelAfter} · 퀴즈를 통과하면 ${XP_PER_QUIZ_PASS[quizItems[0].level]} XP를 받아요`}
         </p>
         <ActionButton onClick={() => onDone(passed)}>
           {passed ? '퀴즈 완료하고 지도 보기' : '지도로 돌아가기'}

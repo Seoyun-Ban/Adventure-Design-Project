@@ -34,20 +34,15 @@ const LEVELS: { level: Difficulty; hint: string }[] = [
 
 export function BossScreen({
   placeIds,
-  bossWins,
   onWin,
   onExit,
 }: {
   /** 문제를 낼 장소 (학습을 마친 장소) */
   placeIds: string[]
-  /** 지금까지 이긴 횟수 (0이면 이번이 첫 승리라 경험치를 받는다) */
-  bossWins: number
   onWin: (xp: number) => void
   onExit: () => void
 }) {
   const [phase, setPhase] = useState<Phase>('setup')
-  /** 이번 승리로 받은 경험치 (처음 이겼을 때만 있고, 그 뒤에는 0) */
-  const [winXp, setWinXp] = useState(0)
   const [names, setNames] = useState<string[]>(['', ''])
   const [players, setPlayers] = useState<string[]>([])
   /** 지금까지 푼 차례 수 (0부터). 라운드 = floor(turn / 사람 수) + 1 */
@@ -143,9 +138,7 @@ export function BossScreen({
 
   function next() {
     if (hp <= 0) {
-      const gained = bossWins === 0 ? BOSS_WIN_XP : 0
-      setWinXp(gained)
-      onWin(gained)
+      onWin(BOSS_WIN_XP)
       setPhase('win')
       return
     }
@@ -344,9 +337,7 @@ export function BossScreen({
                     <span key={name}>{name}</span>
                   ))}
                 </div>
-                <p className="boss-reward">
-                  {winXp > 0 ? `경험치 +${winXp} · ` : '경험치는 처음 이겼을 때만 받아요 · '}배지 ‘함께 물리친 괴물’
-                </p>
+                <p className="boss-reward">경험치 +{BOSS_WIN_XP} · 배지 ‘함께 물리친 괴물’</p>
                 <div className="boss-end-actions">
                   <button type="button" className="boss-primary" onClick={retry}>
                     <Icon name="refresh" size={16} /> 다시 하기

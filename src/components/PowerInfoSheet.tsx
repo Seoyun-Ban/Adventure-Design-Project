@@ -21,7 +21,7 @@ export function PowerInfoSheet({
           </span>
           {/* 문장을 p 하나로 묶어야 굵은 글씨 앞뒤에서 줄이 엉뚱하게 꺾이지 않는다 */}
           <p>
-            장소를 방문하면 {XP_PER_VISIT} XP, 퀴즈를 처음 통과하면
+            장소를 방문하면 {XP_PER_VISIT} XP, 퀴즈를 통과하면
             <br />
             {XP_PER_QUIZ_PASS.쉬움}~{XP_PER_QUIZ_PASS.어려움} XP를 받아요.
             <br />
