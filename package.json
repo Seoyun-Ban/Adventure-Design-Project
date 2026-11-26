@@ -8,8 +8,7 @@
     "build": "node scripts/list-audio.mjs && tsc --noEmit && vite build",
     "preview": "vite preview",
     "format": "prettier --write src",
-    "images": "node scripts/optimize-images.mjs",
-    "photos": "node scripts/collect-photos.mjs"
+    "images": "node scripts/optimize-images.mjs"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "^1.2.3",
