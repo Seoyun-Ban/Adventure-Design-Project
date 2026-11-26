@@ -5095,6 +5095,10 @@ img.character-item[style*='height'] {
   font-size: 11px;
   line-height: 1.6;
 }
+.face-guide.face-notice {
+  color: var(--ink);
+  font-weight: 700;
+}
 .face-panel .action-button {
   width: 100%;
 }

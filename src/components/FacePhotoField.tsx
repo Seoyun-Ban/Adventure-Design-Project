@@ -1,11 +1,14 @@
-import { useRef, useState, type ChangeEvent } from 'react'
+import { useEffect, useRef, useState, type ChangeEvent } from 'react'
 import { Icon } from './Icon'
 import { ActionButton } from './ActionButton'
 import { BottomSheet } from './BottomSheet'
 import { WebcamCapture } from './WebcamCapture'
+import { detectFace, FaceModelError, preloadFaceModel } from '../lib/faceDetect'
+import { alignFace, centerCropFace, loadPhoto } from '../lib/faceCrop'
 
 // 얼굴 사진 넣기 (온보딩 '얼굴 등록하기'와 설정 '개인정보 고치기'에서 함께 쓴다)
-// '촬영하기' → 카메라로 찍기 / 앨범에서 고르기. 사진은 만화풍으로 바꿔 이 기기에만 저장한다.
+// '촬영하기' → 카메라로 찍기 / 앨범에서 고르기. 얼굴을 찾아 눈 위치에 맞춰 자르고 만화풍으로 바꿔 이 기기에만 저장한다.
+// 얼굴 찾기를 쓸 수 없으면 안내 문구를 띄우고 사진 가운데를 동그랗게 쓰는 기본 방식으로 넣는다.
 export function FacePhotoField({
   faceImage,
   onChange,
@@ -20,9 +23,46 @@ export function FacePhotoField({
   /** 컴퓨터의 웹캠 촬영 창 */
   const [webcam, setWebcam] = useState(false)
 
-  /** 받은 사진을 만화풍으로 바꿔 얼굴로 쓴다 (기기 안에서만 처리) */
+  /** 사진 처리 중인지 */
+  const [busy, setBusy] = useState(false)
+  /** 처리 결과 안내 (얼굴을 못 찾음, 기본 방식으로 넣음 등) */
+  const [notice, setNotice] = useState('')
+
+  // 얼굴 찾기 모델이 커서, 이 화면이 열리면 미리 받아 둔다
+  useEffect(() => {
+    preloadFaceModel()
+  }, [])
+
+  /** 받은 사진에서 얼굴을 찾아 맞추고 만화풍으로 바꿔 얼굴로 쓴다 (기기 안에서만 처리) */
   async function applyPhoto(photo: Blob) {
-    onChange(await resizeImage(photo, 160))
+    setBusy(true)
+    setNotice('')
+    try {
+      const image = await loadPhoto(photo)
+      try {
+        const face = await detectFace(image)
+        if (!face) {
+          setNotice('얼굴이 잘 보이지 않아요. 밝은 곳에서 정면을 바라보고 다시 찍어주세요.')
+          return
+        }
+        onChange(alignFace(image, face))
+      } finally {
+        image.close()
+      }
+    } catch (error) {
+      if (error instanceof FaceModelError) {
+        try {
+          onChange(await centerCropFace(photo))
+          setNotice('이 기기에서는 얼굴 자동 맞춤을 쓸 수 없어 기본 방식으로 넣었어요.')
+        } catch {
+          setNotice('사진을 읽지 못했어요. 다른 사진으로 다시 해주세요.')
+        }
+      } else {
+        setNotice('사진을 읽지 못했어요. 다른 사진으로 다시 해주세요.')
+      }
+    } finally {
+      setBusy(false)
+    }
   }
 
   async function handlePhoto(event: ChangeEvent<HTMLInputElement>) {
@@ -59,7 +99,12 @@ export function FacePhotoField({
       {/* 휴대폰: 앞면 카메라로 바로 찍기 / 사진 앨범에서 고르기 */}
       <input ref={cameraInput} type="file" accept="image/*" capture="user" hidden onChange={handlePhoto} />
       <input ref={albumInput} type="file" accept="image/*" hidden onChange={handlePhoto} />
-      <ActionButton variant="secondary" onClick={() => setPhotoMenu(true)}>
+      {(busy || notice) && (
+        <p className="face-guide face-notice" role="status">
+          {busy ? '얼굴을 찾고 있어요…' : notice}
+        </p>
+      )}
+      <ActionButton variant="secondary" onClick={() => setPhotoMenu(true)} disabled={busy}>
         <Icon name="camera" size={18} /> {faceImage ? '다시 찍기' : '촬영하기'}
       </ActionButton>
       {faceImage && (
@@ -98,63 +143,4 @@ export function FacePhotoField({
       )}
     </>
   )
-}
-
-/**
- * 사진을 정사각형으로 잘라 작게 줄이고, 2D 캐릭터와 어울리도록 만화풍으로 바꾼다.
- * (색 단순화 + 부드럽게 + 윤곽선) — 사진은 서버로 보내지 않고 기기 안에서만 처리한다.
- */
-function resizeImage(file: Blob, size: number): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onerror = reject
-    reader.onload = () => {
-      const image = new Image()
-      image.onerror = reject
-      image.onload = () => {
-        const side = Math.min(image.width, image.height)
-        // 1) 작게 줄였다가 키워서 잔주름·잡티를 부드럽게
-        const small = document.createElement('canvas')
-        small.width = small.height = 56
-        small
-          .getContext('2d')
-          ?.drawImage(image, (image.width - side) / 2, (image.height - side) / 2, side, side, 0, 0, 56, 56)
-        const canvas = document.createElement('canvas')
-        canvas.width = canvas.height = size
-        const context = canvas.getContext('2d')
-        if (!context) return reject(new Error('canvas unavailable'))
-        context.imageSmoothingQuality = 'high'
-        context.drawImage(small, 0, 0, size, size)
-        // 2) 색을 몇 단계로 단순화 (만화 채색 느낌)
-        const data = context.getImageData(0, 0, size, size)
-        const px = data.data
-        const levels = 6
-        const lum = new Float32Array(size * size)
-        for (let i = 0; i < px.length; i += 4) {
-          for (let c = 0; c < 3; c += 1) {
-            const boosted = Math.min(255, px[i + c] * 1.06 + 6)
-            px[i + c] = Math.round(Math.round((boosted / 255) * (levels - 1)) * (255 / (levels - 1)))
-          }
-          lum[i / 4] = px[i] * 0.3 + px[i + 1] * 0.59 + px[i + 2] * 0.11
-        }
-        // 3) 밝기 차이가 큰 곳에 윤곽선
-        for (let y = 1; y < size - 1; y += 1) {
-          for (let x = 1; x < size - 1; x += 1) {
-            const k = y * size + x
-            const gx = lum[k + 1] - lum[k - 1]
-            const gy = lum[k + size] - lum[k - size]
-            if (Math.hypot(gx, gy) > 70) {
-              px[k * 4] *= 0.45
-              px[k * 4 + 1] *= 0.4
-              px[k * 4 + 2] *= 0.4
-            }
-          }
-        }
-        context.putImageData(data, 0, 0)
-        resolve(canvas.toDataURL('image/jpeg', 0.85))
-      }
-      image.src = reader.result as string
-    }
-    reader.readAsDataURL(file)
-  })
 }
