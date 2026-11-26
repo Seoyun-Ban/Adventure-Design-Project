@@ -3,6 +3,7 @@ import { Icon } from '../components/Icon'
 import { ActionButton } from '../components/ActionButton'
 import { HistoryScene } from '../components/HistoryScene'
 import { Place3D } from '../components/Place3D'
+import { PhotoFigure, PhotoViewer, photosOf, spreadPhotos, usePhotoViewer } from '../components/LearnPhotos'
 import { PlaceItems } from '../components/PlaceItems'
 import { getContent } from '../data/contents'
 import type { AvatarLook, Difficulty, Equipped, Place } from '../types'
@@ -34,6 +35,12 @@ export function LearnScreen({
   const [difficulty, setDifficulty] = useState<Difficulty>(defaultDifficulty)
   const content = getContent(place.id)
   const text = content.body[difficulty]
+  const paragraphs = text.detail.split('\n')
+  // 사진은 사람이 고르지 않고 문단 사이에 고르게 자동 배치 (사진이 없으면 글만)
+  const photoSlots = spreadPhotos(photosOf(place.id), paragraphs.length + 1)
+  const [viewing, setViewing] = usePhotoViewer()
+  const photosAt = (slot: number) =>
+    photoSlots[slot].map((photo) => <PhotoFigure key={photo.src} photo={photo} onOpen={setViewing} />)
 
   return (
     <main className="screen learn-screen">
@@ -89,6 +96,7 @@ export function LearnScreen({
         </div>
         <h2 style={{ whiteSpace: 'pre-line' }}>{content.headline}</h2>
         <p className="lead">{text.intro}</p>
+        {photosAt(0)}
         <div className="history-note">
           <span>알고 있었나요?</span>
           <p>{content.didYouKnow}</p>
@@ -136,6 +144,7 @@ export function LearnScreen({
           퀴즈 풀어보기 <Icon name="chevron" size={19} />
         </ActionButton>
       </div>
+      {viewing && <PhotoViewer photo={viewing} onClose={() => setViewing(null)} />}
     </main>
   )
 }

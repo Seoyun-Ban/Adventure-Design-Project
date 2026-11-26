@@ -1,0 +1,58 @@
+// 이 파일은 npm run images가 art/photos/sources.csv를 보고 만든다. 직접 고치지 마세요.
+export type PlacePhoto = {
+  src: string
+  caption: string
+  credit: string
+  url?: string
+  crop?: 'top' | 'center' | 'bottom' | 'left' | 'right'
+}
+export const PLACE_PHOTOS: Record<string, PlacePhoto[]> = {
+  "gyeongbokgung": [
+    {
+      "src": "/images/photos/gyeongbokgung/geunjeongjeon.webp",
+      "caption": "경복궁의 중심 건물 근정전",
+      "credit": "국가유산청, 공공누리 제1유형",
+      "url": "https://www.heritage.go.kr/heri/cul/culSelectDetail.do?pageNo=1_1_1_1&sngl=Y&ccbaCpno=1111102230000"
+    },
+    {
+      "src": "/images/photos/gyeongbokgung/gyeonghoeru.webp",
+      "caption": "연못 위에 세운 경회루",
+      "credit": "국가유산청, 공공누리 제1유형",
+      "url": "https://www.heritage.go.kr/heri/cul/culSelectDetail.do?pageNo=1_1_1_1&sngl=Y&ccbaCpno=1111102240000"
+    },
+    {
+      "src": "/images/photos/gyeongbokgung/gwanghwamun.webp",
+      "caption": "복원된 경복궁의 정문 광화문",
+      "credit": "한국관광공사, 공공누리 제1유형",
+      "url": "https://api.visitkorea.or.kr/#/hubTourSearchDetail"
+    }
+  ],
+  "suwon": [
+    {
+      "src": "/images/photos/suwon/paldalmun.webp",
+      "caption": "수원화성의 남쪽 문 팔달문",
+      "credit": "국가유산청, 공공누리 제1유형",
+      "url": "https://www.heritage.go.kr/heri/cul/culSelectDetail.do?pageNo=1_1_1_1&sngl=Y&ccbaCpno=1123104020000"
+    },
+    {
+      "src": "/images/photos/suwon/seonggwak.webp",
+      "caption": "수원화성의 성곽 길",
+      "credit": "국가유산청, 공공누리 제1유형",
+      "url": "https://www.heritage.go.kr/heri/cul/culSelectDetail.do?pageNo=1_1_1_1&sngl=Y&ccbaCpno=1333100030000"
+    },
+    {
+      "src": "/images/photos/suwon/haenggung.webp",
+      "caption": "정조가 머물던 화성행궁",
+      "credit": "국가유산청, 공공누리 제1유형",
+      "url": "https://www.heritage.go.kr/heri/cul/culSelectDetail.do?pageNo=1_1_1_1&sngl=Y&ccbaCpno=1333104780000"
+    }
+  ],
+  "independence": [
+    {
+      "src": "/images/photos/independence/gyeoreui-jip.webp",
+      "caption": "가운데 멀리 겨레의 집이 보이는 독립기념관 전경",
+      "credit": "한국관광공사, 공공누리 제1유형",
+      "url": "https://api.visitkorea.or.kr/#/hubTourSearchDetail"
+    }
+  ]
+}

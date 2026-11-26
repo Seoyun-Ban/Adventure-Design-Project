@@ -5,6 +5,7 @@
 import { mkdir, readdir, stat, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import sharp from 'sharp'
+import { PHOTO_DIR, placeIdOf, readPlaces, readSources } from './lib/photoSources.mjs'
 
 const SRC = 'art/characters'
 const OUT = 'public/images/characters'
@@ -70,3 +71,63 @@ for (const name of bgFiles) {
   console.log(`${name}: ${kb((await stat(input)).size)} → ${kb(result.size)} (${result.width}×${result.height})`)
 }
 if (bgFiles.length === 0) console.log('배경 원본(art/backgrounds/)이 없어 배경 그림은 건너뜀')
+
+// 학습 글 중간 사진 (art/photos/장소id/파일) → public/images/photos/장소id/파일.webp
+// 설명·출처는 art/photos/sources.csv에서 읽어 src/data/generated/photos.ts로 만든다.
+// 출처(이름)가 적혀 있지 않은 사진은 앱에 넣지 않는다 (사진 규칙: 출처 표시 필수).
+const PHOTO_OUT = 'public/images/photos'
+const PHOTO_WIDTH = 1000 // 휴대폰 화면(3배)에서 크게 보기를 해도 충분한 크기
+const CROPS = { 위: 'top', 가운데: 'center', 아래: 'bottom', 왼쪽: 'left', 오른쪽: 'right' }
+const places = await readPlaces()
+const sources = await readSources()
+const photos = {}
+let photoCount = 0
+for (const entry of sources) {
+  const placeId = placeIdOf(entry.place, places)
+  if (!placeId) {
+    console.log(`⚠ 사진 건너뜀: 장소 '${entry.place}'를 못 찾음 (${entry.file})`)
+    continue
+  }
+  const input = path.join(PHOTO_DIR, placeId, entry.file)
+  if (!(await stat(input).catch(() => null))) {
+    console.log(`⚠ 사진 건너뜀: 파일이 없음 (${input})`)
+    continue
+  }
+  if (!entry.credit) {
+    console.log(`⚠ 사진 건너뜀: 출처가 비어 있음 (${input}) — 출처를 적어야 앱에 나옵니다`)
+    continue
+  }
+  const outName = entry.file.replace(/\.[^.]+$/, '') + '.webp'
+  await mkdir(path.join(PHOTO_OUT, placeId), { recursive: true })
+  const result = await sharp(input)
+    .rotate()
+    .resize({ width: PHOTO_WIDTH, height: PHOTO_WIDTH, fit: 'inside', withoutEnlargement: true })
+    .webp({ quality: 78, effort: 6 })
+    .toFile(path.join(PHOTO_OUT, placeId, outName))
+  console.log(`사진 ${placeId}/${entry.file}: ${kb((await stat(input)).size)} → ${kb(result.size)} (${result.width}×${result.height})`)
+  ;(photos[placeId] ??= []).push({
+    src: `/images/photos/${placeId}/${outName}`,
+    caption: entry.caption,
+    credit: entry.credit,
+    ...(entry.url ? { url: entry.url } : {}),
+    ...(CROPS[entry.crop] ? { crop: CROPS[entry.crop] } : {}),
+  })
+  photoCount++
+}
+await mkdir('src/data/generated', { recursive: true })
+await writeFile(
+  'src/data/generated/photos.ts',
+  `// 이 파일은 npm run images가 art/photos/sources.csv를 보고 만든다. 직접 고치지 마세요.
+` +
+    `export type PlacePhoto = {
+  src: string
+  caption: string
+  credit: string
+  url?: string
+  crop?: 'top' | 'center' | 'bottom' | 'left' | 'right'
+}
+` +
+    `export const PLACE_PHOTOS: Record<string, PlacePhoto[]> = ${JSON.stringify(photos, null, 2)}
+`,
+)
+console.log(`학습 글 사진 ${photoCount}장`)

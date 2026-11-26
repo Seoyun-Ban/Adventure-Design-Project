@@ -12,3 +12,6 @@ art/login/
 
 # 배경 그림 원본 (내 컴퓨터에만 보관)
 art/backgrounds/
+
+# 사진 원본은 용량이 커서 내 컴퓨터에만 둔다 (설명·출처 목록 sources.csv와 줄인 사진 public/images/photos/는 올린다)
+art/photos/*/
