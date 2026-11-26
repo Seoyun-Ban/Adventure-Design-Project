@@ -3,7 +3,13 @@ import { Icon } from './Icon'
 import { ActionButton } from './ActionButton'
 import { BottomSheet } from './BottomSheet'
 import { WebcamCapture } from './WebcamCapture'
-import { detectFace, FaceModelError, preloadFaceModel } from '../lib/faceDetect'
+import {
+  detectFace,
+  FaceModelError,
+  getFaceModelStatus,
+  onFaceModelStatus,
+  preloadFaceModel,
+} from '../lib/faceDetect'
 import { alignFace, centerCropFace, loadPhoto } from '../lib/faceCrop'
 
 // 얼굴 사진 넣기 (온보딩 '얼굴 등록하기'와 설정 '개인정보 고치기'에서 함께 쓴다)
@@ -29,8 +35,11 @@ export function FacePhotoField({
   const [notice, setNotice] = useState('')
 
   // 얼굴 찾기 모델이 커서, 이 화면이 열리면 미리 받아 둔다
+  const [model, setModel] = useState(getFaceModelStatus())
   useEffect(() => {
+    const stop = onFaceModelStatus(setModel)
     preloadFaceModel()
+    return stop
   }, [])
 
   /** 받은 사진에서 얼굴을 찾아 맞추고 만화풍으로 바꿔 얼굴로 쓴다 (기기 안에서만 처리) */
@@ -99,9 +108,13 @@ export function FacePhotoField({
       {/* 휴대폰: 앞면 카메라로 바로 찍기 / 사진 앨범에서 고르기 */}
       <input ref={cameraInput} type="file" accept="image/*" capture="user" hidden onChange={handlePhoto} />
       <input ref={albumInput} type="file" accept="image/*" hidden onChange={handlePhoto} />
-      {(busy || notice) && (
+      {(busy || notice || model.state === 'loading') && (
         <p className="face-guide face-notice" role="status">
-          {busy ? '얼굴을 찾고 있어요…' : notice}
+          {model.state === 'loading'
+            ? `얼굴 인식 준비 중 ${model.percent}%`
+            : busy
+              ? '얼굴을 찾고 있어요…'
+              : notice}
         </p>
       )}
       <ActionButton variant="secondary" onClick={() => setPhotoMenu(true)} disabled={busy}>

@@ -36,26 +36,87 @@ const LEFT_EYE = [33, 133]
 const RIGHT_EYE = [362, 263]
 
 const BASE = '/mediapipe'
-const LOAD_TIMEOUT_MS = 20000
+const LOAD_TIMEOUT_MS = 40000
+/** 받아야 하는 파일 크기 (바이트). 서버가 압축해서 보내도 진행 정도를 셀 수 있게 미리 적어 둔다 */
+const MODEL_BYTES = 3758596
+const WASM_BYTES = 14665716
 
 let landmarkerPromise: Promise<FaceLandmarker> | null = null
 
-async function create(delegate: 'GPU' | 'CPU'): Promise<FaceLandmarker> {
+// ── 받는 진행 정도 (화면에서 "얼굴 인식 준비 중 45%"처럼 보여 준다) ──
+export type FaceModelStatus = { state: 'idle' | 'loading' | 'ready'; percent: number }
+let status: FaceModelStatus = { state: 'idle', percent: 0 }
+const listeners = new Set<(status: FaceModelStatus) => void>()
+
+function setStatus(next: FaceModelStatus) {
+  status = next
+  listeners.forEach((listener) => listener(status))
+}
+
+export function getFaceModelStatus(): FaceModelStatus {
+  return status
+}
+
+/** 진행 정도가 바뀔 때마다 알려 달라고 등록한다. 돌려받은 함수를 부르면 등록이 풀린다 */
+export function onFaceModelStatus(listener: (status: FaceModelStatus) => void): () => void {
+  listeners.add(listener)
+  return () => {
+    listeners.delete(listener)
+  }
+}
+
+/** 파일을 받으면서 받은 바이트를 알려 준다 */
+async function download(url: string, onBytes: (bytes: number) => void): Promise<Uint8Array> {
+  const response = await fetch(url)
+  if (!response.ok || !response.body) throw new Error(`download failed: ${url}`)
+  const reader = response.body.getReader()
+  const chunks: Uint8Array[] = []
+  let total = 0
+  for (;;) {
+    const { done, value } = await reader.read()
+    if (done) break
+    chunks.push(value)
+    total += value.length
+    onBytes(value.length)
+  }
+  const bytes = new Uint8Array(total)
+  let offset = 0
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset)
+    offset += chunk.length
+  }
+  return bytes
+}
+
+async function create(delegate: 'GPU' | 'CPU', model: Uint8Array): Promise<FaceLandmarker> {
   const { FaceLandmarker, FilesetResolver } = await import('@mediapipe/tasks-vision')
   const fileset = await FilesetResolver.forVisionTasks(`${BASE}/wasm`)
   return FaceLandmarker.createFromOptions(fileset, {
-    baseOptions: { modelAssetPath: `${BASE}/face_landmarker.task`, delegate },
+    baseOptions: { modelAssetBuffer: model, delegate },
     runningMode: 'IMAGE',
     numFaces: 3,
   })
 }
 
 async function load(): Promise<FaceLandmarker> {
+  let received = 0
+  const report = (bytes: number) => {
+    received += bytes
+    // 다 받은 뒤 모델을 켜는 시간이 남아 있어 99%까지만 센다
+    const percent = Math.min(99, Math.round((received / (MODEL_BYTES + WASM_BYTES)) * 100))
+    if (percent !== status.percent) setStatus({ state: 'loading', percent })
+  }
+  setStatus({ state: 'loading', percent: 0 })
+  // 실행 파일(wasm)은 받아서 브라우저 저장소에 담아 두고, 뒤에서 MediaPipe가 같은 주소로 불러 쓴다
+  const [model] = await Promise.all([
+    download(`${BASE}/face_landmarker.task`, report),
+    download(`${BASE}/wasm/vision_wasm_internal.wasm`, report),
+  ])
   // 아이폰 등에서 GPU 방식이 막히는 경우가 있어 실패하면 CPU 방식으로 한 번 더 시도한다
   try {
-    return await create('GPU')
+    return await create('GPU', model)
   } catch {
-    return await create('CPU')
+    return await create('CPU', model)
   }
 }
 
@@ -66,14 +127,24 @@ export function preloadFaceModel(): void {
 
 function getLandmarker(): Promise<FaceLandmarker> {
   if (!landmarkerPromise) {
+    let timer: ReturnType<typeof setTimeout> | undefined
     const loading = Promise.race([
       load(),
-      new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), LOAD_TIMEOUT_MS)),
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(new Error('timeout')), LOAD_TIMEOUT_MS)
+      }),
     ])
-    landmarkerPromise = loading.catch((error) => {
-      landmarkerPromise = null // 다음에 다시 시도할 수 있게 비운다
-      throw new FaceModelError(error)
-    })
+    landmarkerPromise = loading
+      .then((landmarker) => {
+        setStatus({ state: 'ready', percent: 100 })
+        return landmarker
+      })
+      .catch((error) => {
+        landmarkerPromise = null // 다음에 다시 시도할 수 있게 비운다
+        setStatus({ state: 'idle', percent: 0 })
+        throw new FaceModelError(error)
+      })
+      .finally(() => clearTimeout(timer))
   }
   return landmarkerPromise
 }
