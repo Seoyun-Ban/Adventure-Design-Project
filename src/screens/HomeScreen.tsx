@@ -216,6 +216,7 @@ export function HomeScreen({
           battle={progress.battle}
           onEquip={equip}
           onBattleEnd={recordBattle}
+          bossWins={progress.bossWins}
           onBossWin={recordBossWin}
           onNotice={onNotice}
         />

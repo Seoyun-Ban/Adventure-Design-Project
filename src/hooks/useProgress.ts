@@ -26,6 +26,8 @@ export type Progress = {
   xp: number
   /** 경험치 계산 방식 버전. 2보다 작으면 불러올 때 새 기준으로 다시 계산한다 */
   xpVersion?: number
+  /** 퀴즈 통과 경험치를 이미 받은 '장소id:난이도' 목록 (장소마다 난이도별로 처음 통과할 때만 받는다) */
+  quizXpClaimed: string[]
   defaultDifficulty: Difficulty
   pushEnabled: boolean
   /** 위치 설명 화면에서 고른 것 (on: 위치 켜기, later: 나중에). 위치 자체는 저장하지 않는다 */
@@ -68,17 +70,22 @@ const RECENT_BATTLES = 20
 
 const STORAGE_KEY = 'history-step-progress-v3'
 
-/** 지금 경험치 계산 방식의 버전 (1: 퀴즈 문제마다, 2: 장소 방문 + 퀴즈 통과) */
-const XP_VERSION = 2
+/** 지금 경험치 계산 방식의 버전 (1: 퀴즈 문제마다, 2: 장소 방문 + 퀴즈 통과, 3: 퀴즈·보스전은 처음 한 번만) */
+const XP_VERSION = 3
+
+/** 퀴즈 경험치를 받은 기록의 이름표 ('장소id:난이도') */
+export const quizClaimKey = (placeId: string, level: Difficulty) => `${placeId}:${level}`
 
 /**
  * 기록으로 경험치를 다시 계산한다 (예전 기록을 새 기준으로 바꿀 때)
- * 방문한 장소 × 방문 경험치 + 퀴즈를 통과한 장소 × 쉬움 통과 경험치 + 보스전 승리 × 승리 경험치
+ * 방문한 장소 × 방문 경험치 + 퀴즈를 통과한 장소 × 쉬움 통과 경험치(한 번씩) + 보스전 승리 경험치(한 번만)
  * 예전 기록에는 어떤 난이도로 통과했는지 없어서 가장 낮은 값(쉬움)으로 센다.
  */
 export function recomputeXp(visitedIds: string[], records: LearningRecord[], bossWins: number) {
-  const quizzes = records.filter((record) => record.quizAt).length
-  return visitedIds.length * XP_PER_VISIT + quizzes * XP_PER_QUIZ_PASS.쉬움 + bossWins * BOSS_WIN_XP
+  const quizXpClaimed = records.filter((record) => record.quizAt).map((record) => quizClaimKey(record.placeId, '쉬움'))
+  const xp =
+    visitedIds.length * XP_PER_VISIT + quizXpClaimed.length * XP_PER_QUIZ_PASS.쉬움 + (bossWins > 0 ? BOSS_WIN_XP : 0)
+  return { xp, quizXpClaimed }
 }
 
 function daysAgo(days: number) {
@@ -104,6 +111,7 @@ function demoProgress(): Progress {
     // 처음 방문해서 열린 장소가 3곳이라 300 XP (Lv.4)
     xp: DEMO_VISITED_IDS.length * XP_PER_VISIT,
     xpVersion: XP_VERSION,
+    quizXpClaimed: [],
     defaultDifficulty: '보통',
     pushEnabled: true,
     favorites: ['bulguksa'],
@@ -147,11 +155,11 @@ function load(): Progress {
       const favorites: string[] = (parsed.favorites ?? demo.favorites).filter((id: string) => findPlace(id))
       // 예전 방식으로 모은 경험치는 지금 기록(방문·퀴즈·보스전)으로 새 기준에 맞게 다시 계산한다
       const bossWins: number = typeof parsed.bossWins === 'number' ? parsed.bossWins : 0
-      const xp: number =
-        parsed.xpVersion === XP_VERSION && typeof parsed.xp === 'number'
-          ? parsed.xp
-          : recomputeXp(visitedIds, records, bossWins)
-      return { ...demo, ...parsed, equipped, records, visitedIds, favorites, xp, xpVersion: XP_VERSION, battle: { ...demo.battle, ...parsed.battle } }
+      const current = parsed.xpVersion === XP_VERSION && typeof parsed.xp === 'number'
+      const recomputed = current ? null : recomputeXp(visitedIds, records, bossWins)
+      const xp: number = recomputed ? recomputed.xp : parsed.xp
+      const quizXpClaimed: string[] = recomputed ? recomputed.quizXpClaimed : (parsed.quizXpClaimed ?? [])
+      return { ...demo, ...parsed, equipped, records, visitedIds, favorites, xp, quizXpClaimed, xpVersion: XP_VERSION, battle: { ...demo.battle, ...parsed.battle } }
     }
   } catch {
     // 저장소를 쓸 수 없는 환경이면 기본값 사용
@@ -195,8 +203,13 @@ export function useProgress() {
     /** 학습 완료: 기록 추가 */
     completeLearning: (placeId: string) => upsertRecord(placeId, {}),
     completeQuiz: (placeId: string) => upsertRecord(placeId, { quizAt: new Date().toISOString() }),
-    /** 경험치를 더한다 (퀴즈 통과) */
-    addXp: (amount: number) => setProgress((prev) => ({ ...prev, xp: prev.xp + Math.max(0, amount) })),
+    /** 퀴즈를 통과했을 때: 이 장소·난이도에서 처음이면 경험치를 주고 받았다고 기록한다 */
+    claimQuizXp: (placeId: string, level: Difficulty) =>
+      setProgress((prev) => {
+        const key = quizClaimKey(placeId, level)
+        if (prev.quizXpClaimed.includes(key)) return prev
+        return { ...prev, xp: prev.xp + XP_PER_QUIZ_PASS[level], quizXpClaimed: [...prev.quizXpClaimed, key] }
+      }),
     /** 장소 반경 안에 들어왔을 때: 방문한 장소로 기억하고 경험치를 준다 (처음 한 번만, 위치는 저장하지 않는다) */
     visitPlace: (placeId: string) =>
       setProgress((prev) =>
@@ -226,9 +239,13 @@ export function useProgress() {
           ),
         },
       })),
-    /** 보스전에서 이기면: 물리친 횟수를 올리고 경험치를 준다 */
+    /** 보스전에서 이기면: 물리친 횟수를 올린다. 경험치는 처음 이겼을 때만 준다 */
     recordBossWin: (xp: number) =>
-      setProgress((prev) => ({ ...prev, bossWins: prev.bossWins + 1, xp: prev.xp + Math.max(0, xp) })),
+      setProgress((prev) => ({
+        ...prev,
+        bossWins: prev.bossWins + 1,
+        xp: prev.xp + (prev.bossWins === 0 ? Math.max(0, xp) : 0),
+      })),
     /** 문의 보내기: 내 문의 내역 맨 앞에 '답변 대기 중'으로 쌓는다 */
     addInquiry: (inquiry: Pick<Inquiry, 'kind' | 'title' | 'body'>) =>
       setProgress((prev) => ({
@@ -248,6 +265,7 @@ export function useProgress() {
         records: [],
         visitedIds: [],
         xp: 0,
+        quizXpClaimed: [],
         favorites: [],
         inquiries: [],
       }),

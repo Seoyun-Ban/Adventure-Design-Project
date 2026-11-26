@@ -25,6 +25,7 @@ export function AvatarScreen({
   completedIds,
   xp,
   battle,
+  bossWins,
   onEquip,
   onBattleEnd,
   onBossWin,
@@ -37,9 +38,11 @@ export function AvatarScreen({
   /** 퀴즈로 모은 경험치 (레벨 계산) */
   xp: number
   battle: BattleRecord
+  /** 보스전에서 이긴 횟수 (처음 이겼을 때만 경험치를 받는다) */
+  bossWins: number
   onEquip: (category: ItemCategory, itemId?: string) => void
   onBattleEnd: (opponent: string, won: boolean) => void
-  /** 보스전에서 이겼을 때 (경험치를 받는다) */
+  /** 보스전에서 이겼을 때 (경험치는 처음 이겼을 때만 들어간다) */
   onBossWin: (xp: number) => void
   onNotice: (message: string) => void
 }) {
@@ -71,7 +74,7 @@ export function AvatarScreen({
   }
 
   if (view === 'boss' && togetherOpen) {
-    return <BossScreen placeIds={learned} onWin={onBossWin} onExit={() => setView('inventory')} />
+    return <BossScreen placeIds={learned} bossWins={bossWins} onWin={onBossWin} onExit={() => setView('inventory')} />
   }
 
   if (view === 'friends' && togetherOpen) {
