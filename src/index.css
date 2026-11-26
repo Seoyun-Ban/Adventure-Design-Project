@@ -5468,46 +5468,6 @@ img.character-item[style*='height'] {
 }
 
 /* 알림 토스트 */
-/* 레벨 업 알림 */
-.level-up {
-  position: fixed;
-  z-index: 90;
-  left: 50%;
-  top: 22%;
-  display: grid;
-  gap: 4px;
-  padding: 16px 28px;
-  border-radius: 18px;
-  color: white;
-  background: linear-gradient(135deg, #c48a2c, #e0a93e);
-  text-align: center;
-  box-shadow: 0 14px 30px rgba(23, 40, 30, 0.3);
-  transform: translateX(-50%);
-  animation: level-up-pop 0.5s ease;
-  pointer-events: none;
-}
-.level-up strong {
-  font-size: 22px;
-}
-.level-up span {
-  font-size: 13px;
-  font-weight: 700;
-}
-@keyframes level-up-pop {
-  from {
-    opacity: 0;
-    transform: translateX(-50%) scale(0.7);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(-50%) scale(1);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .level-up {
-    animation: none;
-  }
-}
 .app-toast {
   position: fixed;
   z-index: 80;

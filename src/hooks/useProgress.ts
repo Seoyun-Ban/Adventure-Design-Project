@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
-import { BOSS_WIN_XP } from '../data/boss'
-import { defaultLook, migrateEquipped, XP_PER_QUIZ_PASS, XP_PER_VISIT } from '../data/avatar'
+import { defaultLook, migrateEquipped } from '../data/avatar'
 import { DEMO_VISITED_IDS, findPlace } from '../data/places'
 import type { AvatarLook, Difficulty, Equipped, LearningRecord, SocialProvider } from '../types'
 
@@ -22,10 +21,8 @@ export type Progress = {
   records: LearningRecord[]
   /** 직접 가서 열린 장소 id (위치는 저장하지 않고, 방문한 장소만 기억한다) */
   visitedIds: string[]
-  /** 장소 방문·퀴즈 통과·보스전 승리로 모은 경험치. 레벨은 이 값으로 계산한다 (levelFor) */
+  /** 퀴즈로 모은 경험치. 레벨은 이 값으로 계산한다 (levelFor) */
   xp: number
-  /** 경험치 계산 방식 버전. 2보다 작으면 불러올 때 새 기준으로 다시 계산한다 */
-  xpVersion?: number
   defaultDifficulty: Difficulty
   pushEnabled: boolean
   /** 위치 설명 화면에서 고른 것 (on: 위치 켜기, later: 나중에). 위치 자체는 저장하지 않는다 */
@@ -68,19 +65,6 @@ const RECENT_BATTLES = 20
 
 const STORAGE_KEY = 'history-step-progress-v3'
 
-/** 지금 경험치 계산 방식의 버전 (1: 퀴즈 문제마다, 2: 장소 방문 + 퀴즈 통과) */
-const XP_VERSION = 2
-
-/**
- * 기록으로 경험치를 다시 계산한다 (예전 기록을 새 기준으로 바꿀 때)
- * 방문한 장소 × 방문 경험치 + 퀴즈를 통과한 장소 × 쉬움 통과 경험치 + 보스전 승리 × 승리 경험치
- * 예전 기록에는 어떤 난이도로 통과했는지 없어서 가장 낮은 값(쉬움)으로 센다.
- */
-export function recomputeXp(visitedIds: string[], records: LearningRecord[], bossWins: number) {
-  const quizzes = records.filter((record) => record.quizAt).length
-  return visitedIds.length * XP_PER_VISIT + quizzes * XP_PER_QUIZ_PASS.쉬움 + bossWins * BOSS_WIN_XP
-}
-
 function daysAgo(days: number) {
   const date = new Date()
   date.setDate(date.getDate() - days)
@@ -101,9 +85,8 @@ function demoProgress(): Progress {
     equipped: {},
     records: [{ placeId: 'suwon', learnedAt: daysAgo(3) }],
     visitedIds: DEMO_VISITED_IDS,
-    // 처음 방문해서 열린 장소가 3곳이라 300 XP (Lv.4)
-    xp: DEMO_VISITED_IDS.length * XP_PER_VISIT,
-    xpVersion: XP_VERSION,
+    // 처음 시작할 때 Lv.2 (경험치 100마다 레벨 1)
+    xp: 100,
     defaultDifficulty: '보통',
     pushEnabled: true,
     favorites: ['bulguksa'],
@@ -145,13 +128,9 @@ function load(): Progress {
         ...new Set([...(parsed.visitedIds ?? demo.visitedIds), ...records.map((record) => record.placeId)]),
       ].filter((id) => findPlace(id))
       const favorites: string[] = (parsed.favorites ?? demo.favorites).filter((id: string) => findPlace(id))
-      // 예전 방식으로 모은 경험치는 지금 기록(방문·퀴즈·보스전)으로 새 기준에 맞게 다시 계산한다
-      const bossWins: number = typeof parsed.bossWins === 'number' ? parsed.bossWins : 0
-      const xp: number =
-        parsed.xpVersion === XP_VERSION && typeof parsed.xp === 'number'
-          ? parsed.xp
-          : recomputeXp(visitedIds, records, bossWins)
-      return { ...demo, ...parsed, equipped, records, visitedIds, favorites, xp, xpVersion: XP_VERSION, battle: { ...demo.battle, ...parsed.battle } }
+      // 경험치가 없던 예전 기록은 예전 레벨(1 + 학습한 장소 수)과 같아지도록 채운다
+      const xp: number = typeof parsed.xp === 'number' ? parsed.xp : records.length * 100
+      return { ...demo, ...parsed, equipped, records, visitedIds, favorites, xp, battle: { ...demo.battle, ...parsed.battle } }
     }
   } catch {
     // 저장소를 쓸 수 없는 환경이면 기본값 사용
@@ -195,14 +174,12 @@ export function useProgress() {
     /** 학습 완료: 기록 추가 */
     completeLearning: (placeId: string) => upsertRecord(placeId, {}),
     completeQuiz: (placeId: string) => upsertRecord(placeId, { quizAt: new Date().toISOString() }),
-    /** 경험치를 더한다 (퀴즈 통과) */
+    /** 퀴즈에서 얻은 경험치를 더한다 */
     addXp: (amount: number) => setProgress((prev) => ({ ...prev, xp: prev.xp + Math.max(0, amount) })),
-    /** 장소 반경 안에 들어왔을 때: 방문한 장소로 기억하고 경험치를 준다 (처음 한 번만, 위치는 저장하지 않는다) */
+    /** 장소 반경 안에 들어왔을 때: 방문한 장소로 기억한다 (위치는 저장하지 않는다) */
     visitPlace: (placeId: string) =>
       setProgress((prev) =>
-        prev.visitedIds.includes(placeId)
-          ? prev
-          : { ...prev, visitedIds: [...prev.visitedIds, placeId], xp: prev.xp + XP_PER_VISIT },
+        prev.visitedIds.includes(placeId) ? prev : { ...prev, visitedIds: [...prev.visitedIds, placeId] },
       ),
     equip: (category: keyof Equipped, itemId?: string) =>
       setProgress((prev) => ({ ...prev, equipped: { ...prev.equipped, [category]: itemId } })),

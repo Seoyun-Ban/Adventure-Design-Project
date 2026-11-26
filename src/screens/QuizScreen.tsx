@@ -1,11 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import { Icon } from '../components/Icon'
 import { ActionButton } from '../components/ActionButton'
-import { levelFor, XP_PER_QUIZ_PASS } from '../data/avatar'
+import { levelFor, XP_PER_CORRECT } from '../data/avatar'
 import { passScore, type GeneratedQuiz } from '../lib/quizGenerator'
 
-/** retried: 쉬움 단계에서 힌트를 보고 다시 골라 맞혔는지 */
+/** retried: 쉬움 단계에서 힌트를 보고 다시 골라 맞혔는지 (경험치 절반) */
 type QuizResult = { placeId: string; item: GeneratedQuiz; correct: boolean; retried: boolean }
+
+/** 문제 하나로 얻는 경험치 */
+const xpOf = (result: QuizResult) =>
+  result.correct ? XP_PER_CORRECT[result.item.level] / (result.retried ? 2 : 1) : 0
 
 // 장소 퀴즈 화면
 // load: 문제를 만들어 오는 함수 — AI 또는 기기 안 자동 생성
@@ -39,13 +43,9 @@ export function QuizScreen({
   const [results, setResults] = useState<QuizResult[]>([])
   const [finished, setFinished] = useState(false)
 
-  // 퀴즈를 통과하면(절반 이상 정답) 난이도별 경험치를 한 번만 더한다
+  // 다 풀면 얻은 경험치를 한 번만 더한다
   useEffect(() => {
-    if (finished && results.length > 0) {
-      const level = results[0].item.level
-      const right = results.filter((result) => result.correct).length
-      if (right >= passScore(results.length)) onXp(XP_PER_QUIZ_PASS[level])
-    }
+    if (finished) onXp(results.reduce((sum, result) => sum + xpOf(result), 0))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [finished])
 
@@ -114,7 +114,7 @@ export function QuizScreen({
 
   if (finished) {
     const passed = score >= passScore(quizItems.length)
-    const gained = passed ? XP_PER_QUIZ_PASS[quizItems[0].level] : 0
+    const gained = results.reduce((sum, result) => sum + xpOf(result), 0)
     const levelBefore = levelFor(startXp.current)
     const levelAfter = levelFor(startXp.current + gained)
     return (
@@ -151,7 +151,7 @@ export function QuizScreen({
         <p className="result-level">
           {levelAfter > levelBefore
             ? `레벨이 올랐어요! Lv. ${levelBefore} → Lv. ${levelAfter}`
-            : `지금 Lv. ${levelAfter} · 퀴즈를 통과하면 ${XP_PER_QUIZ_PASS[quizItems[0].level]} XP를 받아요`}
+            : `지금 Lv. ${levelAfter} · 맞힌 문제마다 ${XP_PER_CORRECT[quizItems[0].level]} XP`}
         </p>
         <ActionButton onClick={() => onDone(passed)}>
           {passed ? '퀴즈 완료하고 지도 보기' : '지도로 돌아가기'}
