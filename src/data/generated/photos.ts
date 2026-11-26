@@ -25,8 +25,8 @@ export const PLACE_PHOTOS: Record<string, PlacePhoto[]> = {
     {
       "src": "/images/photos/gyeongbokgung/gwanghwamun.webp",
       "caption": "복원된 경복궁의 정문 광화문",
-      "credit": "한국관광공사, 공공누리 제1유형",
-      "url": "https://api.visitkorea.or.kr/#/hubTourSearchDetail"
+      "credit": "한국관광공사(한국관광콘텐츠랩) '광화문', 공공누리 제1유형",
+      "url": "https://api.visitkorea.or.kr/"
     }
   ],
   "suwon": [
@@ -53,8 +53,8 @@ export const PLACE_PHOTOS: Record<string, PlacePhoto[]> = {
     {
       "src": "/images/photos/independence/gyeoreui-jip.webp",
       "caption": "가운데 멀리 겨레의 집이 보이는 독립기념관 전경",
-      "credit": "한국관광공사, 공공누리 제1유형",
-      "url": "https://api.visitkorea.or.kr/#/hubTourSearchDetail"
+      "credit": "한국관광공사(한국관광콘텐츠랩) '독립기념관', 공공누리 제1유형",
+      "url": "https://api.visitkorea.or.kr/"
     }
   ],
   "bulguksa": [
@@ -63,6 +63,18 @@ export const PLACE_PHOTOS: Record<string, PlacePhoto[]> = {
       "caption": "경주 불국사 전경",
       "credit": "국가유산청, 공공누리 제1유형",
       "url": "https://www.heritage.go.kr/heri/cul/culSelectDetail.do?pageNo=1_1_1_1&sngl=Y&ccbaCpno=1333705020000"
+    },
+    {
+      "src": "/images/photos/bulguksa/dabotap.webp",
+      "caption": "화려한 다보탑",
+      "credit": "국가유산청, 공공누리 제1유형",
+      "url": "https://www.heritage.go.kr/heri/cul/culSelectDetail.do?pageNo=1_1_1_1&sngl=Y&ccbaCpno=1113700200000"
+    },
+    {
+      "src": "/images/photos/bulguksa/seokgatap.webp",
+      "caption": "단정한 석가탑(경주 불국사 삼층석탑)",
+      "credit": "국가유산청, 공공누리 제1유형",
+      "url": "https://www.heritage.go.kr/heri/cul/culSelectDetail.do?pageNo=1_1_1_1&sngl=Y&ccbaCpno=1113700210000"
     }
   ],
   "hansando": [
@@ -84,8 +96,8 @@ export const PLACE_PHOTOS: Record<string, PlacePhoto[]> = {
     {
       "src": "/images/photos/aunae/aunae-park.jpg",
       "caption": "아우내 독립만세운동을 기리는 조형물",
-      "credit": "한국관광공사, 공공누리 제3유형",
-      "url": "https://api.visitkorea.or.kr/#/hubTourSearchDetail",
+      "credit": "한국관광공사(한국관광콘텐츠랩) '아우내독립만세운동기념공원', 공공누리 제3유형",
+      "url": "https://api.visitkorea.or.kr/",
       "locked": true
     }
   ]
