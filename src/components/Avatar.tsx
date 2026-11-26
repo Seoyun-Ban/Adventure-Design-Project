@@ -1,5 +1,6 @@
 import { useId } from 'react'
 import { Taegukgi } from './Taegukgi'
+import { isCutoutFace } from '../lib/faceCrop'
 import type { AvatarLook, Equipped } from '../types'
 
 // 레이어 방식으로 그린 2D 캐릭터 (사용자 아바타와 역사 인물 공용)
@@ -160,7 +161,10 @@ export function Avatar({
       <ellipse cx="113.5" cy="78" rx="5" ry="7" fill={look.skin} stroke={OL} strokeWidth="2" />
       <circle cx="80" cy="74" r="34" fill={look.skin} stroke={OL} strokeWidth="2.4" />
 
-      {faceImage ? (
+      {faceImage && isCutoutFace(faceImage) ? (
+        // 윤곽대로 자른 얼굴: 틀 없이 모양 그대로 (세로는 살짝 눌러 머리 크기에 맞춘다)
+        <image href={faceImage} x="24.5" y="34.5" width="111" height="80" preserveAspectRatio="none" />
+      ) : faceImage ? (
         <>
           <image
             href={faceImage}

@@ -5,6 +5,7 @@ import { CharacterAvatar } from '../components/CharacterAvatar'
 import { FacePhotoField } from '../components/FacePhotoField'
 import { NICKNAME_MAX } from '../components/NicknameSheet'
 import { LookFields } from '../components/OptionRow'
+import { isCutoutFace } from '../lib/faceCrop'
 import { SubpageHeader } from '../components/SubpageHeader'
 import { AccountSection, EmailChange, PasswordChange, type AccountView } from '../components/AccountSection'
 import type { AvatarLook, SocialProvider } from '../types'
@@ -107,6 +108,11 @@ export function ProfileEditScreen({
           </div>
           <div className="profile-edit-panel face-panel">
             <FacePhotoField faceImage={nextFace} onChange={setNextFace} />
+            {nextFace && !isCutoutFace(nextFace) && (
+              <p className="face-guide face-notice">
+                얼굴을 다시 등록하면 얼굴 모양대로 더 자연스럽게 붙어요.
+              </p>
+            )}
           </div>
         </div>
         <ActionButton

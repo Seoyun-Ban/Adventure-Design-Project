@@ -5658,6 +5658,14 @@ button.settings-row {
   width: auto;
   filter: drop-shadow(0 6px 8px rgba(20, 30, 20, 0.25));
 }
+.actor-face.cutout {
+  /* 윤곽대로 자른 얼굴은 틀 없이 모양 그대로. 얼굴 윤곽의 가운데가 지정한 자리에 오게 한다 */
+  border-radius: 0;
+  box-shadow: none;
+  object-fit: fill;
+  transform: translate(-50%, -49.5%);
+  pointer-events: none;
+}
 .actor-face {
   position: absolute;
   aspect-ratio: 1;

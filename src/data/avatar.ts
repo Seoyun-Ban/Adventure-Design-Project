@@ -20,6 +20,25 @@ export type CharacterStyle = {
   mounts: { head: Point & { w: number }; hand: Point }
   /** 옷 아이템을 입은 그림이면 true (그 옷은 배지로 따로 그리지 않는다) */
   outfitWorn?: boolean
+  /** 윤곽대로 자른 얼굴을 붙일 때의 그림별 보정 (face 기준에서 옮기는 %, 크기 배율). 없으면 공통 값 */
+  cutout?: { dx?: number; dy?: number; scale?: number }
+}
+
+/**
+ * 윤곽대로 자른 얼굴(투명 그림)을 face 자리에 붙이는 공통 값. 얼굴이 어색하면 여기를 바꾼다.
+ * - scale: face.size(동그라미 지름) 대비 얼굴 너비 배율. 크게 하면 얼굴이 커진다
+ * - squash: 세로를 줄이는 비율. 캐릭터 얼굴이 사진보다 둥글고 납작해서 살짝 눌러 맞춘다 (1이면 그대로)
+ * - ovalWidth: 얼굴 그림 한 장 안에서 얼굴 윤곽이 차지하는 너비 비율 (faceCrop.ts의 크기 설정에서 나온 값, 바꾸지 않는다)
+ */
+export const CUTOUT_FIT = { scale: 1.08, squash: 0.72, ovalWidth: 0.66 }
+
+/** 윤곽대로 자른 얼굴 그림을 놓을 자리와 크기(캐릭터 그림 너비 대비 %) */
+export function cutoutPlacement(face: Point & { size: number }, fit: CharacterStyle['cutout'] = {}) {
+  return {
+    x: face.x + (fit.dx ?? 0),
+    y: face.y + (fit.dy ?? 0),
+    width: (face.size * CUTOUT_FIT.scale * (fit.scale ?? 1)) / CUTOUT_FIT.ovalWidth,
+  }
 }
 
 /**
@@ -103,7 +122,10 @@ const OUTFIT_FIT: Record<string, Partial<Pick<CharacterStyle, 'face' | 'slots' |
  * - 옷 그림이 아직 없으면 기본 그림 (옷은 배지로 보여준다)
  * 옷 그림 목록(OUTFIT_IMAGES)은 npm run images가 art/characters를 보고 자동으로 만든다.
  */
-export function characterFor(look: Pick<AvatarLook, 'gender' | 'style'>, equipped?: Equipped): CharacterStyle {
+export function characterFor(
+  look: Pick<AvatarLook, 'gender' | 'style'>,
+  equipped?: Equipped,
+): CharacterStyle {
   const styleId = styleIdFor(look)
   const base = characterStyles[styleId]
   const outfit = equipped?.의복 ? OUTFIT_OF_ITEM[equipped.의복] : undefined

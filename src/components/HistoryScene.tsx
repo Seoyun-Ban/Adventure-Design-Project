@@ -2,7 +2,8 @@ import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 
 import { Icon } from './Icon'
 import { Avatar } from './Avatar'
 import { figures, myVoiceFor } from '../data/figures'
-import { characterFor } from '../data/avatar'
+import { characterFor, CUTOUT_FIT, cutoutPlacement } from '../data/avatar'
+import { isCutoutFace } from '../lib/faceCrop'
 import {
   canSpeak,
   dialogueAudioUrl,
@@ -269,14 +270,29 @@ export function HistoryScene({
               />
             }
           >
-            {faceImage && (
-              <img
-                className="actor-face"
-                src={faceImage}
-                alt=""
-                style={{ left: `${me.face.x}%`, top: `${me.face.y}%`, width: `${me.face.size}%` }}
-              />
-            )}
+            {faceImage &&
+              (isCutoutFace(faceImage) ? (
+                // 눈에 맞춰 윤곽대로 자른 얼굴: 동그라미·테두리 없이 모양 그대로 붙인다
+                <img
+                  className="actor-face cutout"
+                  src={faceImage}
+                  alt=""
+                  style={{
+                    left: `${cutoutPlacement(me.face, me.cutout).x}%`,
+                    top: `${cutoutPlacement(me.face, me.cutout).y}%`,
+                    width: `${cutoutPlacement(me.face, me.cutout).width}%`,
+                    aspectRatio: `1 / ${CUTOUT_FIT.squash}`,
+                  }}
+                />
+              ) : (
+                // 예전에 등록한 얼굴(동그란 사진)
+                <img
+                  className="actor-face"
+                  src={faceImage}
+                  alt=""
+                  style={{ left: `${me.face.x}%`, top: `${me.face.y}%`, width: `${me.face.size}%` }}
+                />
+              ))}
           </CharacterArt>
           <span className="actor-name">{nickname}</span>
         </div>

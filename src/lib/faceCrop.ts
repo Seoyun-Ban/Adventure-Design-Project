@@ -10,10 +10,27 @@ const OUT = 256
 const EYE_DISTANCE = 0.3
 /** 두 눈 가운데의 위에서부터 높이 / 그림 한 변. 이마와 턱이 모두 들어오게 정함 */
 const EYE_Y = 0.37
-/** 윤곽선을 안쪽으로 줄이는 비율 (머리카락·배경이 섞이지 않게) */
-const OVAL_SHRINK = 0.96
-/** 가장자리를 부드럽게 하는 번짐 반지름 (픽셀) */
-const FEATHER = 5
+/** 윤곽선을 안쪽으로 줄이는 비율 (머리카락·배경이 섞이지 않게. 가장자리를 넓게 번지게 하는 만큼 더 줄인다) */
+const OVAL_SHRINK = 0.93
+/** 가장자리를 부드럽게 하는 번짐 반지름 (픽셀). 클수록 가장자리가 넓고 부드럽게 사라진다 */
+const FEATHER = 10
+
+/**
+ * 만화풍 강도 — 얼굴이 어색하면 여기 숫자만 바꾸면 된다.
+ * (알아두기: 번짐을 키우고 선을 줄일수록 매끈하고 사진 느낌이 나며, 반대면 만화 느낌이 강해진다)
+ */
+export const CARTOON_STYLE = {
+  /** 사진을 줄였다 키우는 크기 / 그림 한 변. 작을수록 더 흐려져 잡티가 사라진다 (0.2~0.4) */
+  softenRatio: 0.28,
+  /** 윤곽선을 찾기 전에 한 번 더 흐리게 하는 반지름 (픽셀, 0이면 안 함). 클수록 잡티가 선으로 안 그려진다 */
+  lineBlur: 2,
+  /** 색 단계 수. 적을수록 만화처럼 단순해진다 (4~8) */
+  levels: 6,
+  /** 윤곽선이 생기는 밝기 차이. 클수록 선이 적게 생긴다 (20~100) */
+  lineThreshold: 45,
+  /** 윤곽선 진하기 (1이면 색 그대로, 0이면 검정). 클수록 연하다 */
+  lineLight: 0.72,
+}
 
 /** 사진을 읽는다. 아이폰 사진이 옆으로 돌아가지 않게 방향 정보를 따르고, 얼굴 찾기가 빠르도록 긴 변을 1024px 이하로 줄인다 */
 export async function loadPhoto(file: Blob): Promise<ImageBitmap> {
@@ -76,7 +93,7 @@ export function alignFace(photo: ImageBitmap, face: FaceShape): string {
   context.setTransform(1, 0, 0, 1, 0, 0)
 
   const data = context.getImageData(0, 0, OUT, OUT)
-  cartoonize(data, OUT, 96)
+  cartoonize(data, OUT)
 
   // 얼굴 윤곽 안쪽만 남기는 부드러운 가장자리 마스크
   const oval = face.oval.map(toOut)
@@ -90,11 +107,17 @@ export function alignFace(photo: ImageBitmap, face: FaceShape): string {
   if (!maskContext) throw new Error('canvas unavailable')
   maskContext.fillStyle = '#fff'
   maskContext.beginPath()
-  oval.forEach((p, i) => {
-    const x = center.x + (p.x - center.x) * OVAL_SHRINK
-    const y = center.y + (p.y - center.y) * OVAL_SHRINK
-    if (i === 0) maskContext.moveTo(x, y)
-    else maskContext.lineTo(x, y)
+  // 점들을 직선으로 이으면 각져 보여서, 점 사이 가운데를 이어 가는 곡선으로 그린다
+  const shrunk = oval.map((p) => ({
+    x: center.x + (p.x - center.x) * OVAL_SHRINK,
+    y: center.y + (p.y - center.y) * OVAL_SHRINK,
+  }))
+  const middle = (a: Point, b: Point): Point => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 })
+  const start = middle(shrunk[shrunk.length - 1], shrunk[0])
+  maskContext.moveTo(start.x, start.y)
+  shrunk.forEach((p, i) => {
+    const next = middle(p, shrunk[(i + 1) % shrunk.length])
+    maskContext.quadraticCurveTo(p.x, p.y, next.x, next.y)
   })
   maskContext.closePath()
   maskContext.fill()
@@ -129,7 +152,8 @@ export async function centerCropFace(file: Blob, size = 160): Promise<string> {
 }
 
 /** 작게 줄였다가 키워 잡티를 부드럽게 한 뒤 만화풍으로 바꾼다 */
-function cartoonize(data: ImageData, size: number, soften: number) {
+function cartoonize(data: ImageData, size: number) {
+  const soften = Math.max(16, Math.round(size * CARTOON_STYLE.softenRatio))
   const source = document.createElement('canvas')
   source.width = source.height = size
   source.getContext('2d')?.putImageData(data, 0, 0)
@@ -149,30 +173,61 @@ function cartoonize(data: ImageData, size: number, soften: number) {
   data.data.set(softened.data)
 }
 
-/** 색을 몇 단계로 단순화하고 밝기 차이가 큰 곳에 윤곽선을 넣는다 (제자리에서 바꿈) */
+/**
+ * 윤곽선을 넣고 색을 몇 단계로 단순화한다 (제자리에서 바꿈).
+ * 선은 색을 단순화하기 전의 부드러운 밝기에서 찾는다. 단계 경계에서 찾으면 잡티마다 선이 생겨 지저분해진다.
+ */
 function applyCartoon(data: ImageData, size: number) {
+  const { levels, lineThreshold, lineLight, lineBlur } = CARTOON_STYLE
   const px = data.data
-  const levels = 6
   const lum = new Float32Array(size * size)
+  for (let i = 0; i < px.length; i += 4) lum[i / 4] = px[i] * 0.3 + px[i + 1] * 0.59 + px[i + 2] * 0.11
+  const smooth = lineBlur > 0 ? blurValues(lum, size, lineBlur) : lum
+
+  const line = new Uint8Array(size * size)
+  for (let y = 1; y < size - 1; y += 1) {
+    for (let x = 1; x < size - 1; x += 1) {
+      const k = y * size + x
+      const gx = smooth[k + 1] - smooth[k - 1]
+      const gy = smooth[k + size] - smooth[k - size]
+      if (Math.hypot(gx, gy) > lineThreshold) line[k] = 1
+    }
+  }
+
   for (let i = 0; i < px.length; i += 4) {
     for (let c = 0; c < 3; c += 1) {
       const boosted = Math.min(255, px[i + c] * 1.06 + 6)
       px[i + c] = Math.round(Math.round((boosted / 255) * (levels - 1)) * (255 / (levels - 1)))
     }
-    lum[i / 4] = px[i] * 0.3 + px[i + 1] * 0.59 + px[i + 2] * 0.11
-  }
-  for (let y = 1; y < size - 1; y += 1) {
-    for (let x = 1; x < size - 1; x += 1) {
-      const k = y * size + x
-      const gx = lum[k + 1] - lum[k - 1]
-      const gy = lum[k + size] - lum[k - size]
-      if (Math.hypot(gx, gy) > 70) {
-        px[k * 4] *= 0.45
-        px[k * 4 + 1] *= 0.4
-        px[k * 4 + 2] *= 0.4
-      }
+    if (line[i / 4]) {
+      px[i] *= lineLight
+      px[i + 1] *= lineLight * 0.95
+      px[i + 2] *= lineLight * 0.95
     }
   }
+}
+
+/** 값 배열(size×size)을 상자 번짐으로 부드럽게 한다 */
+function blurValues(values: Float32Array, size: number, radius: number): Float32Array {
+  const window = radius * 2 + 1
+  const horizontal = new Float32Array(size * size)
+  const result = new Float32Array(size * size)
+  const clamp = (n: number) => Math.min(size - 1, Math.max(0, n))
+  for (let y = 0; y < size; y += 1) {
+    for (let x = 0; x < size; x += 1) {
+      let sum = 0
+      for (let d = -radius; d <= radius; d += 1) sum += values[y * size + clamp(x + d)]
+      horizontal[y * size + x] = sum / window
+    }
+  }
+  for (let y = 0; y < size; y += 1) {
+    for (let x = 0; x < size; x += 1) {
+      let sum = 0
+      for (let d = -radius; d <= radius; d += 1) sum += horizontal[clamp(y + d) * size + x]
+      result[y * size + x] = sum / window
+    }
+  }
+  return result
 }
 
 /** 마스크 그림의 흰 부분(빨강 값)을 상자 번짐 3번으로 부드럽게 해 투명도(0~255) 배열로 돌려준다 */
@@ -204,4 +259,9 @@ function blurAlpha(rgba: Uint8ClampedArray, size: number, radius: number): Uint8
   }
   next = current
   return Uint8ClampedArray.from(next)
+}
+
+/** 눈 위치에 맞춰 자른 투명 얼굴 그림인지 (예전 방식으로 저장한 동그란 JPG와 구분한다) */
+export function isCutoutFace(src: string): boolean {
+  return !src.startsWith('data:image/jpeg')
 }
