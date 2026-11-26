@@ -80,6 +80,13 @@ export const PLACE_PHOTOS: Record<string, PlacePhoto[]> = {
       "credit": "국가유산청, 공공누리 제4유형",
       "url": "https://www.heritage.go.kr/heri/cul/culSelectDetail.do?pageNo=1_1_1_1&sngl=Y&ccbaCpno=1333402300000",
       "locked": true
+    },
+    {
+      "src": "/images/photos/aunae/aunae-park.jpg",
+      "caption": "아우내 독립만세운동을 기리는 조형물",
+      "credit": "한국관광공사, 공공누리 제3유형",
+      "url": "https://api.visitkorea.or.kr/#/hubTourSearchDetail",
+      "locked": true
     }
   ]
 }
