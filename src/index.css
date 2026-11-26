@@ -5080,6 +5080,10 @@ img.character-item[style*='height'] {
   height: 100%;
   object-fit: cover;
 }
+.face-frame img.cutout {
+  /* 윤곽대로 자른 얼굴은 잘리지 않게 전체를 보여준다 */
+  object-fit: contain;
+}
 .face-frame i {
   position: absolute;
   inset: 8px;

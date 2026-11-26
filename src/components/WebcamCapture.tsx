@@ -82,7 +82,7 @@ export function WebcamCapture({
             <i aria-hidden="true" />
             {status === 'starting' && <span className="webcam-wait">카메라를 켜는 중이에요…</span>}
           </div>
-          <p className="face-guide">얼굴이 동그라미 안에 들어오게 하고 찍어 주세요.</p>
+          <p className="face-guide">정면을 바라보고 얼굴이 화면 가운데 오게 찍어 주세요.</p>
           <ActionButton onClick={shoot} disabled={status !== 'ready'}>
             <Icon name="camera" size={18} /> 찍기
           </ActionButton>

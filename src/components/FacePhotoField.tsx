@@ -10,7 +10,7 @@ import {
   onFaceModelStatus,
   preloadFaceModel,
 } from '../lib/faceDetect'
-import { alignFace, centerCropFace, loadPhoto } from '../lib/faceCrop'
+import { alignFace, centerCropFace, isCutoutFace, loadPhoto } from '../lib/faceCrop'
 
 // 얼굴 사진 넣기 (온보딩 '얼굴 등록하기'와 설정 '개인정보 고치기'에서 함께 쓴다)
 // '촬영하기' → 카메라로 찍기 / 앨범에서 고르기. 얼굴을 찾아 눈 위치에 맞춰 자르고 만화풍으로 바꿔 이 기기에만 저장한다.
@@ -97,13 +97,17 @@ export function FacePhotoField({
   return (
     <>
       <div className={`face-frame ${faceImage ? 'has-photo' : ''}`}>
-        {faceImage ? <img src={faceImage} alt="등록한 얼굴" /> : <Icon name="user" size={46} />}
+        {faceImage ? (
+          <img src={faceImage} alt="등록한 얼굴" className={isCutoutFace(faceImage) ? 'cutout' : undefined} />
+        ) : (
+          <Icon name="user" size={46} />
+        )}
         <i />
       </div>
       <p className="face-guide">
-        정면을 바라보고 얼굴이 원 안에 들어오게 찍어주세요.
+        밝은 곳에서 정면을 바라보고 얼굴이 잘 보이게 찍어주세요.
         <br />
-        사진은 이 기기에만 저장돼요.
+        얼굴 모양대로 자동으로 맞춰져요. 사진은 이 기기에만 저장돼요.
       </p>
       {/* 휴대폰: 앞면 카메라로 바로 찍기 / 사진 앨범에서 고르기 */}
       <input ref={cameraInput} type="file" accept="image/*" capture="user" hidden onChange={handlePhoto} />
@@ -141,7 +145,7 @@ export function FacePhotoField({
               앨범에서 고르기
             </button>
           </div>
-          <p className="face-guide">사진은 만화풍으로 바뀌어 이 기기에만 저장돼요.</p>
+          <p className="face-guide">얼굴 모양대로 잘라 만화풍으로 바꾸고, 이 기기에만 저장돼요.</p>
         </BottomSheet>
       )}
       {webcam && (

@@ -59,7 +59,7 @@ git push
 3. 터미널에서 `npm run images` → 여백을 자르고 용량을 줄인 그림이 `public/images/characters/`에 생긴다 (약 1MB → 100KB)
 4. `npm run dev`로 확인 후 커밋 (원본과 줄인 그림 둘 다)
 
-내 캐릭터 그림을 바꾸거나 머리 모양을 추가하면 `src/data/avatar.ts`의 `characterStyles`에서 그림 경로, 얼굴 사진 위치(`face`), 아이템 배지 자리(`slots`), 머리·손 아이템 자리(`mounts`)를 그림에 맞게 고쳐야 합니다. 머리 모양을 추가할 때는 `src/types.ts`의 `CharacterStyleId`에도 이름을 더합니다. 성별마다 맨 앞에 적은 머리 모양이 기본값이에요.
+내 캐릭터 그림을 바꾸거나 머리 모양을 추가하면 `src/data/avatar.ts`의 `characterStyles`에서 그림 경로, 얼굴 사진 위치(`face`), 아이템 배지 자리(`slots`), 머리·손 아이템 자리(`mounts`)를 그림에 맞게 고쳐야 합니다. 머리 모양을 추가할 때는 `src/types.ts`의 `CharacterStyleId`에도 이름을 더합니다. 성별마다 맨 앞에 적은 머리 모양이 기본값이에요. 얼굴 사진은 윤곽대로 잘라 붙이므로 `face` 값을 같이 쓰고, 어색하면 같은 파일의 `CUTOUT_FIT`(공통)이나 그림별 `cutout`(옮김·배율)을 조정하세요. 만화풍 강도는 `src/lib/faceCrop.ts`의 `CARTOON_STYLE`에서 바꿉니다.
 
 ### 아이템 그림 넣기
 
