@@ -7464,3 +7464,51 @@ button.settings-row {
     justify-content: center;
   }
 }
+
+/* 세로 사진: 자르지 않고 원래 비율 그대로 전체가 보이게. 높이는 화면의 60%까지, 남는 양옆은 배경색 */
+:root {
+  --photo-max-h: 60svh;
+  --photo-bg: #efe8d4;
+}
+.learn-article figure.learn-photo-portrait button {
+  display: flex;
+  justify-content: center;
+  border-radius: 4px 18px 4px 18px;
+  background: var(--photo-bg);
+  overflow: hidden;
+}
+.learn-article figure.learn-photo-portrait img {
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: var(--photo-max-h);
+  aspect-ratio: auto;
+  border-radius: 0;
+  object-fit: contain;
+  box-shadow: none;
+}
+/* 묶음 안: 가로·세로 사진이 섞여도 모든 칸의 크기를 같게 (사진은 칸 안에 원래 비율로) */
+.learn-article figure.learn-photo-stage button {
+  position: relative;
+  max-height: var(--photo-max-h);
+  border-radius: 4px 18px 4px 18px;
+  background: var(--photo-bg);
+  overflow: hidden;
+}
+.learn-article figure.learn-photo-stage img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  aspect-ratio: auto;
+  border-radius: 0;
+  object-fit: contain;
+  box-shadow: none;
+}
+/* 컴퓨터 화면에서는 틀(852px)이 기준이라 그 60% */
+@media (min-width: 500px) and (hover: hover) and (pointer: fine) {
+  :root {
+    --photo-max-h: 511px;
+  }
+}

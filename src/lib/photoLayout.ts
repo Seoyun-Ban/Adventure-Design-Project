@@ -29,3 +29,20 @@ export function layoutPhotos<T>(photos: T[], detailCount: number): T[][] {
   }
   return slots
 }
+
+type Sized = { width: number; height: number; locked?: boolean }
+
+/** 세로 사진인지 (세로가 더 긴 사진) */
+export function isPortrait(photo: Sized) {
+  return photo.height > photo.width
+}
+
+/**
+ * 묶음(옆으로 넘기기) 안 사진 칸의 가로÷세로 비율. 세로 사진이나 변경금지 사진이 섞인 묶음은 모든 칸의 크기를 같게 맞춘다.
+ * 가장 길쭉한 사진이 통째로 들어가는 비율이고, 나머지는 칸 안에서 원래 비율 그대로 보인다(남는 곳은 배경색).
+ * 가로 사진만 있고 변경금지가 없으면 null → 예전처럼 4:3 칸에 맞춰 자른다.
+ */
+export function stageRatioOf(photos: Sized[]): number | null {
+  if (!photos.some((photo) => isPortrait(photo) || photo.locked)) return null
+  return Math.min(...photos.map((photo) => photo.width / photo.height))
+}

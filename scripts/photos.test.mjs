@@ -4,7 +4,7 @@
 import assert from 'node:assert/strict'
 import { readFile, stat } from 'node:fs/promises'
 import { test } from 'node:test'
-import { layoutPhotos } from '../src/lib/photoLayout.ts'
+import { isPortrait, layoutPhotos, stageRatioOf } from '../src/lib/photoLayout.ts'
 import { PLACE_PHOTOS } from '../src/data/generated/photos.ts'
 import { placeIdOf, readPlaces, readSources } from './lib/photoSources.mjs'
 
@@ -157,4 +157,27 @@ test('경복궁·수원화성 단계별 배치(사진 3장)', async () => {
   assert.equal(show('suwon', '쉬움'), 'paldalmun | seonggwak+haenggung')
   assert.equal(show('suwon', '보통'), 'paldalmun | seonggwak | haenggung')
   assert.equal(show('suwon', '어려움'), 'paldalmun | seonggwak | haenggung')
+})
+
+test('세로 사진은 자르지 않고, 묶음 안 칸 크기는 모두 같다', () => {
+  const photo = (id) => PLACE_PHOTOS.bulguksa.find((p) => p.src.includes(id))
+  // 다보탑·석가탑은 세로 사진, 불국사 전경은 가로 사진
+  assert.ok(isPortrait(photo('dabotap')) && isPortrait(photo('seokgatap')))
+  assert.ok(!isPortrait(photo('bulguksa.webp')))
+  for (const list of Object.values(PLACE_PHOTOS)) {
+    for (const p of list) {
+      assert.ok(p.width > 0 && p.height > 0, `${p.src}: 가로·세로 크기가 없음 (npm run images)`)
+    }
+  }
+  // 세로끼리 묶음: 가장 길쭉한 사진(석가탑 667×1000)에 맞춘 같은 칸
+  assert.equal(stageRatioOf([photo('dabotap'), photo('seokgatap')]), 667 / 1000)
+  // 가로·세로가 섞여도 칸 하나(가장 길쭉한 사진 기준)
+  assert.equal(stageRatioOf([photo('bulguksa.webp'), photo('seokgatap')]), 667 / 1000)
+  // 가로 사진만(변경금지 없음)이면 예전처럼 4:3 칸 (null)
+  const gb = PLACE_PHOTOS.gyeongbokgung
+  assert.equal(stageRatioOf(gb), null)
+  // 변경금지 사진은 가로여도 자르지 않으므로 같은 칸에 원래 비율로
+  const aunae = PLACE_PHOTOS.aunae
+  assert.ok(aunae.every((p) => p.locked))
+  assert.equal(stageRatioOf(aunae), Math.min(...aunae.map((p) => p.width / p.height)))
 })

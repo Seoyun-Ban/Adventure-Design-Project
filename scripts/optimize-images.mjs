@@ -101,10 +101,15 @@ for (const entry of sources) {
   }
   await mkdir(path.join(PHOTO_OUT, placeId), { recursive: true })
   let outName
+  let shown // 화면에 보이는 가로·세로 크기 (세로 사진 구분용)
   if (entry.locked) {
     // 변경금지(공공누리 제3·4유형): 자르기·크기 조절·형식 바꾸기 없이 원본 파일을 그대로 복사만 한다
     outName = entry.file
     await copyFile(input, path.join(PHOTO_OUT, placeId, outName))
+    const meta = await sharp(input).metadata()
+    // 브라우저는 사진 방향 정보(EXIF 5~8)대로 눕히거나 세워 보여 주므로 가로·세로를 바꿔 센다
+    const turned = (meta.orientation ?? 1) >= 5
+    shown = turned ? { width: meta.height, height: meta.width } : { width: meta.width, height: meta.height }
     console.log(
       `사진 ${placeId}/${entry.file}: 변경금지 → 원본 그대로 복사 (${kb((await stat(input)).size)})`,
     )
@@ -115,12 +120,15 @@ for (const entry of sources) {
       .resize({ width: PHOTO_WIDTH, height: PHOTO_WIDTH, fit: 'inside', withoutEnlargement: true })
       .webp({ quality: 78, effort: 6 })
       .toFile(path.join(PHOTO_OUT, placeId, outName))
+    shown = { width: result.width, height: result.height }
     console.log(
       `사진 ${placeId}/${entry.file}: ${kb((await stat(input)).size)} → ${kb(result.size)} (${result.width}×${result.height})`,
     )
   }
   ;(photos[placeId] ??= []).push({
     src: `/images/photos/${placeId}/${outName}`,
+    width: shown.width,
+    height: shown.height,
     caption: entry.caption,
     credit: entry.credit,
     ...(entry.url ? { url: entry.url } : {}),
@@ -135,6 +143,9 @@ await writeFile(
 ` +
     `export type PlacePhoto = {
   src: string
+  /** 화면에 보이는 크기 (세로 사진은 height가 더 크다) */
+  width: number
+  height: number
   caption: string
   credit: string
   url?: string

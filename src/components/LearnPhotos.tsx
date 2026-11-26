@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react'
 import { PLACE_PHOTOS, type PlacePhoto } from '../data/generated/photos'
+import { isPortrait, stageRatioOf } from '../lib/photoLayout'
 
 /** 장소의 사진 목록 (없으면 빈 목록 → 글만 나온다) */
 export function photosOf(placeId: string): PlacePhoto[] {
@@ -28,16 +29,40 @@ function Credit({ photo }: { photo: PlacePhoto }) {
   )
 }
 
-/** 사진 + 설명 + 작은 글씨 출처. 누르면 크게 본다 */
-export function PhotoFigure({ photo, onOpen }: { photo: PlacePhoto; onOpen: (photo: PlacePhoto) => void }) {
+/**
+ * 사진 + 설명 + 작은 글씨 출처. 누르면 크게 본다
+ * - 가로 사진: 4:3 칸에 맞춰 보여 준다 (변경금지 사진은 자르지 않고 원래 비율)
+ * - 세로 사진: 자르지 않고 원래 비율 그대로 전체를 보여 준다 (높이는 화면의 60%까지, 남는 양옆은 배경색)
+ * - stageRatio가 있으면(묶음 안) 모든 사진이 같은 크기 칸 안에 원래 비율로 들어간다
+ */
+export function PhotoFigure({
+  photo,
+  onOpen,
+  stageRatio,
+}: {
+  photo: PlacePhoto
+  onOpen: (photo: PlacePhoto) => void
+  stageRatio?: number | null
+}) {
+  const classes = ['learn-photo']
+  if (photo.locked) classes.push('learn-photo-locked')
+  if (stageRatio) classes.push('learn-photo-stage')
+  else if (isPortrait(photo)) classes.push('learn-photo-portrait')
   return (
-    <figure className={`learn-photo${photo.locked ? ' learn-photo-locked' : ''}`}>
-      <button type="button" onClick={() => onOpen(photo)} aria-label={`${photo.caption} 크게 보기`}>
+    <figure className={classes.join(' ')}>
+      <button
+        type="button"
+        onClick={() => onOpen(photo)}
+        aria-label={`${photo.caption} 크게 보기`}
+        style={stageRatio ? { aspectRatio: String(stageRatio) } : undefined}
+      >
         <img
           src={photo.src}
           alt={photo.caption}
           loading="lazy"
-          style={!photo.locked && photo.crop ? { objectPosition: photo.crop } : undefined}
+          width={photo.width}
+          height={photo.height}
+          style={!stageRatio && !photo.locked && photo.crop ? { objectPosition: photo.crop } : undefined}
         />
       </button>
       <figcaption>
@@ -62,6 +87,7 @@ export function PhotoGroup({
 }) {
   const track = useRef<HTMLDivElement>(null)
   const [index, setIndex] = useState(0)
+  const stageRatio = stageRatioOf(photos)
   if (photos.length === 0) return null
   if (photos.length === 1) return <PhotoFigure photo={photos[0]} onOpen={onOpen} />
 
@@ -91,7 +117,7 @@ export function PhotoGroup({
     <div className="photo-group" role="group" aria-roledescription="사진 묶음" aria-label="사진 넘겨 보기">
       <div className="photo-track" ref={track} onScroll={onScroll} onKeyDown={onKeyDown} tabIndex={0}>
         {photos.map((photo) => (
-          <PhotoFigure key={photo.src} photo={photo} onOpen={onOpen} />
+          <PhotoFigure key={photo.src} photo={photo} onOpen={onOpen} stageRatio={stageRatio} />
         ))}
       </div>
       <div className="photo-nav">
