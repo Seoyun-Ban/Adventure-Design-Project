@@ -3,7 +3,7 @@ import { Icon } from '../components/Icon'
 import { ActionButton } from '../components/ActionButton'
 import { HistoryScene } from '../components/HistoryScene'
 import { Place3D } from '../components/Place3D'
-import { PhotoFigure, PhotoViewer, photosOf, usePhotoViewer } from '../components/LearnPhotos'
+import { PhotoGroup, PhotoViewer, photosOf, usePhotoViewer } from '../components/LearnPhotos'
 import { PlaceItems } from '../components/PlaceItems'
 import { layoutPhotos } from '../lib/photoLayout'
 import { getContent } from '../data/contents'
@@ -40,8 +40,15 @@ export function LearnScreen({
   // 사진은 사람이 고르지 않고 문단 사이에 고르게 자동 배치 (사진이 없으면 글만)
   const photoSlots = layoutPhotos(photosOf(place.id), paragraphs.length)
   const [viewing, setViewing] = usePhotoViewer()
+  // 한 자리에 사진이 2장 이상이면 옆으로 넘기는 묶음. 자리 안의 사진이 바뀌면(학습 단계 변경) 묶음을 새로 시작한다
   const photosAt = (slot: number) =>
-    photoSlots[slot].map((photo) => <PhotoFigure key={photo.src} photo={photo} onOpen={setViewing} />)
+    photoSlots[slot].length > 0 && (
+      <PhotoGroup
+        key={photoSlots[slot].map((photo) => photo.src).join('|')}
+        photos={photoSlots[slot]}
+        onOpen={setViewing}
+      />
+    )
 
   return (
     <main className="screen learn-screen">

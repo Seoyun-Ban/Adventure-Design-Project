@@ -7407,3 +7407,60 @@ button.settings-row {
   color: inherit;
   text-decoration: underline;
 }
+
+/* 한 자리에 모인 사진 묶음: 옆으로 밀어서 넘긴다 (사진 위에는 아무것도 겹치지 않는다) */
+.photo-group {
+  margin: 20px 0;
+}
+.photo-track {
+  display: flex;
+  align-items: flex-start;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  outline: none;
+}
+.photo-track::-webkit-scrollbar {
+  display: none;
+}
+.photo-track:focus-visible {
+  outline: 2px solid #8a9a6b;
+  outline-offset: 2px;
+}
+.learn-article .photo-track figure.learn-photo {
+  flex: 0 0 100%;
+  min-width: 0;
+  margin: 0;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+.photo-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 6px;
+  color: #625b4f;
+  font-size: 11px;
+}
+.photo-nav button {
+  display: none; /* 휴대폰은 밀어서 넘기고, 화살표는 마우스가 있는 컴퓨터에서만 보인다 */
+  width: 28px;
+  height: 28px;
+  border: 1px solid #d5d8d0;
+  border-radius: 50%;
+  background: #fff;
+  color: #556058;
+  font-size: 18px;
+  line-height: 1;
+}
+.photo-nav button:disabled {
+  opacity: 0.35;
+}
+@media (hover: hover) and (pointer: fine) {
+  .photo-nav button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
