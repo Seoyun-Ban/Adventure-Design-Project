@@ -19,6 +19,7 @@ import { useLocation } from './hooks/useLocation'
 import { itemsForPlace, levelFor } from './data/avatar'
 import { clearChallengeHash, readChallenge } from './lib/challenge'
 import { scrollAppToTop } from './lib/frameScale'
+import { setFaceStyle } from './lib/faceCrop'
 import { generateQuiz, QUIZ_COUNT, type GeneratedQuiz } from './lib/quizGenerator'
 import type { Difficulty, HistoryItem, Place, Screen, SocialProvider, Tab } from './types'
 
@@ -246,6 +247,7 @@ export default function App() {
   /** 회원 탈퇴: 이 기기에 저장된 기록(학습 기록, 아바타, 계정 정보)을 모두 지우고 처음 화면으로 */
   function withdraw() {
     clearAll()
+    setFaceStyle('photo')
     setPretendId(null)
     setScreen('login')
     showToast('탈퇴했어요. 그동안 함께해 줘서 고마워요.')
@@ -257,6 +259,7 @@ export default function App() {
    */
   function resetAll() {
     resetProgress()
+    setFaceStyle('photo')
     setPretendId(null)
     setHomeTab('map')
     setScreen('login')

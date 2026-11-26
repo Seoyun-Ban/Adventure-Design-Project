@@ -40,8 +40,9 @@ export function ProfileEditScreen({
   const [name, setName] = useState(nickname)
   const [nextLook, setNextLook] = useState(look)
   const [nextFace, setNextFace] = useState(faceImage)
-  // 얼굴 표현 방식: 고르면 바로 이 기기에 저장되고, 다음에 얼굴을 등록할 때부터 적용된다
-  const [faceStyle, setFaceStyleState] = useState<FaceStyle>(getFaceStyle())
+  // 얼굴 표현 방식: 고르기만 해서는 바뀌지 않고, '저장'을 눌러야 이 기기에 저장된다 (다음에 얼굴을 등록할 때부터 적용)
+  const savedFaceStyle = getFaceStyle()
+  const [faceStyle, setFaceStyleState] = useState<FaceStyle>(savedFaceStyle)
   const trimmed = name.trim()
   // 한글·이모지도 한 글자로 세도록 문자 단위로 센다
   const length = [...trimmed].length
@@ -50,12 +51,19 @@ export function ProfileEditScreen({
     trimmed !== nickname ||
     nextLook.gender !== look.gender ||
     nextLook.style !== look.style ||
-    nextFace !== faceImage
+    nextFace !== faceImage ||
+    faceStyle !== savedFaceStyle
   const canSave = length > 0 && !tooLong && changed
 
   function submit(event: FormEvent) {
     event.preventDefault()
-    if (canSave) onSave({ nickname: trimmed, look: nextLook, faceImage: nextFace })
+    save()
+  }
+
+  function save() {
+    if (!canSave) return
+    setFaceStyle(faceStyle)
+    onSave({ nickname: trimmed, look: nextLook, faceImage: nextFace })
   }
 
   if (view === 'email') {
@@ -114,10 +122,7 @@ export function ProfileEditScreen({
               options={['photo', 'cartoon'] as const}
               value={faceStyle}
               labelOf={(style) => (style === 'photo' ? '사진 그대로' : '만화풍')}
-              onChange={(style) => {
-                setFaceStyleState(style)
-                setFaceStyle(style)
-              }}
+              onChange={setFaceStyleState}
             />
             <p className="face-guide">바꾼 표현은 다음에 얼굴을 등록할 때부터 적용돼요. 이미 등록한 얼굴은 그대로예요.</p>
             <FacePhotoField faceImage={nextFace} onChange={setNextFace} />
@@ -129,7 +134,7 @@ export function ProfileEditScreen({
           </div>
         </div>
         <ActionButton
-          onClick={() => canSave && onSave({ nickname: trimmed, look: nextLook, faceImage: nextFace })}
+          onClick={save}
           disabled={!canSave}
         >
           저장
