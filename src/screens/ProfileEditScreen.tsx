@@ -4,8 +4,8 @@ import { FieldHint } from '../components/AuthHeader'
 import { CharacterAvatar } from '../components/CharacterAvatar'
 import { FacePhotoField } from '../components/FacePhotoField'
 import { NICKNAME_MAX } from '../components/NicknameSheet'
-import { LookFields } from '../components/OptionRow'
-import { isCutoutFace } from '../lib/faceCrop'
+import { LookFields, OptionRow } from '../components/OptionRow'
+import { getFaceStyle, isCutoutFace, setFaceStyle, type FaceStyle } from '../lib/faceCrop'
 import { SubpageHeader } from '../components/SubpageHeader'
 import { AccountSection, EmailChange, PasswordChange, type AccountView } from '../components/AccountSection'
 import type { AvatarLook, SocialProvider } from '../types'
@@ -40,6 +40,8 @@ export function ProfileEditScreen({
   const [name, setName] = useState(nickname)
   const [nextLook, setNextLook] = useState(look)
   const [nextFace, setNextFace] = useState(faceImage)
+  // 얼굴 표현 방식: 고르면 바로 이 기기에 저장되고, 다음에 얼굴을 등록할 때부터 적용된다
+  const [faceStyle, setFaceStyleState] = useState<FaceStyle>(getFaceStyle())
   const trimmed = name.trim()
   // 한글·이모지도 한 글자로 세도록 문자 단위로 센다
   const length = [...trimmed].length
@@ -107,6 +109,17 @@ export function ProfileEditScreen({
             <small>학습 영상 장면 속 내 캐릭터 얼굴에만 쓰여요.</small>
           </div>
           <div className="profile-edit-panel face-panel">
+            <OptionRow
+              label="얼굴 표현"
+              options={['photo', 'cartoon'] as const}
+              value={faceStyle}
+              labelOf={(style) => (style === 'photo' ? '사진 그대로' : '만화풍')}
+              onChange={(style) => {
+                setFaceStyleState(style)
+                setFaceStyle(style)
+              }}
+            />
+            <p className="face-guide">바꾼 표현은 다음에 얼굴을 등록할 때부터 적용돼요. 이미 등록한 얼굴은 그대로예요.</p>
             <FacePhotoField faceImage={nextFace} onChange={setNextFace} />
             {nextFace && !isCutoutFace(nextFace) && (
               <p className="face-guide face-notice">

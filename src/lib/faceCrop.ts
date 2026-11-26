@@ -1,11 +1,15 @@
 // 얼굴 사진을 캐릭터에 붙일 얼굴 그림으로 바꾼다. 모두 기기 안에서만 처리한다.
-// - alignFace: 눈 위치로 기울기·크기·위치를 맞추고 얼굴 윤곽대로 잘라(가장자리 부드럽게) 만화풍으로 바꾼 투명 그림
-// - centerCropFace: 얼굴을 못 찾는 환경용 대체 방식 (사진 가운데를 정사각형으로 잘라 만화풍으로 바꾼 동그라미용 그림)
+// - alignFace: 눈 위치로 기울기·크기·위치를 맞추고 얼굴 윤곽대로 잘라(가장자리 부드럽게) 투명 그림으로 만든다.
+//   '사진 그대로'(기본)는 색감만 살짝 맞추고, '만화풍'은 선·색 단계 변환을 더한다.
+// - centerCropFace: 얼굴을 못 찾는 환경용 대체 방식 (사진 가운데를 정사각형으로 잘라 동그라미용 그림으로 만든다)
 
 import type { FaceShape, Point } from './faceDetect'
 
-/** 얼굴 그림 한 변 (픽셀) */
-const OUT = 256
+/** 얼굴 그림 한 변 (픽셀). 만화풍은 어차피 뭉개지므로 작게, 사진 그대로는 캐릭터 얼굴(화면에서 약 100~150px, 확대 화면 대비)에 선명하도록 크게 */
+const CARTOON_OUT = 256
+const PHOTO_OUT = 384
+/** FEATHER·번짐 값을 정한 기준 크기 (그림이 커지면 같은 비율로 키운다) */
+const BASE_OUT = 256
 /** 두 눈 사이 거리 / 그림 한 변. 얼굴 너비는 이 값의 약 2.2배 */
 const EYE_DISTANCE = 0.3
 /** 두 눈 가운데의 위에서부터 높이 / 그림 한 변. 이마와 턱이 모두 들어오게 정함 */
@@ -32,6 +36,43 @@ export const CARTOON_STYLE = {
   lineLight: 0.72,
 }
 
+/** 얼굴 표현 방식: 사진 그대로(기본) / 만화풍 */
+export type FaceStyle = 'photo' | 'cartoon'
+const FACE_STYLE_KEY = 'history-step-face-style'
+
+/** 설정에서 고른 얼굴 표현 방식 (기기에 저장, 기본은 사진 그대로). 다음에 얼굴을 등록할 때부터 적용된다 */
+export function getFaceStyle(): FaceStyle {
+  try {
+    return localStorage.getItem(FACE_STYLE_KEY) === 'cartoon' ? 'cartoon' : 'photo'
+  } catch {
+    return 'photo'
+  }
+}
+
+export function setFaceStyle(style: FaceStyle) {
+  try {
+    localStorage.setItem(FACE_STYLE_KEY, style)
+  } catch {
+    // 저장을 못 해도 이번 사용에는 지장 없다
+  }
+}
+
+/**
+ * 사진 그대로일 때의 색감 보정 — 캐릭터 그림과 어울리게 살짝만 맞춘다. 여기 숫자만 바꾸면 된다.
+ * strength: 0이면 보정 없음, 1이면 가장 강함 (기본 0.5 정도가 자연스럽다)
+ */
+export const PHOTO_TONE = {
+  strength: 0.5,
+  /** 얼굴의 평균 밝기를 이 값 쪽으로 끌어온다 (0~255). 어둡거나 너무 밝은 사진을 맞춘다 */
+  targetBrightness: 150,
+  /** 대비를 키우는 정도 (최대치, strength를 곱해 적용) */
+  contrast: 0.12,
+  /** 푸른빛·회색빛을 덜어내는 정도 (최대치, strength를 곱해 적용) */
+  castFix: 0.6,
+  /** 따뜻한 쪽으로 기울이는 정도 (최대치, strength를 곱해 적용) */
+  warmth: 0.08,
+}
+
 /** 사진을 읽는다. 아이폰 사진이 옆으로 돌아가지 않게 방향 정보를 따르고, 얼굴 찾기가 빠르도록 긴 변을 1024px 이하로 줄인다 */
 export async function loadPhoto(file: Blob): Promise<ImageBitmap> {
   let bitmap: ImageBitmap
@@ -53,8 +94,10 @@ export async function loadPhoto(file: Blob): Promise<ImageBitmap> {
   return createImageBitmap(canvas)
 }
 
-/** 눈 위치로 맞추고 얼굴 윤곽대로 잘라, 만화풍으로 바꾼 투명 그림(data URL)을 만든다 */
-export function alignFace(photo: ImageBitmap, face: FaceShape): string {
+/** 눈 위치로 맞추고 얼굴 윤곽대로 잘라 투명 그림(data URL)을 만든다. style이 'cartoon'이면 만화풍으로 바꾼다 */
+export function alignFace(photo: ImageBitmap, face: FaceShape, style: FaceStyle = getFaceStyle()): string {
+  const OUT = style === 'cartoon' ? CARTOON_OUT : PHOTO_OUT
+  const feather = Math.round((FEATHER * OUT) / BASE_OUT)
   const canvas = document.createElement('canvas')
   canvas.width = canvas.height = OUT
   const context = canvas.getContext('2d', { willReadFrequently: true })
@@ -93,7 +136,7 @@ export function alignFace(photo: ImageBitmap, face: FaceShape): string {
   context.setTransform(1, 0, 0, 1, 0, 0)
 
   const data = context.getImageData(0, 0, OUT, OUT)
-  cartoonize(data, OUT)
+  if (style === 'cartoon') cartoonize(data, OUT)
 
   // 얼굴 윤곽 안쪽만 남기는 부드러운 가장자리 마스크
   const oval = face.oval.map(toOut)
@@ -121,23 +164,26 @@ export function alignFace(photo: ImageBitmap, face: FaceShape): string {
   })
   maskContext.closePath()
   maskContext.fill()
-  const alpha = blurAlpha(maskContext.getImageData(0, 0, OUT, OUT).data, OUT, FEATHER)
+  const alpha = blurAlpha(maskContext.getImageData(0, 0, OUT, OUT).data, OUT, feather)
   for (let i = 0; i < alpha.length; i += 1) data.data[i * 4 + 3] = alpha[i]
+  if (style === 'photo') toneFace(data)
 
   context.putImageData(data, 0, 0)
   // 투명을 담을 수 있는 형식 (webp를 못 만드는 브라우저는 png로 저장된다)
-  return canvas.toDataURL('image/webp', 0.85)
+  return canvas.toDataURL('image/webp', style === 'cartoon' ? 0.85 : 0.8)
 }
 
-/** 얼굴을 못 찾는 환경용 대체 방식: 사진 가운데를 정사각형으로 잘라 만화풍으로 바꾼다 (동그라미로 보여줌) */
-export async function centerCropFace(file: Blob, size = 160): Promise<string> {
+/** 얼굴을 못 찾는 환경용 대체 방식: 사진 가운데를 정사각형으로 잘라 동그라미로 보여준다 (만화풍이면 만화풍으로 바꾼다) */
+export async function centerCropFace(file: Blob, style: FaceStyle = getFaceStyle()): Promise<string> {
+  const cartoon = style === 'cartoon'
+  const size = cartoon ? 160 : 256
   const image = await createImageBitmap(file)
   const side = Math.min(image.width, image.height)
   const small = document.createElement('canvas')
-  small.width = small.height = 56
+  small.width = small.height = cartoon ? 56 : size
   small
     .getContext('2d')
-    ?.drawImage(image, (image.width - side) / 2, (image.height - side) / 2, side, side, 0, 0, 56, 56)
+    ?.drawImage(image, (image.width - side) / 2, (image.height - side) / 2, side, side, 0, 0, small.width, small.height)
   image.close()
   const canvas = document.createElement('canvas')
   canvas.width = canvas.height = size
@@ -146,9 +192,52 @@ export async function centerCropFace(file: Blob, size = 160): Promise<string> {
   context.imageSmoothingQuality = 'high'
   context.drawImage(small, 0, 0, size, size)
   const data = context.getImageData(0, 0, size, size)
-  applyCartoon(data, size)
+  if (cartoon) applyCartoon(data, size)
+  else toneFace(data)
   context.putImageData(data, 0, 0)
   return canvas.toDataURL('image/jpeg', 0.85)
+}
+
+/**
+ * 사진 그대로일 때 밝기·대비·색감을 캐릭터 그림과 어울리게 살짝 맞춘다 (제자리에서 바꿈).
+ * 투명하지 않은 부분(얼굴)의 평균으로 계산한다. 강도는 PHOTO_TONE에서 바꾼다.
+ */
+function toneFace(data: ImageData) {
+  const { strength, targetBrightness, contrast, castFix, warmth } = PHOTO_TONE
+  if (strength <= 0) return
+  const px = data.data
+  let r = 0
+  let g = 0
+  let b = 0
+  let count = 0
+  for (let i = 0; i < px.length; i += 4) {
+    if (px[i + 3] < 128) continue
+    r += px[i]
+    g += px[i + 1]
+    b += px[i + 2]
+    count += 1
+  }
+  if (count === 0) return
+  r /= count
+  g /= count
+  b /= count
+  const mean = r * 0.3 + g * 0.59 + b * 0.11
+  const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n))
+  // 밝기: 너무 어둡거나 밝은 정도를 목표 쪽으로 약하게
+  const gain = clamp(1 + (targetBrightness / Math.max(mean, 1) - 1) * strength, 0.8, 1.4)
+  // 색조: 평균이 회색 쪽에서 벗어난 정도(푸른빛 등)를 덜어낸다
+  const fix = strength * castFix
+  const cast = [mean / Math.max(r, 1), mean / Math.max(g, 1), mean / Math.max(b, 1)].map((f) =>
+    clamp(1 + (f - 1) * fix, 0.85, 1.15),
+  )
+  const warm = [1 + warmth * strength, 1 + warmth * strength * 0.2, 1 - warmth * strength]
+  const slope = 1 + contrast * strength
+  for (let i = 0; i < px.length; i += 4) {
+    for (let c = 0; c < 3; c += 1) {
+      const v = px[i + c] * gain * cast[c] * warm[c]
+      px[i + c] = clamp((v - 128) * slope + 128, 0, 255)
+    }
+  }
 }
 
 /** 작게 줄였다가 키워 잡티를 부드럽게 한 뒤 만화풍으로 바꾼다 */

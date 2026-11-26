@@ -13,7 +13,7 @@ import {
 import { alignFace, centerCropFace, isCutoutFace, loadPhoto } from '../lib/faceCrop'
 
 // 얼굴 사진 넣기 (온보딩 '얼굴 등록하기'와 설정 '개인정보 고치기'에서 함께 쓴다)
-// '촬영하기' → 카메라로 찍기 / 앨범에서 고르기. 얼굴을 찾아 눈 위치에 맞춰 자르고 만화풍으로 바꿔 이 기기에만 저장한다.
+// '촬영하기' → 카메라로 찍기 / 앨범에서 고르기. 얼굴을 찾아 눈 위치에 맞춰 자르고(설정에 따라 만화풍으로 바꿔) 이 기기에만 저장한다.
 // 얼굴 찾기를 쓸 수 없으면 안내 문구를 띄우고 사진 가운데를 동그랗게 쓰는 기본 방식으로 넣는다.
 export function FacePhotoField({
   faceImage,
@@ -42,7 +42,7 @@ export function FacePhotoField({
     return stop
   }, [])
 
-  /** 받은 사진에서 얼굴을 찾아 맞추고 만화풍으로 바꿔 얼굴로 쓴다 (기기 안에서만 처리) */
+  /** 받은 사진에서 얼굴을 찾아 맞춰 얼굴로 쓴다 (사진 그대로 / 만화풍은 설정을 따름) (기기 안에서만 처리) */
   async function applyPhoto(photo: Blob) {
     setBusy(true)
     setNotice('')
@@ -145,7 +145,7 @@ export function FacePhotoField({
               앨범에서 고르기
             </button>
           </div>
-          <p className="face-guide">얼굴 모양대로 잘라 만화풍으로 바꾸고, 이 기기에만 저장돼요.</p>
+          <p className="face-guide">얼굴 모양대로 잘라 붙이고, 이 기기에만 저장돼요.</p>
         </BottomSheet>
       )}
       {webcam && (
