@@ -109,6 +109,9 @@ git push
 3. `npm run images`를 실행하면 휴대폰에 맞게 줄여 `public/images/photos/장소id/`에 저장하고 목록(`src/data/generated/photos.ts`)이 갱신된다. 줄인 사진·sources.csv·photos.ts를 커밋한다.
 4. README '사진 출처'는 이 sources.csv와 같게 유지한다.
 
-**npm run photos (자동 수집 도구)**: 국가유산청 공개 API(키 불필요)로 후보를 받는 도구를 검토했지만, 사진별 이용 조건 코드(`imageNuri`)의 뜻과 촬영 연도를 공식 자료로 확인하지 못해 **아직 만들지 않았다.** 확인되기 전까지는 위 방법으로 직접 넣는다.
+**공공누리 유형은 사진마다 직접 확인한다**
+- 국가유산청 API가 사진마다 주는 이용 조건 코드(`imageNuri`: A/F, B/F, D/F)로는 공공누리 유형을 판단할 수 없다. 같은 D/F인데 어떤 사진은 제1유형이고 어떤 사진은 제4유형이었다. 같은 유산 페이지 안에서도 사진마다 유형이 다르다.
+- 그래서 코드로 자동 선택하는 `npm run photos`는 만들지 않는다. 사진마다 국가유산포털 상세 페이지에서 공공누리(OPEN) 표시를 직접 보고 제1·2유형인 것만 쓴다.
+- 확인한 사진은 API가 주는 원본(`https://www.khs.go.kr/unisearch/images/...jpg`, https로 받는다)을 `art/photos/장소id/`에 저장하고 위 방법대로 `sources.csv`에 적는다. 출처 칸에는 "국가유산청, 공공누리 제○유형"처럼 확인한 유형을 쓴다.
 
 

@@ -54,5 +54,21 @@ export const PLACE_PHOTOS: Record<string, PlacePhoto[]> = {
       "credit": "한국관광공사, 공공누리 제1유형",
       "url": "https://api.visitkorea.or.kr/#/hubTourSearchDetail"
     }
+  ],
+  "bulguksa": [
+    {
+      "src": "/images/photos/bulguksa/bulguksa.webp",
+      "caption": "경주 불국사 전경",
+      "credit": "국가유산청, 공공누리 제1유형",
+      "url": "https://www.heritage.go.kr/heri/cul/culSelectDetail.do?pageNo=1_1_1_1&sngl=Y&ccbaCpno=1333705020000"
+    }
+  ],
+  "hansando": [
+    {
+      "src": "/images/photos/hansando/jeseungdang.webp",
+      "caption": "한산도 제승당의 수루",
+      "credit": "국가유산청, 공공누리 제1유형",
+      "url": "https://www.heritage.go.kr/heri/cul/culSelectDetail.do?pageNo=1_1_1_1&sngl=Y&ccbaCpno=1333801130000"
+    }
   ]
 }
