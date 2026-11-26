@@ -6,24 +6,6 @@ export function photosOf(placeId: string): PlacePhoto[] {
   return PLACE_PHOTOS[placeId] ?? []
 }
 
-/**
- * 사진 n장을 글 사이 자리 slotCount곳에 고르게 나눈다. 반환값: 자리 번호별 사진 목록
- * (자리 0 = 첫 문단 다음, 자리 1~ = 자세히 읽기 문단 다음)
- */
-export function spreadPhotos(photos: PlacePhoto[], slotCount: number): PlacePhoto[][] {
-  const slots: PlacePhoto[][] = Array.from({ length: slotCount }, () => [])
-  // 사진이 1장뿐이면 맨 끝이 아니라 첫 문단 뒤에 둔다
-  if (photos.length === 1) {
-    slots[0].push(photos[0])
-    return slots
-  }
-  photos.forEach((photo, index) => {
-    const slot = Math.min(slotCount - 1, Math.floor(((index + 0.5) * slotCount) / photos.length))
-    slots[slot].push(photo)
-  })
-  return slots
-}
-
 /** 출처 글씨 + 원본 페이지 링크 (링크를 눌러도 크게 보기가 열리거나 닫히지 않게 한다) */
 function Credit({ photo }: { photo: PlacePhoto }) {
   return (

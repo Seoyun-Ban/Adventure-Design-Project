@@ -3,8 +3,9 @@ import { Icon } from '../components/Icon'
 import { ActionButton } from '../components/ActionButton'
 import { HistoryScene } from '../components/HistoryScene'
 import { Place3D } from '../components/Place3D'
-import { PhotoFigure, PhotoViewer, photosOf, spreadPhotos, usePhotoViewer } from '../components/LearnPhotos'
+import { PhotoFigure, PhotoViewer, photosOf, usePhotoViewer } from '../components/LearnPhotos'
 import { PlaceItems } from '../components/PlaceItems'
+import { layoutPhotos } from '../lib/photoLayout'
 import { getContent } from '../data/contents'
 import type { AvatarLook, Difficulty, Equipped, Place } from '../types'
 
@@ -37,7 +38,7 @@ export function LearnScreen({
   const text = content.body[difficulty]
   const paragraphs = text.detail.split('\n')
   // 사진은 사람이 고르지 않고 문단 사이에 고르게 자동 배치 (사진이 없으면 글만)
-  const photoSlots = spreadPhotos(photosOf(place.id), paragraphs.length + 1)
+  const photoSlots = layoutPhotos(photosOf(place.id), paragraphs.length)
   const [viewing, setViewing] = usePhotoViewer()
   const photosAt = (slot: number) =>
     photoSlots[slot].map((photo) => <PhotoFigure key={photo.src} photo={photo} onOpen={setViewing} />)
@@ -109,8 +110,11 @@ export function LearnScreen({
           </figure>
         )}
         <h3>{content.sectionTitle}</h3>
-        {text.detail.split('\n').map((paragraph) => (
-          <p key={paragraph}>{paragraph}</p>
+        {paragraphs.map((paragraph, index) => (
+          <div key={paragraph} className="learn-paragraph">
+            <p>{paragraph}</p>
+            {photosAt(index + 1)}
+          </div>
         ))}
         <div className="mini-quiz">
           <Icon name="sparkle" size={22} />
