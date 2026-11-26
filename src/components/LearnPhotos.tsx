@@ -12,6 +12,11 @@ export function photosOf(placeId: string): PlacePhoto[] {
  */
 export function spreadPhotos(photos: PlacePhoto[], slotCount: number): PlacePhoto[][] {
   const slots: PlacePhoto[][] = Array.from({ length: slotCount }, () => [])
+  // 사진이 1장뿐이면 맨 끝이 아니라 첫 문단 뒤에 둔다
+  if (photos.length === 1) {
+    slots[0].push(photos[0])
+    return slots
+  }
   photos.forEach((photo, index) => {
     const slot = Math.min(slotCount - 1, Math.floor(((index + 0.5) * slotCount) / photos.length))
     slots[slot].push(photo)
