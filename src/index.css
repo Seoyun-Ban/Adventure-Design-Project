@@ -7493,38 +7493,74 @@ button.settings-row {
   outline-offset: 2px;
   border-radius: 2px;
 }
-.gloss-layer {
+.gloss-bubble {
   position: fixed;
-  inset: 0;
+  left: 0;
+  top: 0;
   z-index: 95;
-  background: transparent;
-}
-.gloss-card {
-  position: absolute;
-  left: 50%;
-  bottom: 104px;
-  width: min(361px, calc(100% - 32px));
-  transform: translateX(-50%);
-  padding: 14px 16px 12px;
+  box-sizing: border-box;
+  width: max-content;
+  max-width: 70%;
+  padding: 10px 13px;
   border: 1px solid var(--line);
-  border-radius: 16px;
+  border-radius: 14px;
   background: var(--cream);
-  box-shadow: 0 10px 30px rgba(49, 56, 43, 0.22);
+  box-shadow: 0 8px 24px rgba(49, 56, 43, 0.2);
+  visibility: hidden; /* 자리를 잡은 뒤에 보인다 */
 }
-.gloss-card p {
-  margin: 0 0 8px;
+.gloss-bubble[data-placed] {
+  visibility: visible;
+  animation: gloss-pop 0.14s ease-out;
+}
+.gloss-bubble[data-placement='above'][data-placed] {
+  animation-name: gloss-pop-up;
+}
+.gloss-bubble p {
+  margin: 0;
   color: var(--ink);
-  font-size: 14px;
-  line-height: 1.6;
+  font-size: 13px;
+  line-height: 1.55;
   word-break: keep-all;
 }
-.gloss-card button {
-  display: block;
-  margin-left: auto;
-  padding: 4px 12px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: #fff;
-  color: var(--ink-soft);
-  font-size: 12px;
+.gloss-tail {
+  position: absolute;
+  left: calc(var(--tail-x, 24px) - 6px);
+  width: 12px;
+  height: 12px;
+  background: var(--cream);
+  transform: rotate(45deg);
+}
+.gloss-bubble[data-placement='below'] .gloss-tail {
+  top: -7px;
+  border-top: 1px solid var(--line);
+  border-left: 1px solid var(--line);
+}
+.gloss-bubble[data-placement='above'] .gloss-tail {
+  bottom: -7px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+@keyframes gloss-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+@keyframes gloss-pop-up {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+@keyframes gloss-fade {
+  from {
+    opacity: 0;
+  }
+}
+/* 움직임 줄이기: 움직이지 않고 짧게 나타나기만 한다 */
+@media (prefers-reduced-motion: reduce) {
+  .gloss-bubble[data-placed],
+  .gloss-bubble[data-placement='above'][data-placed] {
+    animation: gloss-fade 0.08s linear;
+  }
 }

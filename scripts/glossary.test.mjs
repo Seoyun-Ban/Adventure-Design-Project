@@ -5,7 +5,8 @@ import { GLOSSARY } from '../src/data/glossary.ts'
 import { annotate, findWordMatches, glossaryLine } from '../src/lib/glossary.ts'
 import { readContents } from './lib/readContents.mjs'
 
-const marked = (texts) => annotate(texts).map((segments) => segments.filter((s) => s.entry).map((s) => s.text))
+const marked = (texts) =>
+  annotate(texts).map((segments) => segments.filter((s) => s.entry).map((s) => s.text))
 const HANGUL = /[가-힣]/
 
 test('낱말 목록: 낱말이 겹치지 않고 풀이가 있다', () => {
@@ -13,7 +14,10 @@ test('낱말 목록: 낱말이 겹치지 않고 풀이가 있다', () => {
   assert.equal(new Set(words).size, words.length, '같은 낱말이 두 번 적혀 있음')
   for (const entry of GLOSSARY) {
     assert.ok(entry.word && entry.meaning, `${entry.word}: 풀이가 비어 있음`)
-    assert.ok(!entry.meaning.includes('시험') && !entry.meaning.includes('예시'), `${entry.word}: 화면에 쓰면 안 되는 말`)
+    assert.ok(
+      !entry.meaning.includes('시험') && !entry.meaning.includes('예시'),
+      `${entry.word}: 화면에 쓰면 안 되는 말`,
+    )
   }
 })
 
@@ -35,10 +39,20 @@ test('다른 낱말의 일부에는 밑줄이 그어지지 않는다', () => {
   assert.deepEqual(marked(['수원 화산으로 옮기고']), [['화산']])
   // 말끝이 붙은 모양도 낱말 그대로
   assert.deepEqual(marked(['감옥에서 순국했어요.']), [['순국']])
-  // 합쳐진 낱말·책 이름 속의 낱말은 긋지 않는다 (광복절, 삼도수군통제사, 화성성역의궤)
-  assert.deepEqual(marked(['광복절에 문을 열었어요.']), [[]])
-  assert.deepEqual(marked(['삼도수군통제사가 되었어요.']), [[]])
-  assert.deepEqual(marked(['『화성성역의궤』에 기록했어요.']), [[]])
+  // 합쳐진 낱말 속의 낱말은 긋지 않고, 합쳐진 낱말 자체가 목록에 있으면 그 낱말 전체에 긋는다
+  assert.deepEqual(marked(['광복절에 문을 열었어요.']), [['광복절']])
+  assert.deepEqual(marked(['광복 직후, 광복절에 열었어요.']), [['광복', '광복절']])
+  assert.deepEqual(marked(['삼도수군통제사라는 자리에 올랐어요.']), [['삼도수군통제사']])
+  assert.deepEqual(marked(['수군을 이끈 삼도수군통제사가 되었어요.']), [['수군', '삼도수군통제사']])
+  assert.deepEqual(marked(['성곽의 일부를 의궤로 남겼어요.']), [['성곽', '의궤']])
+  // 『』 안에 있어도 긋는다 (기호는 그대로 두고 안의 글자에만)
+  const book = annotate(['『화성성역의궤』에 기록했어요.'])[0]
+  assert.deepEqual(
+    book.map((s) => s.text),
+    ['『', '화성성역의궤', '』에 기록했어요.'],
+  )
+  assert.equal(book[1].entry?.word, '화성성역의궤')
+  assert.equal(book[0].entry, undefined)
   assert.deepEqual(marked(['세계유산이 되었어요.']), [['세계유산']])
 })
 
@@ -48,7 +62,11 @@ test('앞에 일부만 맞는 자리가 있어도 진짜 낱말 자리를 찾는
 })
 
 test('낱말마다 처음 나오는 곳에만 밑줄이 그어진다 (글이 여러 개여도)', () => {
-  const result = marked(['의식을 치렀어요. 또 다른 의식도 있어요.', '여기도 의식이 나와요.', '사신을 맞았어요.'])
+  const result = marked([
+    '의식을 치렀어요. 또 다른 의식도 있어요.',
+    '여기도 의식이 나와요.',
+    '사신을 맞았어요.',
+  ])
   assert.deepEqual(result, [['의식'], [], ['사신']])
   // 각 글의 조각을 이어 붙이면 원래 글이 그대로다
   const texts = ['법궁은 으뜸 궁궐이에요. 법궁!', '누각에서 사신을 맞았어요.']
@@ -80,14 +98,20 @@ test('실제 학습 글: 밑줄은 항상 낱말 그대로에만, 괄호 풀이�
         for (const part of parts) {
           if (part.entry) {
             const last = before.slice(-1)
-            assert.ok(!HANGUL.test(last), `${id} ${level}: '${before.slice(-4)}${part.text}' — 낱말 일부에 밑줄이 그어짐`)
+            assert.ok(
+              !HANGUL.test(last),
+              `${id} ${level}: '${before.slice(-4)}${part.text}' — 낱말 일부에 밑줄이 그어짐`,
+            )
             assert.deepEqual(findWordMatches(texts[textIndex], part.text).length > 0, true)
           }
           before += part.text
         }
       })
       // 한 학습 단계 안에서 같은 낱말에 밑줄이 두 번 그어지지 않는다
-      const words = segments.flat().filter((s) => s.entry).map((s) => s.text)
+      const words = segments
+        .flat()
+        .filter((s) => s.entry)
+        .map((s) => s.text)
       assert.equal(new Set(words).size, words.length, `${id} ${level}: 같은 낱말에 밑줄이 두 번`)
     }
     // 괄호로 붙였던 풀이는 낱말 풀이로 대신했다
