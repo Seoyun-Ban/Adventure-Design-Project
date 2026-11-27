@@ -150,7 +150,6 @@ export type HistoryItem = {
   shortName: string
   /** 장비 = 머리, 무기 = 손, 의복 = 몸 */
   category: ItemCategory
-  symbol: string
   /** 이 장소의 학습을 완료하면 아이템을 얻는다 */
   placeId: string
   rarity: string

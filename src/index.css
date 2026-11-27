@@ -2620,17 +2620,6 @@ button {
   background: var(--green-3);
   font-weight: 800;
 }
-.place-item-chip b {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  color: white;
-  background: var(--green-2);
-  font-family: 'Gowun Batang', serif;
-  font-size: 9px;
-}
 .place-item-shadow {
   display: inline-flex;
   align-items: center;
@@ -2642,15 +2631,15 @@ button {
   font-weight: 800;
 }
 .shadow-art {
-  width: 22px;
-  height: 22px;
+  width: 28px;
+  height: 28px;
   display: grid;
   place-items: center;
   overflow: hidden;
 }
 .shadow-art .item-picture {
   width: 64px;
-  transform: scale(0.35);
+  transform: scale(0.44);
   flex: none;
 }
 /* 아직 못 얻은 아이템의 검은 실루엣 (ItemShadow): 그림을 통째로 검게. 이름표·깃발 흔들림은 뺀다 */
@@ -2683,11 +2672,6 @@ button {
   border-radius: 14px;
   background: rgba(255, 252, 245, 0.9);
   font-size: 11.5px;
-}
-.learn-items .place-item-chip b {
-  width: 18px;
-  height: 18px;
-  font-size: 10px;
 }
 .inventory-heading {
   display: flex;
@@ -4929,8 +4913,8 @@ img.character-item[style*='height'] {
 }
 .slot-art {
   flex: none;
-  width: 30px;
-  height: 30px;
+  width: 40px;
+  height: 40px;
   border-radius: 9px;
   display: grid;
   place-items: center;
@@ -6673,18 +6657,6 @@ button.settings-row {
   height: 120px;
   transform: none;
 }
-.reward-symbol {
-  width: 96px;
-  height: 96px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  color: white;
-  background: var(--green);
-  font-family: 'Gowun Batang', serif;
-  font-size: 46px;
-  box-shadow: 0 6px 14px rgba(23, 78, 58, 0.3);
-}
 .reward-card-face .item-rarity {
   position: relative;
 }
@@ -6750,9 +6722,6 @@ button.settings-row {
 }
 .reward-art .item-picture {
   height: 120px;
-}
-.item-picture-symbol {
-  font-family: 'Gowun Batang', serif;
 }
 /* 두루마리 옆에 세로로 붙은 작은 종이 띠 */
 .item-tag {
@@ -7591,16 +7560,15 @@ button.settings-row {
 }
 .place-item-chip .item-icon {
   flex: none;
-  width: 18px;
-  height: 18px;
-}
-.learn-items .place-item-chip .item-icon {
-  width: 20px;
-  height: 20px;
+  width: 28px;
+  height: 28px;
 }
 .slot-art .item-icon {
-  width: 26px;
-  height: 26px;
+  width: 36px;
+  height: 36px;
+}
+.item-bundle {
+  aspect-ratio: 1 / 1;
 }
 .item-badge {
   background: var(--cream);

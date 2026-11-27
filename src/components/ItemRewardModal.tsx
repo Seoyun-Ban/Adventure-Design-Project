@@ -30,13 +30,7 @@ export function ItemRewardModal({
           <div className="reward-card-face">
             <span className="reward-rays" aria-hidden="true" />
             <div className="reward-art">
-              {item.art ? (
-                <ItemPicture item={item} size="large" />
-              ) : (
-                <span className="reward-symbol" aria-hidden="true">
-                  {item.symbol}
-                </span>
-              )}
+              <ItemPicture item={item} size="large" />
             </div>
             <span className="item-rarity">
               {item.rarity} · {item.category}
