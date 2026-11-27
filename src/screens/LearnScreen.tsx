@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTutorial } from '../hooks/useTutorial'
 import { Icon } from '../components/Icon'
 import { ActionButton } from '../components/ActionButton'
 import { HistoryScene } from '../components/HistoryScene'
@@ -35,7 +36,9 @@ export function LearnScreen({
   /** 퀴즈 난이도는 지금 읽고 있는 학습 단계와 같다 */
   onQuiz: (difficulty: Difficulty) => void
 }) {
-  const [difficulty, setDifficulty] = useState<Difficulty>(defaultDifficulty)
+  // 처음 시작 체험 중에는 '쉬움' 단계로 고정한다 (기본 단계 설정은 그대로 둔다)
+  const inTutorial = useTutorial().active
+  const [difficulty, setDifficulty] = useState<Difficulty>(inTutorial ? '쉬움' : defaultDifficulty)
   const content = getContent(place.id)
   const text = content.body[difficulty]
   // 낱말 풀이: 화면에 나오는 순서(첫 문단 → 알고 있었나요? → 자세히 읽기 → 외우기 한 줄)대로 넣어, 낱말이 처음 나오는 곳에만 밑줄
@@ -97,6 +100,7 @@ export function LearnScreen({
                   key={item}
                   className={difficulty === item ? 'active' : ''}
                   onClick={() => setDifficulty(item)}
+                  disabled={inTutorial && item !== '쉬움'}
                 >
                   {item}
                 </button>

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { BottomTabs } from '../components/BottomTabs'
 import { NicknameSheet } from '../components/NicknameSheet'
 import { LocationIntro } from '../components/LocationIntro'
@@ -19,6 +19,8 @@ import { places } from '../data/places'
 import type { useProgress } from '../hooks/useProgress'
 import type { useLocation } from '../hooks/useLocation'
 import { rankUpMessage } from '../lib/league'
+import { useTutorial } from '../hooks/useTutorial'
+import { tutorialEnabled } from '../data/tutorial'
 import type { Place, SubPage, Tab } from '../types'
 
 // 로그인 이후의 메인 화면: 하단 탭 4개 + 잠깐 여는 서브 화면
@@ -85,7 +87,18 @@ export function HomeScreen({
   // 닉네임 바꾸기 창: 내 정보 탭의 연필 버튼
   const [nicknameOpen, setNicknameOpen] = useState(false)
   // 앱 소개 안내: 온보딩을 마치고 처음 지도에 오면 한 번, 도움말의 '앱 소개 다시 보기'로 언제든
-  const [tourOn, setTourOn] = useState(!progress.tourDone)
+  // (처음 시작 체험(튜토리얼)이 켜져 있으면 그것이 대신하므로 자동으로는 띄우지 않는다)
+  const [tourOn, setTourOn] = useState(!progress.tourDone && !tutorialEnabled())
+  // 튜토리얼 단계가 보여 달라는 탭으로 옮긴다
+  const tutorial = useTutorial()
+  const tutorialTab = tutorial.beat?.tab
+  const tutorialBeat = tutorial.beat?.id
+  useEffect(() => {
+    if (tutorialTab) {
+      setPage('main')
+      setTab(tutorialTab)
+    }
+  }, [tutorialTab, tutorialBeat])
   function finishTour() {
     setTourOn(false)
     setTab('map')
@@ -192,7 +205,7 @@ export function HomeScreen({
           onLearn={onLearn}
           onQuiz={() => setPage('quiz')}
           onNotice={onNotice}
-          locationStatus={location.status}
+          locationStatus={tutorial.active ? 'off' : location.status}
           myPosition={location.position}
           onLocationStart={onLocationOn}
           onTitleSecret={() => setPickerOpen(true)}
@@ -203,7 +216,7 @@ export function HomeScreen({
         <AppTour look={progress.look} nickname={progress.nickname} onTab={setTab} onFinish={finishTour} />
       )}
       {/* 앱 소개가 끝난 뒤에 위치 설명 화면이 이어진다 */}
-      {tab === 'map' && !tourOn && !progress.locationChoice && (
+      {tab === 'map' && !tourOn && !tutorial.active && !progress.locationChoice && (
         <LocationIntro onAllow={onLocationOn} onLater={onLocationLater} />
       )}
       {tab === 'book' && (

@@ -26,6 +26,7 @@ export function Spotlight({
   guard = false,
   allow,
   missingMs = 0,
+  scroll = true,
   label,
   className = '',
   children,
@@ -39,6 +40,8 @@ export function Spotlight({
   allow?: string
   /** 0보다 크면, 첫 비출 곳이 이 시간(ms) 동안 안 보일 때 missing = true */
   missingMs?: number
+  /** false: 비출 곳을 화면 가운데로 자동 스크롤하지 않는다 */
+  scroll?: boolean
   label: string
   className?: string
   children: (view: SpotlightView) => ReactNode
@@ -51,7 +54,9 @@ export function Spotlight({
   spotsRef.current = spots
   const allowRef = useRef(allow)
   allowRef.current = allow
-  const scrolled = useRef(false)
+  const scrollRef = useRef(scroll)
+  scrollRef.current = scroll
+  const scrolled = useRef(!scroll)
 
   /** 비출 곳을 찾아 안내 화면 좌표로 바꾼다 (컴퓨터에서 틀이 줄어 있어도 맞도록 비율을 나눈다) */
   const measure = useCallback(() => {
@@ -111,7 +116,7 @@ export function Spotlight({
 
   // 단계가 바뀌면 처음부터 다시 찾는다. 화면이 그려지는 동안(탭 옮기기, 문제 불러오기 등) 계속 다시 잰다.
   useEffect(() => {
-    scrolled.current = false
+    scrolled.current = !scrollRef.current
     setMissing(false)
     measure()
     const timer = window.setInterval(measure, 250)

@@ -54,6 +54,11 @@ export type Beat = {
   allow?: string
   /** 화면 안으로 자동 스크롤하지 않기 (낱말 뜻 풍선처럼 스크롤하면 닫히는 곳) */
   noScroll?: boolean
+  /**
+   * 말풍선 자리. 기본은 비춘 곳 옆.
+   * top: 화면 위쪽 / compact: 비춘 곳이 화면 거의 전체일 때 맨 위에 작은 띠로
+   */
+  bubble?: 'top' | 'compact'
   /** 글에 \n이 있으면 줄이 바뀐다 */
   title: string
   body: string | ((facts: TutorialFacts) => string)
@@ -92,8 +97,9 @@ export const BEATS: Beat[] = [
   {
     id: 'word-meaning',
     group: 2,
-    spots: [{ selector: '.gloss-bubble' }],
+    spots: [{ selector: '.learn-article .gloss' }],
     noScroll: true,
+    bubble: 'top',
     title: '낱말 뜻이 나왔어요',
     body: '어려운 낱말은 이렇게 쉽게 풀어 줘요.\n이제 경복궁을 세운 분을 만나 볼까요?',
     advance: { kind: 'next', label: '다음' },
@@ -119,6 +125,7 @@ export const BEATS: Beat[] = [
   {
     id: 'quiz',
     group: 4,
+    bubble: 'compact',
     spots: [{ selector: '.quiz-body, .quiz-action', all: true }],
     title: '퀴즈 2문제',
     body: '답을 골라 보세요. 틀려도 괜찮아요!\n다 풀면 결과가 나와요.',
@@ -154,6 +161,7 @@ export const BEATS: Beat[] = [
   {
     id: 'dex',
     group: 6,
+    bubble: 'compact',
     tab: 'avatar',
     spots: [{ selector: '.inventory-heading, .item-category-tabs, .history-item-grid', all: true }],
     title: '역사 아이템 도감',
@@ -165,6 +173,7 @@ export const BEATS: Beat[] = [
   {
     id: 'map-legend',
     group: 7,
+    bubble: 'compact',
     tab: 'map',
     spots: [{ selector: '.map-marker', all: true }],
     title: '장소 표시를 읽어 봐요',

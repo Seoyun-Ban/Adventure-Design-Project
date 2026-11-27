@@ -22,6 +22,7 @@ import { scrollAppToTop } from './lib/frameScale'
 import { setFaceStyle } from './lib/faceCrop'
 import { generateQuiz, QUIZ_COUNT, type GeneratedQuiz } from './lib/quizGenerator'
 import { rankUpMessage } from './lib/league'
+import { Tutorial } from './components/Tutorial'
 import { TutorialProvider, useTutorialController } from './hooks/useTutorial'
 import { TUTORIAL_PLACE, tutorialEnabled } from './data/tutorial'
 import type { Difficulty, HistoryItem, Place, Screen, SocialProvider, Tab } from './types'
@@ -447,6 +448,9 @@ export default function App() {
               startPlaceQuiz(selectedPlace, learnDifficulty, 'learn')
             }}
           />
+        )}
+        {tutorial.active && (screen === 'home' || screen === 'learn' || screen === 'quiz') && (
+          <Tutorial look={progress.look} nickname={progress.nickname} completedIds={completedIds} />
         )}
         {toast && (
           <div className="app-toast" role="status">

@@ -7660,3 +7660,46 @@ button.settings-row {
 .tour-layer.guard .tour-skip {
   pointer-events: auto;
 }
+
+.tutorial-body {
+  white-space: pre-line;
+}
+.tutorial-bubble .tour-controls {
+  grid-template-columns: 1fr auto;
+}
+.tutorial-hint {
+  padding-right: 6px;
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 800;
+}
+.tutorial-escape {
+  grid-column: 1 / -1;
+  justify-self: center;
+  min-height: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 99px;
+  padding: 0 14px;
+  color: white;
+  background: rgba(20, 30, 24, 0.7);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+/* 비춘 곳이 화면 거의 전체일 때: 맨 위의 작은 띠 (아바타 없이) */
+.tutorial-bubble.compact {
+  grid-template-columns: 1fr;
+}
+.tutorial-bubble.compact .tour-guide {
+  display: none;
+}
+.tutorial-bubble.compact .tour-bubble::before {
+  display: none;
+}
+.tutorial-bubble.compact .tour-bubble {
+  padding: 10px 14px 8px;
+}
+.tutorial-bubble.compact .tour-body {
+  font-size: 12px;
+  line-height: 1.5;
+}
