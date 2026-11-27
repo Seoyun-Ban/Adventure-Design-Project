@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { Icon } from '../components/Icon'
 import { ActionButton } from '../components/ActionButton'
+import { GlossaryProvider, GlossaryText } from '../components/GlossaryText'
 import { levelFor, XP_PER_CORRECT } from '../data/avatar'
+import { annotate } from '../lib/glossary'
 import { passScore, type GeneratedQuiz } from '../lib/quizGenerator'
 
 /** retried: 쉬움 단계에서 힌트를 보고 다시 골라 맞혔는지 (경험치 절반) */
@@ -193,70 +195,77 @@ export function QuizScreen({
       <div className="quiz-progress">
         <span style={{ width: `${((index + 1) / quizItems.length) * 100}%` }} />
       </div>
-      <section className="quiz-body">
-        <div className="question-badge">문제 {String(index + 1).padStart(2, '0')}</div>
-        <h1>{current.question}</h1>
-        <p>{current.options.length === 2 ? '옳으면 O, 틀리면 X를 골라주세요.' : '하나를 선택해 주세요.'}</p>
-        <div className="answer-list">
-          {current.options.map((option, optionIndex) => {
-            const resultClass =
-              selected === null
-                ? optionIndex === wrongPick
-                  ? 'wrong'
-                  : ''
-                : optionIndex === current.answer
-                  ? 'correct'
-                  : optionIndex === selected
+      {/* 낱말 풀이는 문제 글에만 (보기·정답 설명은 답을 알려줄 수 있어서 제외) */}
+      <GlossaryProvider>
+        <section className="quiz-body">
+          <div className="question-badge">문제 {String(index + 1).padStart(2, '0')}</div>
+          <h1>
+            <GlossaryText segments={annotate([current.question])[0]} />
+          </h1>
+          <p>{current.options.length === 2 ? '옳으면 O, 틀리면 X를 골라주세요.' : '하나를 선택해 주세요.'}</p>
+          <div className="answer-list">
+            {current.options.map((option, optionIndex) => {
+              const resultClass =
+                selected === null
+                  ? optionIndex === wrongPick
                     ? 'wrong'
-                    : 'muted'
-            return (
-              <button
-                type="button"
-                key={`${index}-${optionIndex}`}
-                className={resultClass}
-                disabled={selected === null && optionIndex === wrongPick}
-                onClick={() => choose(optionIndex)}
-              >
-                <span>{optionIndex + 1}</span>
-                <strong>{option}</strong>
-                {resultClass === 'correct' && (
-                  <i>
-                    <Icon name="check" size={18} />
-                  </i>
-                )}
-                {resultClass === 'wrong' && (
-                  <i>
-                    <Icon name="close" size={18} />
-                  </i>
-                )}
-              </button>
-            )
-          })}
-        </div>
-        {/* 쉬움: 처음 틀리면 힌트 한 줄과 함께 한 번 더 */}
-        {selected === null && wrongPick !== null && (
-          <div className="feedback hint" role="status">
-            <span>
-              <Icon name="sparkle" size={19} />
-            </span>
-            <div>
-              <strong>힌트를 보고 한 번 더 골라 볼까요?</strong>
-              <p>{current.hint}</p>
-            </div>
+                    : ''
+                  : optionIndex === current.answer
+                    ? 'correct'
+                    : optionIndex === selected
+                      ? 'wrong'
+                      : 'muted'
+              return (
+                <button
+                  type="button"
+                  key={`${index}-${optionIndex}`}
+                  className={resultClass}
+                  disabled={selected === null && optionIndex === wrongPick}
+                  onClick={() => choose(optionIndex)}
+                >
+                  <span>{optionIndex + 1}</span>
+                  <strong>{option}</strong>
+                  {resultClass === 'correct' && (
+                    <i>
+                      <Icon name="check" size={18} />
+                    </i>
+                  )}
+                  {resultClass === 'wrong' && (
+                    <i>
+                      <Icon name="close" size={18} />
+                    </i>
+                  )}
+                </button>
+              )
+            })}
           </div>
-        )}
-        {selected !== null && (
-          <div className={`feedback ${selected === current.answer ? 'correct' : 'wrong'}`}>
-            <span>
-              <Icon name={selected === current.answer ? 'check' : 'refresh'} size={19} />
-            </span>
-            <div>
-              <strong>{selected === current.answer ? '정답이에요!' : '아쉬워요, 정답을 확인해 봐요.'}</strong>
-              <p>{current.note}</p>
+          {/* 쉬움: 처음 틀리면 힌트 한 줄과 함께 한 번 더 */}
+          {selected === null && wrongPick !== null && (
+            <div className="feedback hint" role="status">
+              <span>
+                <Icon name="sparkle" size={19} />
+              </span>
+              <div>
+                <strong>힌트를 보고 한 번 더 골라 볼까요?</strong>
+                <p>{current.hint}</p>
+              </div>
             </div>
-          </div>
-        )}
-      </section>
+          )}
+          {selected !== null && (
+            <div className={`feedback ${selected === current.answer ? 'correct' : 'wrong'}`}>
+              <span>
+                <Icon name={selected === current.answer ? 'check' : 'refresh'} size={19} />
+              </span>
+              <div>
+                <strong>
+                  {selected === current.answer ? '정답이에요!' : '아쉬워요, 정답을 확인해 봐요.'}
+                </strong>
+                <p>{current.note}</p>
+              </div>
+            </div>
+          )}
+        </section>
+      </GlossaryProvider>
       <div className="quiz-action">
         <ActionButton disabled={selected === null} onClick={next}>
           {index === quizItems.length - 1 ? '결과 확인하기' : '다음 문제'} <Icon name="chevron" size={19} />

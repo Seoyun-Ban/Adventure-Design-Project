@@ -4,7 +4,9 @@ import { ActionButton } from '../components/ActionButton'
 import { HistoryScene } from '../components/HistoryScene'
 import { Place3D } from '../components/Place3D'
 import { PhotoGroup, PhotoViewer, photosOf, usePhotoViewer } from '../components/LearnPhotos'
+import { GlossaryProvider, GlossaryText } from '../components/GlossaryText'
 import { PlaceItems } from '../components/PlaceItems'
+import { annotate } from '../lib/glossary'
 import { layoutPhotos } from '../lib/photoLayout'
 import { getContent } from '../data/contents'
 import type { AvatarLook, Difficulty, Equipped, Place } from '../types'
@@ -36,7 +38,9 @@ export function LearnScreen({
   const [difficulty, setDifficulty] = useState<Difficulty>(defaultDifficulty)
   const content = getContent(place.id)
   const text = content.body[difficulty]
+  // 낱말 풀이: 화면에 나오는 순서(첫 문단 → 알고 있었나요? → 자세히 읽기 → 외우기 한 줄)대로 넣어, 낱말이 처음 나오는 곳에만 밑줄
   const paragraphs = text.detail.split('\n')
+  const glossed = annotate([text.intro, content.didYouKnow, ...paragraphs, content.remember])
   // 사진은 사람이 고르지 않고 문단 사이에 고르게 자동 배치 (사진이 없으면 글만)
   const photoSlots = layoutPhotos(photosOf(place.id), paragraphs.length)
   const [viewing, setViewing] = usePhotoViewer()
@@ -78,75 +82,85 @@ export function LearnScreen({
           <Icon name="book" size={15} /> {content.readMinutes}분
         </div>
       </div>
-      <article className="learn-article">
-        <PlaceItems placeId={place.id} owned={completed} className="learn-items" />
-        <div className="difficulty-row">
-          <div>
-            <span>학습 단계</span>
-            <small>나에게 맞게 읽어보세요</small>
+      <GlossaryProvider>
+        <article className="learn-article">
+          <PlaceItems placeId={place.id} owned={completed} className="learn-items" />
+          <div className="difficulty-row">
+            <div>
+              <span>학습 단계</span>
+              <small>나에게 맞게 읽어보세요</small>
+            </div>
+            <div className="segment-control">
+              {(['쉬움', '보통', '어려움'] as Difficulty[]).map((item) => (
+                <button
+                  type="button"
+                  key={item}
+                  className={difficulty === item ? 'active' : ''}
+                  onClick={() => setDifficulty(item)}
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="segment-control">
-            {(['쉬움', '보통', '어려움'] as Difficulty[]).map((item) => (
-              <button
-                type="button"
-                key={item}
-                className={difficulty === item ? 'active' : ''}
-                onClick={() => setDifficulty(item)}
-              >
-                {item}
-              </button>
-            ))}
+          <div className="chapter-kicker">
+            <span>첫 번째 이야기</span>
+            <i />
           </div>
-        </div>
-        <div className="chapter-kicker">
-          <span>첫 번째 이야기</span>
-          <i />
-        </div>
-        <h2 style={{ whiteSpace: 'pre-line' }}>{content.headline}</h2>
-        <p className="lead">{text.intro}</p>
-        {photosAt(0)}
-        <div className="history-note">
-          <span>알고 있었나요?</span>
-          <p>{content.didYouKnow}</p>
-        </div>
-        <HistoryScene placeId={place.id} placeName={place.name} {...avatar} />
-        {content.detailImage && (
-          <figure>
-            <img src={content.detailImage} alt={content.detailCaption} />
-            <figcaption>{content.detailCaption}</figcaption>
-          </figure>
-        )}
-        <h3>{content.sectionTitle}</h3>
-        {paragraphs.map((paragraph, index) => (
-          <div key={paragraph} className="learn-paragraph">
-            <p>{paragraph}</p>
-            {photosAt(index + 1)}
+          <h2 style={{ whiteSpace: 'pre-line' }}>{content.headline}</h2>
+          <p className="lead">
+            <GlossaryText segments={glossed[0]} />
+          </p>
+          {photosAt(0)}
+          <div className="history-note">
+            <span>알고 있었나요?</span>
+            <p>
+              <GlossaryText segments={glossed[1]} />
+            </p>
           </div>
-        ))}
-        <div className="mini-quiz">
-          <Icon name="sparkle" size={22} />
-          <div>
-            <strong>잠깐, 기억해 볼까요?</strong>
-            <span>{content.remember}</span>
+          <HistoryScene placeId={place.id} placeName={place.name} {...avatar} />
+          {content.detailImage && (
+            <figure>
+              <img src={content.detailImage} alt={content.detailCaption} />
+              <figcaption>{content.detailCaption}</figcaption>
+            </figure>
+          )}
+          <h3>{content.sectionTitle}</h3>
+          {paragraphs.map((paragraph, index) => (
+            <div key={paragraph} className="learn-paragraph">
+              <p>
+                <GlossaryText segments={glossed[index + 2]} />
+              </p>
+              {photosAt(index + 1)}
+            </div>
+          ))}
+          <div className="mini-quiz">
+            <Icon name="sparkle" size={22} />
+            <div>
+              <strong>잠깐, 기억해 볼까요?</strong>
+              <span>
+                <GlossaryText segments={glossed[glossed.length - 1]} />
+              </span>
+            </div>
           </div>
-        </div>
-        <section className="learn-references">
-          <h4>참고 자료</h4>
-          <ul>
-            {content.references.map((reference) => (
-              <li key={reference.name}>
-                {reference.url ? (
-                  <a href={reference.url} target="_blank" rel="noopener noreferrer">
-                    {reference.name}
-                  </a>
-                ) : (
-                  reference.name
-                )}
-              </li>
-            ))}
-          </ul>
-        </section>
-      </article>
+          <section className="learn-references">
+            <h4>참고 자료</h4>
+            <ul>
+              {content.references.map((reference) => (
+                <li key={reference.name}>
+                  {reference.url ? (
+                    <a href={reference.url} target="_blank" rel="noopener noreferrer">
+                      {reference.name}
+                    </a>
+                  ) : (
+                    reference.name
+                  )}
+                </li>
+              ))}
+            </ul>
+          </section>
+        </article>
+      </GlossaryProvider>
       <div className="learn-actions">
         <ActionButton variant="secondary" onClick={() => onComplete(difficulty)}>
           <Icon name="footprint" size={20} /> 학습 완료

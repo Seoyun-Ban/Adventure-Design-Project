@@ -7472,3 +7472,59 @@ button.settings-row {
     --photo-max-h: 511px;
   }
 }
+
+/* 낱말 풀이: 점선 밑줄 낱말을 누르면 작은 창이 뜬다 */
+.gloss {
+  display: inline;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-decoration: underline dotted;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+  cursor: help;
+}
+.gloss:focus-visible {
+  outline: 2px solid #8a9a6b;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+.gloss-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  background: transparent;
+}
+.gloss-card {
+  position: absolute;
+  left: 50%;
+  bottom: 104px;
+  width: min(361px, calc(100% - 32px));
+  transform: translateX(-50%);
+  padding: 14px 16px 12px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--cream);
+  box-shadow: 0 10px 30px rgba(49, 56, 43, 0.22);
+}
+.gloss-card p {
+  margin: 0 0 8px;
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.6;
+  word-break: keep-all;
+}
+.gloss-card button {
+  display: block;
+  margin-left: auto;
+  padding: 4px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ink-soft);
+  font-size: 12px;
+}
