@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { LoginScreen } from './screens/LoginScreen'
 import { ChallengeScreen } from './screens/ChallengeScreen'
 import { SignupScreen } from './screens/SignupScreen'
@@ -22,6 +22,8 @@ import { scrollAppToTop } from './lib/frameScale'
 import { setFaceStyle } from './lib/faceCrop'
 import { generateQuiz, QUIZ_COUNT, type GeneratedQuiz } from './lib/quizGenerator'
 import { rankUpMessage } from './lib/league'
+import { TutorialProvider, useTutorialController } from './hooks/useTutorial'
+import { TUTORIAL_PLACE, tutorialEnabled } from './data/tutorial'
 import type { Difficulty, HistoryItem, Place, Screen, SocialProvider, Tab } from './types'
 
 /** 장소 퀴즈 한 번 (통과하면 그 장소의 퀴즈 완료) */
@@ -77,6 +79,13 @@ export default function App() {
   /** 실제 내 위치 (앱 전체에서 하나만 켠다. 위치는 저장하지 않는다) */
   const myLocation = useLocation()
   const startLocation = myLocation.start
+  /** 처음 시작 체험(튜토리얼). 진행 중에는 근처 알림·도전장 같은 다른 알림이 끼어들지 않는다 */
+  const tutorial = useTutorialController({
+    step: progress.tutorialStep,
+    update,
+    completedIds,
+    equipped: progress.equipped,
+  })
 
   // 전에 '위치 켜기'를 골랐으면 앱을 열 때 바로 위치를 받기 시작한다
   useEffect(() => {
@@ -92,8 +101,7 @@ export default function App() {
   const pretendSpotNow = pretendId ? pretendSpot(pretendId) : undefined
   /** 지금 내가 있는 곳 (위치를 받고 있을 때). 위치는 이 메모리 안에만 있고 저장하지 않는다 */
   const here = useMemo(
-    () =>
-      pretendSpotNow ? { ...pretendSpotNow, accuracy: 0 } : myLocation.position,
+    () => (pretendSpotNow ? { ...pretendSpotNow, accuracy: 0 } : myLocation.position),
     [pretendSpotNow, myLocation.position],
   )
   /** 방금 반경 안에 들어와 열린 장소 (근처 알림) */
@@ -107,10 +115,22 @@ export default function App() {
       if (progress.visitedIds.includes(place.id)) continue
       if (!isInsideUnlockArea(place, here)) continue
       visitPlace(place.id)
-      if (progress.pushEnabled) setNearby(place)
+      if (progress.pushEnabled && !tutorial.active) setNearby(place)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [here, progress.visitedIds, progress.pushEnabled])
+
+  // 튜토리얼이 시작되면 떠 있던 근처 알림은 닫는다
+  useEffect(() => {
+    if (tutorial.active) setNearby(null)
+  }, [tutorial.active])
+
+  // 앱을 닫았다 다시 열어 '아이템 입기' 단계에서 이어질 때는 아이템 카드를 다시 보여준다
+  useEffect(() => {
+    if (tutorial.beat?.id !== 'wear' || reward || screen !== 'home') return
+    const items = itemsForPlace(TUTORIAL_PLACE)
+    if (items.length > 0) setReward({ items, index: 0, then: 'home' })
+  }, [tutorial.beat, reward, screen])
 
   function showToast(message: string) {
     setToast(message)
@@ -118,16 +138,28 @@ export default function App() {
   }
 
   // 앱을 켜 둔 채로 도전장 링크를 열어도(주소의 # 부분만 바뀜) 도전장 화면으로 간다
+  // (튜토리얼 중이면 끝날 때까지 기다렸다가 연다)
+  const tutorialActive = useRef(tutorial.active)
+  tutorialActive.current = tutorial.active
+  const [heldHash, setHeldHash] = useState(false)
+  const openChallengeFromHash = () => {
+    const next = readChallenge(window.location.hash)
+    if (!next) return
+    setChallenge(next)
+    setScreen('challenge')
+  }
   useEffect(() => {
-    const onHash = () => {
-      const next = readChallenge(window.location.hash)
-      if (!next) return
-      setChallenge(next)
-      setScreen('challenge')
-    }
+    const onHash = () => (tutorialActive.current ? setHeldHash(true) : openChallengeFromHash())
     window.addEventListener('hashchange', onHash)
     return () => window.removeEventListener('hashchange', onHash)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+  useEffect(() => {
+    if (!heldHash || tutorial.active) return
+    setHeldHash(false)
+    openChallengeFromHash()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [heldHash, tutorial.active])
 
   /** 도전장 화면을 떠나면 주소에서 도전장을 지운다 (새로고침해도 다시 열리지 않게) */
   function leaveChallenge(next: Screen) {
@@ -164,6 +196,7 @@ export default function App() {
       return
     }
     setReward(null)
+    if (wore) tutorial.signal('item-worn')
     if (wore) {
       // 입어 본 모습을 바로 볼 수 있게 아바타 탭으로
       setHomeTab('avatar')
@@ -253,183 +286,185 @@ export default function App() {
   }
 
   return (
-    <div className="app-frame">
-      {/* 컴퓨터 화면에서는 틀 크기가 고정이라 이 안에서 스크롤된다 */}
-      <div className="app-scroll">
-        {screen === 'challenge' && challenge && (
-          <ChallengeScreen
-            challenge={challenge}
-            me={meAsChallenger}
-            placeIds={challengePlaceIds}
-            onFinish={(opponent, won) => {
-              const rank = recordBattle(opponent, won)
-              const message = rankUpMessage(rank.before, rank.after)
-              if (message) showToast(message)
-            }}
-            onStart={() => leaveChallenge('login')}
-            onClose={() => leaveChallenge('home')}
-            onNotice={showToast}
-          />
-        )}
-        {screen === 'login' && (
-          <LoginScreen
-            rememberedEmail={progress.rememberedEmail}
-            onEnter={enter}
-            onSocial={(provider) => {
-              // 이 기기에서 처음 쓰는 간편 로그인이면 이메일 가입과 같은 나이 확인·보호자 허락 단계를 거친다
-              if (progress.joined) enter(true, undefined, false, provider)
-              else {
-                setSignupProvider(provider)
+    <TutorialProvider value={tutorial}>
+      <div className="app-frame">
+        {/* 컴퓨터 화면에서는 틀 크기가 고정이라 이 안에서 스크롤된다 */}
+        <div className="app-scroll">
+          {screen === 'challenge' && challenge && (
+            <ChallengeScreen
+              challenge={challenge}
+              me={meAsChallenger}
+              placeIds={challengePlaceIds}
+              onFinish={(opponent, won) => {
+                const rank = recordBattle(opponent, won)
+                const message = rankUpMessage(rank.before, rank.after)
+                if (message) showToast(message)
+              }}
+              onStart={() => leaveChallenge('login')}
+              onClose={() => leaveChallenge('home')}
+              onNotice={showToast}
+            />
+          )}
+          {screen === 'login' && (
+            <LoginScreen
+              rememberedEmail={progress.rememberedEmail}
+              onEnter={enter}
+              onSocial={(provider) => {
+                // 이 기기에서 처음 쓰는 간편 로그인이면 이메일 가입과 같은 나이 확인·보호자 허락 단계를 거친다
+                if (progress.joined) enter(true, undefined, false, provider)
+                else {
+                  setSignupProvider(provider)
+                  setScreen('signup')
+                }
+              }}
+              onSignup={() => {
+                setSignupProvider(undefined)
                 setScreen('signup')
-              }
+              }}
+              onFindPassword={(email) => {
+                setResetEmail(email)
+                setScreen('reset')
+              }}
+            />
+          )}
+          {screen === 'signup' && (
+            <SignupScreen
+              provider={signupProvider}
+              onBack={() => setScreen('login')}
+              onDone={(nickname, email) => {
+                // 새로 가입한 계정은 닉네임을 채워 둔 온보딩부터 시작한다
+                // (비밀번호·태어난 해와 달·보호자 이메일은 넘겨받지 않으므로 저장되지 않는다)
+                update({
+                  loggedIn: true,
+                  joined: true,
+                  nickname,
+                  loginProvider: signupProvider,
+                  accountEmail: email,
+                })
+                // 아직 아바타를 만들지 않았으면 아바타 설정부터. 먼저 둘러보기로 이미 만들었으면 그대로 지도로
+                setScreen(progress.onboarded ? 'home' : 'onboarding')
+              }}
+            />
+          )}
+          {screen === 'reset' && (
+            <ResetPasswordScreen initialEmail={resetEmail} onBack={() => setScreen('login')} />
+          )}
+          {screen === 'onboarding' && (
+            <OnboardingScreen
+              initial={progress}
+              equipped={progress.equipped}
+              onDone={(result) => {
+                update({ ...result, onboarded: true, ...(tutorialEnabled() ? { tutorialStep: 1 } : {}) })
+                setScreen('home')
+              }}
+            />
+          )}
+          {screen === 'home' && (
+            <HomeScreen
+              key={homeKey}
+              initialTab={homeTab}
+              store={store}
+              location={{ ...myLocation, position: here, status: pretendSpotNow ? 'on' : myLocation.status }}
+              pretendId={pretendId}
+              onPretend={setPretendId}
+              onLocationOn={() => {
+                update({ locationChoice: 'on' })
+                myLocation.start()
+              }}
+              onLocationLater={() => update({ locationChoice: 'later' })}
+              onWithdraw={withdraw}
+              onReset={resetAll}
+              onLearn={openLearn}
+              onStartQuiz={(place) => startPlaceQuiz(place, progress.defaultDifficulty, 'home')}
+              onLogin={() => setScreen('login')}
+              onLogout={() => {
+                update({ loggedIn: false })
+                setScreen('login')
+              }}
+              onNotice={showToast}
+            />
+          )}
+          {screen === 'learn' && (
+            <LearnScreen
+              key={selectedPlace.id}
+              place={selectedPlace}
+              defaultDifficulty={progress.defaultDifficulty}
+              avatar={{
+                nickname: progress.nickname,
+                look: progress.look,
+                equipped: progress.equipped,
+                faceImage: progress.faceImage,
+              }}
+              favorite={progress.favorites.includes(selectedPlace.id)}
+              completed={completedIds.includes(selectedPlace.id)}
+              onToggleFavorite={() => toggleFavorite(selectedPlace.id)}
+              onBack={() => setScreen('home')}
+              onComplete={(difficulty) => {
+                setLearnDifficulty(difficulty)
+                const items = newItemsFor(selectedPlace)
+                completeLearning(selectedPlace.id)
+                // 처음 학습을 마쳤으면 아이템 카드 → 발자국 획득 창, 아니면 바로 발자국 획득 창
+                if (items.length > 0) setReward({ items, index: 0, then: 'complete' })
+                else setShowComplete(true)
+              }}
+              onQuiz={(difficulty) => startPlaceQuiz(selectedPlace, difficulty, 'learn')}
+            />
+          )}
+          {screen === 'quiz' && quiz && (
+            <QuizScreen
+              key={quizRun}
+              title={quiz.title}
+              load={quiz.load}
+              xp={progress.xp}
+              onXp={addXp}
+              onBack={() => setScreen(quiz.from === 'learn' && findPlace(quiz.place.id) ? 'learn' : 'home')}
+              onDone={finishQuiz}
+            />
+          )}
+        </div>
+        {reward && (
+          <ItemRewardModal
+            item={reward.items[reward.index]}
+            index={reward.index}
+            total={reward.items.length}
+            onWear={() => {
+              const item = reward.items[reward.index]
+              equip(item.category, item.id)
+              nextReward(true)
             }}
-            onSignup={() => {
-              setSignupProvider(undefined)
-              setScreen('signup')
-            }}
-            onFindPassword={(email) => {
-              setResetEmail(email)
-              setScreen('reset')
-            }}
+            onLater={() => nextReward(false)}
           />
         )}
-        {screen === 'signup' && (
-          <SignupScreen
-            provider={signupProvider}
-            onBack={() => setScreen('login')}
-            onDone={(nickname, email) => {
-              // 새로 가입한 계정은 닉네임을 채워 둔 온보딩부터 시작한다
-              // (비밀번호·태어난 해와 달·보호자 이메일은 넘겨받지 않으므로 저장되지 않는다)
-              update({
-                loggedIn: true,
-                joined: true,
-                nickname,
-                loginProvider: signupProvider,
-                accountEmail: email,
-              })
-              // 아직 아바타를 만들지 않았으면 아바타 설정부터. 먼저 둘러보기로 이미 만들었으면 그대로 지도로
-              setScreen(progress.onboarded ? 'home' : 'onboarding')
-            }}
-          />
-        )}
-        {screen === 'reset' && (
-          <ResetPasswordScreen initialEmail={resetEmail} onBack={() => setScreen('login')} />
-        )}
-        {screen === 'onboarding' && (
-          <OnboardingScreen
-            initial={progress}
-            equipped={progress.equipped}
-            onDone={(result) => {
-              update({ ...result, onboarded: true })
+        {showComplete && (
+          <CompleteModal
+            place={selectedPlace}
+            onConfirm={() => {
+              setShowComplete(false)
               setScreen('home')
             }}
+            onQuiz={() => {
+              setShowComplete(false)
+              startPlaceQuiz(selectedPlace, learnDifficulty, 'learn')
+            }}
           />
         )}
-        {screen === 'home' && (
-          <HomeScreen
-            key={homeKey}
-            initialTab={homeTab}
-            store={store}
-            location={{ ...myLocation, position: here, status: pretendSpotNow ? 'on' : myLocation.status }}
-            pretendId={pretendId}
-            onPretend={setPretendId}
-            onLocationOn={() => {
-              update({ locationChoice: 'on' })
-              myLocation.start()
-            }}
-            onLocationLater={() => update({ locationChoice: 'later' })}
-            onWithdraw={withdraw}
-            onReset={resetAll}
-            onLearn={openLearn}
-            onStartQuiz={(place) => startPlaceQuiz(place, progress.defaultDifficulty, 'home')}
-            onLogin={() => setScreen('login')}
-            onLogout={() => {
-              update({ loggedIn: false })
-              setScreen('login')
-            }}
-            onNotice={showToast}
-          />
+        {toast && (
+          <div className="app-toast" role="status">
+            {toast}
+          </div>
         )}
-        {screen === 'learn' && (
-          <LearnScreen
-            key={selectedPlace.id}
-            place={selectedPlace}
-            defaultDifficulty={progress.defaultDifficulty}
-            avatar={{
-              nickname: progress.nickname,
-              look: progress.look,
-              equipped: progress.equipped,
-              faceImage: progress.faceImage,
+        {nearby && (
+          <NearbyBanner
+            key={nearby.id}
+            place={nearby}
+            onOpen={() => {
+              setNearby(null)
+              openLearn(nearby)
             }}
-            favorite={progress.favorites.includes(selectedPlace.id)}
-            completed={completedIds.includes(selectedPlace.id)}
-            onToggleFavorite={() => toggleFavorite(selectedPlace.id)}
-            onBack={() => setScreen('home')}
-            onComplete={(difficulty) => {
-              setLearnDifficulty(difficulty)
-              const items = newItemsFor(selectedPlace)
-              completeLearning(selectedPlace.id)
-              // 처음 학습을 마쳤으면 아이템 카드 → 발자국 획득 창, 아니면 바로 발자국 획득 창
-              if (items.length > 0) setReward({ items, index: 0, then: 'complete' })
-              else setShowComplete(true)
-            }}
-            onQuiz={(difficulty) => startPlaceQuiz(selectedPlace, difficulty, 'learn')}
-          />
-        )}
-        {screen === 'quiz' && quiz && (
-          <QuizScreen
-            key={quizRun}
-            title={quiz.title}
-            load={quiz.load}
-            xp={progress.xp}
-            onXp={addXp}
-            onBack={() => setScreen(quiz.from === 'learn' && findPlace(quiz.place.id) ? 'learn' : 'home')}
-            onDone={finishQuiz}
+            onClose={() => setNearby(null)}
           />
         )}
       </div>
-      {reward && (
-        <ItemRewardModal
-          item={reward.items[reward.index]}
-          index={reward.index}
-          total={reward.items.length}
-          onWear={() => {
-            const item = reward.items[reward.index]
-            equip(item.category, item.id)
-            nextReward(true)
-          }}
-          onLater={() => nextReward(false)}
-        />
-      )}
-      {showComplete && (
-        <CompleteModal
-          place={selectedPlace}
-          onConfirm={() => {
-            setShowComplete(false)
-            setScreen('home')
-          }}
-          onQuiz={() => {
-            setShowComplete(false)
-            startPlaceQuiz(selectedPlace, learnDifficulty, 'learn')
-          }}
-        />
-      )}
-      {toast && (
-        <div className="app-toast" role="status">
-          {toast}
-        </div>
-      )}
-      {nearby && (
-        <NearbyBanner
-          key={nearby.id}
-          place={nearby}
-          onOpen={() => {
-            setNearby(null)
-            openLearn(nearby)
-          }}
-          onClose={() => setNearby(null)}
-        />
-      )}
-    </div>
+    </TutorialProvider>
   )
 }

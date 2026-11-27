@@ -31,6 +31,11 @@ export type Progress = {
   locationChoice?: 'on' | 'later'
   /** 앱 소개 안내를 끝까지 봤거나 건너뛰었는지 (다시는 자동으로 띄우지 않는다) */
   tourDone?: boolean
+  /**
+   * 처음 시작 체험(튜토리얼)이 진행 중인 묶음 번호 (1~7). 없으면 하지 않거나 끝난 것.
+   * 온보딩을 마칠 때 1로 시작하고, 끝나면 지운다. 앱을 닫았다 열면 이 묶음의 처음부터 이어간다.
+   */
+  tutorialStep?: number
   /** '이메일 기억하기'를 켰을 때 저장한 이메일 */
   rememberedEmail?: string
   /** 간편 로그인으로 들어왔으면 그 회사 (이메일 가입이면 없음) */
