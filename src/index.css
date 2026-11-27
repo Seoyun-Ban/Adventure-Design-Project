@@ -7577,3 +7577,77 @@ button.settings-row {
   padding: 3px;
   box-sizing: border-box;
 }
+
+/* 대결 화면 위쪽 [대결] [랭킹] 탭, 랭킹 순위표 */
+.competition-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 14px;
+  padding: 4px;
+  border-radius: 14px;
+  background: rgba(49, 56, 43, 0.08);
+}
+.competition-tabs button {
+  padding: 9px 0;
+  border: 0;
+  border-radius: 11px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 800;
+}
+.competition-tabs button.active {
+  background: #fffcf5;
+  box-shadow: 0 2px 8px rgba(49, 56, 43, 0.12);
+}
+.league-note {
+  margin: 0 0 12px;
+  font-size: 0.85rem;
+  opacity: 0.75;
+}
+.league-list {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 22px;
+  padding: 0;
+  list-style: none;
+}
+.league-list li {
+  display: grid;
+  grid-template-columns: 34px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(255, 252, 245, 0.85);
+  box-shadow: 0 6px 18px rgba(49, 56, 43, 0.07);
+}
+.league-list li.me {
+  background: #fff3c9;
+  outline: 2px solid #e0a82e;
+}
+.league-rank {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(49, 56, 43, 0.1);
+  font-weight: 900;
+}
+.league-list li:first-child .league-rank {
+  background: #e0a82e;
+  color: #fff;
+}
+.league-name,
+.league-record {
+  display: grid;
+  gap: 2px;
+}
+.league-record {
+  text-align: right;
+}
+.league-list small {
+  opacity: 0.7;
+}

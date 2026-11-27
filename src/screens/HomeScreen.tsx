@@ -18,6 +18,7 @@ import { isBookCaughtUp, storyBooks, totalReadCount } from '../data/storyBooks'
 import { places } from '../data/places'
 import type { useProgress } from '../hooks/useProgress'
 import type { useLocation } from '../hooks/useLocation'
+import { rankUpMessage } from '../lib/league'
 import type { Place, SubPage, Tab } from '../types'
 
 // 로그인 이후의 메인 화면: 하단 탭 4개 + 잠깐 여는 서브 화면
@@ -214,8 +215,13 @@ export function HomeScreen({
           completedIds={completedIds}
           xp={progress.xp}
           battle={progress.battle}
+          league={progress.league}
           onEquip={equip}
-          onBattleEnd={recordBattle}
+          onBattleEnd={(opponent, won) => {
+            const rank = recordBattle(opponent, won)
+            const message = rankUpMessage(rank.before, rank.after)
+            if (message) onNotice(message)
+          }}
           onBossWin={recordBossWin}
           onNotice={onNotice}
         />

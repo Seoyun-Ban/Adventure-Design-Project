@@ -6,6 +6,7 @@ import { ItemPicture } from '../components/ItemPicture'
 import { ItemIcon } from '../components/ItemIcon'
 import { ItemShadow } from '../components/ItemShadow'
 import { PowerInfoSheet } from '../components/PowerInfoSheet'
+import { LeagueTable } from '../components/LeagueTable'
 import { BattleRecordCard } from '../components/BattleRecordCard'
 import { ChallengeShareButton } from '../components/ChallengeShareButton'
 import { historyItems, battleFriends, findItem, levelFor, powerOf } from '../data/avatar'
@@ -14,6 +15,7 @@ import { BossScreen } from './BossScreen'
 import { BOSS } from '../data/boss'
 import { TOGETHER_MIN_PLACES } from '../data/battle'
 import { learnedPlaceIds } from '../lib/quizGenerator'
+import type { Tally } from '../lib/league'
 import type { BattleRecord } from '../hooks/useProgress'
 import type { AvatarLook, Equipped, HistoryItem, ItemCategory } from '../types'
 
@@ -27,6 +29,7 @@ export function AvatarScreen({
   completedIds,
   xp,
   battle,
+  league,
   onEquip,
   onBattleEnd,
   onBossWin,
@@ -39,6 +42,8 @@ export function AvatarScreen({
   /** 퀴즈로 모은 경험치 (레벨 계산) */
   xp: number
   battle: BattleRecord
+  /** 대결 랭킹: 가상 친구들의 승패 기록 */
+  league: Record<string, Tally>
   onEquip: (category: ItemCategory, itemId?: string) => void
   onBattleEnd: (opponent: string, won: boolean) => void
   /** 보스전에서 이겼을 때 (경험치를 받는다) */
@@ -53,6 +58,7 @@ export function AvatarScreen({
   const [selectedItem, setSelectedItem] = useState<HistoryItem | null>(null)
   const [view, setView] = useState<'inventory' | 'friends' | 'battle' | 'boss'>('inventory')
   const [opponent, setOpponent] = useState(battleFriends[0])
+  const [competitionTab, setCompetitionTab] = useState<'battle' | 'ranking'>('battle')
   const [powerInfo, setPowerInfo] = useState(false)
   // 함께하기(대결·보스전)는 학습을 마친 장소가 TOGETHER_MIN_PLACES곳 이상이어야 열린다. 문제도 그 장소에서만 낸다.
   const learned = learnedPlaceIds(completedIds)
@@ -94,38 +100,64 @@ export function AvatarScreen({
           </div>
           <span />
         </header>
-        <div className="competition-intro">
-          <Icon name="quiz" size={25} />
-          <div>
-            <strong>누구와 대결할까요?</strong>
-            <span>문제를 맞혀 상대의 체력을 먼저 0으로 만드세요.</span>
-          </div>
-        </div>
-        <div className="challenge-invite">
-          <div>
-            <strong>진짜 친구에게 도전해 볼까요?</strong>
-            <span>내 아바타가 담긴 도전장 링크를 보내요.</span>
-          </div>
-          <ChallengeShareButton me={{ nickname, look, equipped, level }} onNotice={onNotice} />
-        </div>
-        <h3 className="section-title">내 대결 기록</h3>
-        <BattleRecordCard battle={battle} />
-        <h3 className="section-title">대결 상대</h3>
-        <div className="friend-list">
-          {battleFriends.map((friend) => (
-            <button type="button" key={friend.id} onClick={() => startBattle(friend)}>
-              <span className={`friend-avatar ${friend.color}`}>{friend.name.slice(0, 1)}</span>
-              <span>
-                <small>{friend.title}</small>
-                <strong>{friend.name}</strong>
-                <i>
-                  Lv. {friend.level} · 전투력 {powerOf(friend.equipped, friend.level).total.toLocaleString()}
-                </i>
-              </span>
-              <span className="challenge-label">대결</span>
+        <div className="competition-tabs" role="tablist" aria-label="대결 보기">
+          {(
+            [
+              ['battle', '대결'],
+              ['ranking', '랭킹'],
+            ] as const
+          ).map(([key, label]) => (
+            <button
+              type="button"
+              role="tab"
+              key={key}
+              aria-selected={competitionTab === key}
+              className={competitionTab === key ? 'active' : ''}
+              onClick={() => setCompetitionTab(key)}
+            >
+              {label}
             </button>
           ))}
         </div>
+        {competitionTab === 'ranking' ? (
+          <LeagueTable nickname={nickname} xp={xp} battle={battle} league={league} />
+        ) : (
+          <>
+            <div className="competition-intro">
+              <Icon name="quiz" size={25} />
+              <div>
+                <strong>누구와 대결할까요?</strong>
+                <span>문제를 맞혀 상대의 체력을 먼저 0으로 만드세요.</span>
+              </div>
+            </div>
+            <div className="challenge-invite">
+              <div>
+                <strong>진짜 친구에게 도전해 볼까요?</strong>
+                <span>내 아바타가 담긴 도전장 링크를 보내요.</span>
+              </div>
+              <ChallengeShareButton me={{ nickname, look, equipped, level }} onNotice={onNotice} />
+            </div>
+            <h3 className="section-title">내 대결 기록</h3>
+            <BattleRecordCard battle={battle} />
+            <h3 className="section-title">대결 상대</h3>
+            <div className="friend-list">
+              {battleFriends.map((friend) => (
+                <button type="button" key={friend.id} onClick={() => startBattle(friend)}>
+                  <span className={`friend-avatar ${friend.color}`}>{friend.name.slice(0, 1)}</span>
+                  <span>
+                    <small>{friend.title}</small>
+                    <strong>{friend.name}</strong>
+                    <i>
+                      Lv. {friend.level} · 전투력{' '}
+                      {powerOf(friend.equipped, friend.level).total.toLocaleString()}
+                    </i>
+                  </span>
+                  <span className="challenge-label">대결</span>
+                </button>
+              ))}
+            </div>
+          </>
+        )}
       </section>
     )
   }

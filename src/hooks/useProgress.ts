@@ -1,5 +1,7 @@
-import { useEffect, useState } from 'react'
-import { defaultLook, migrateEquipped } from '../data/avatar'
+import { useEffect, useRef, useState } from 'react'
+import { battleFriends, defaultLook, levelFor, migrateEquipped } from '../data/avatar'
+import { LEAGUE_START } from '../data/battle'
+import { addFriendResult, buildStandings, myRank, type Tally } from '../lib/league'
 import { DEMO_VISITED_IDS, findPlace } from '../data/places'
 import type { AvatarLook, Difficulty, Equipped, LearningRecord, SocialProvider } from '../types'
 
@@ -38,6 +40,8 @@ export type Progress = {
   /** 관심 장소로 표시한 장소 id */
   favorites: string[]
   battle: BattleRecord
+  /** 대결 랭킹: 가상 친구들의 승패 기록 (친구 id → 기록). 내 기록은 battle에서 가져온다 */
+  league: Record<string, Tally>
   /** 보스전(협동)에서 괴물을 물리친 횟수 */
   bossWins: number
   /** 내 문의 내역 (최신이 앞) */
@@ -62,6 +66,29 @@ export type BattleRecord = { played: number; wins: number; recent: BattleResult[
 
 /** 최근 대결 결과를 몇 개까지 보관할지 */
 const RECENT_BATTLES = 20
+
+/** 지금 내 대결 랭킹 (1위부터) */
+export function myLeagueRank(progress: Progress) {
+  const me = { name: progress.nickname, level: levelFor(progress.xp), ...progress.battle }
+  return myRank(buildStandings(me, battleFriends, progress.league))
+}
+
+/** 대결 결과를 반영한 새 기록: 내 기록·최근 결과, 가상 친구와 한 대결이면 그 친구의 기록도 함께 */
+function withBattle(prev: Progress, opponent: string, won: boolean): Progress {
+  const friend = battleFriends.find((candidate) => candidate.name === opponent)
+  return {
+    ...prev,
+    battle: {
+      played: prev.battle.played + 1,
+      wins: prev.battle.wins + (won ? 1 : 0),
+      recent: [{ opponent, won, at: new Date().toISOString() }, ...prev.battle.recent].slice(
+        0,
+        RECENT_BATTLES,
+      ),
+    },
+    league: friend ? addFriendResult(prev.league, friend.id, won) : prev.league,
+  }
+}
 
 const STORAGE_KEY = 'history-step-progress-v3'
 
@@ -91,6 +118,7 @@ function demoProgress(): Progress {
     pushEnabled: true,
     favorites: ['bulguksa'],
     battle: { played: 0, wins: 0, recent: [] },
+    league: structuredClone(LEAGUE_START),
     bossWins: 0,
     // 시연용: 운영팀 답변이 달린 문의 한 건 (답변 내용은 학습 글의 사실과 맞춘다)
     inquiries: [
@@ -130,7 +158,17 @@ function load(): Progress {
       const favorites: string[] = (parsed.favorites ?? demo.favorites).filter((id: string) => findPlace(id))
       // 경험치가 없던 예전 기록은 예전 레벨(1 + 학습한 장소 수)과 같아지도록 채운다
       const xp: number = typeof parsed.xp === 'number' ? parsed.xp : records.length * 100
-      return { ...demo, ...parsed, equipped, records, visitedIds, favorites, xp, battle: { ...demo.battle, ...parsed.battle } }
+      return {
+        ...demo,
+        ...parsed,
+        equipped,
+        records,
+        visitedIds,
+        favorites,
+        xp,
+        battle: { ...demo.battle, ...parsed.battle },
+        league: { ...demo.league, ...parsed.league },
+      }
     }
   } catch {
     // 저장소를 쓸 수 없는 환경이면 기본값 사용
@@ -140,6 +178,9 @@ function load(): Progress {
 
 export function useProgress() {
   const [progress, setProgress] = useState<Progress>(load)
+  // 대결이 끝나는 순간(시간 예약 안)에도 최신 기록으로 계산하려고 ref에 같이 들고 있는다
+  const latest = useRef(progress)
+  latest.current = progress
 
   useEffect(() => {
     try {
@@ -190,19 +231,17 @@ export function useProgress() {
           ? prev.favorites.filter((id) => id !== placeId)
           : [...prev.favorites, placeId],
       })),
-    /** 대결이 끝나면 결과를 기록한다 */
-    recordBattle: (opponent: string, won: boolean) =>
-      setProgress((prev) => ({
-        ...prev,
-        battle: {
-          played: prev.battle.played + 1,
-          wins: prev.battle.wins + (won ? 1 : 0),
-          recent: [{ opponent, won, at: new Date().toISOString() }, ...prev.battle.recent].slice(
-            0,
-            RECENT_BATTLES,
-          ),
-        },
-      })),
+    /**
+     * 대결이 끝나면 결과를 기록한다 (친구 도전장 결과도 같은 길로 들어와 내 승패에 포함된다).
+     * 순위가 어떻게 바뀌었는지(before → after)도 돌려준다.
+     */
+    recordBattle: (opponent: string, won: boolean) => {
+      const prev = latest.current
+      const next = withBattle(prev, opponent, won)
+      latest.current = next
+      setProgress(next)
+      return { before: myLeagueRank(prev), after: myLeagueRank(next) }
+    },
     /** 보스전에서 이기면: 물리친 횟수를 올리고 경험치를 준다 */
     recordBossWin: (xp: number) =>
       setProgress((prev) => ({ ...prev, bossWins: prev.bossWins + 1, xp: prev.xp + Math.max(0, xp) })),

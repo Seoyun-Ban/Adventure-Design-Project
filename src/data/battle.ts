@@ -12,3 +12,11 @@ export const BATTLE_LEVELS: Record<Difficulty, { attack: number; heal: number; b
 
 // 함께하기(대결·보스전)가 열리는 조건: 학습을 마친 장소가 이 수 이상이어야 한다 (여기만 고치면 안내 글도 같이 바뀐다)
 export const TOGETHER_MIN_PLACES = 3
+
+// 대결 랭킹(리그): 서버가 없어서 나와 가상 친구들끼리의 순위표다.
+// 가상 친구들이 처음 갖고 있는 승패 기록 (키는 data/avatar.ts battleFriends의 id). 내가 대결하면 그 친구의 기록도 함께 바뀐다.
+export const LEAGUE_START: Record<string, { wins: number; losses: number }> = {
+  seoyeon: { wins: 5, losses: 2 },
+  minjun: { wins: 4, losses: 3 },
+  jiho: { wins: 2, losses: 4 },
+}

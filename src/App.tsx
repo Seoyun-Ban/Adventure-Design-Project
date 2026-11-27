@@ -21,6 +21,7 @@ import { clearChallengeHash, readChallenge } from './lib/challenge'
 import { scrollAppToTop } from './lib/frameScale'
 import { setFaceStyle } from './lib/faceCrop'
 import { generateQuiz, QUIZ_COUNT, type GeneratedQuiz } from './lib/quizGenerator'
+import { rankUpMessage } from './lib/league'
 import type { Difficulty, HistoryItem, Place, Screen, SocialProvider, Tab } from './types'
 
 /** 장소 퀴즈 한 번 (통과하면 그 장소의 퀴즈 완료) */
@@ -260,7 +261,11 @@ export default function App() {
             challenge={challenge}
             me={meAsChallenger}
             placeIds={challengePlaceIds}
-            onFinish={recordBattle}
+            onFinish={(opponent, won) => {
+              const rank = recordBattle(opponent, won)
+              const message = rankUpMessage(rank.before, rank.after)
+              if (message) showToast(message)
+            }}
             onStart={() => leaveChallenge('login')}
             onClose={() => leaveChallenge('home')}
             onNotice={showToast}
