@@ -8,10 +8,10 @@ import type { Tab } from '../types'
 // 내용(어느 곳을 비추는지, 무엇을 하면 넘어가는지)을 바꿀 때는 docs/TEAM_GUIDE.md의 튜토리얼 항목도 함께 본다.
 
 /**
- * 튜토리얼을 켜는 스위치.
- * 마무리 커밋 전까지는 false로 두고, 주소 끝에 `?tutorial`을 붙여 열 때만 시험해 볼 수 있다.
+ * 튜토리얼을 켜는 스위치. true면 온보딩을 마친 사람에게 항상 시작한다.
+ * 끄고 싶을 때는 false로 바꾸면 주소 끝에 `?tutorial`을 붙여 열 때만 시험해 볼 수 있다.
  */
-const TUTORIAL_FINAL = false
+const TUTORIAL_FINAL = true
 export function tutorialEnabled() {
   if (TUTORIAL_FINAL) return true
   try {

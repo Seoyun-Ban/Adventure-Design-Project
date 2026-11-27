@@ -60,6 +60,14 @@ export function useTutorialController({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step])
 
+  // 기록이 처음으로 돌아가(처음부터 다시 시작하기·탈퇴) 묶음 번호가 사라지면 진행 중이던 것도 멈춘다
+  useEffect(() => {
+    if (!step && indexRef.current >= 0) {
+      indexRef.current = -1
+      setIndex(-1)
+    }
+  }, [step])
+
   // 단계가 바뀌어 묶음이 달라지면 저장한다 (앱을 닫았다 열면 그 묶음에서 이어간다)
   const group = index >= 0 ? BEATS[index].group : undefined
   useEffect(() => {
