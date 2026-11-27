@@ -7651,3 +7651,12 @@ button.settings-row {
 .league-list small {
   opacity: 0.7;
 }
+
+/* 튜토리얼: 어둡게만 하고 스크롤·비춘 곳 누르기는 통과 (비춘 곳 밖 누르기는 Spotlight의 가드가 취소) */
+.tour-layer.guard {
+  pointer-events: none;
+}
+.tour-layer.guard .tour-bubble-wrap,
+.tour-layer.guard .tour-skip {
+  pointer-events: auto;
+}
