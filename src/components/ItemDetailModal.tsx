@@ -1,19 +1,23 @@
 import { Icon } from './Icon'
 import { ActionButton } from './ActionButton'
 import { ItemPicture } from './ItemPicture'
+import { ItemShadow } from './ItemShadow'
 import { findPlace } from '../data/places'
-import type { HistoryItem } from '../types'
+import type { CharacterStyleId, HistoryItem } from '../types'
 
 export function ItemDetailModal({
   item,
   owned,
   worn,
+  styleId,
   onToggle,
   onClose,
 }: {
   item: HistoryItem
   owned: boolean
   worn: boolean
+  /** 내 머리 모양 (못 얻은 옷 아이템의 실루엣을 내 모습에 맞춘다) */
+  styleId?: CharacterStyleId
   onToggle: () => void
   onClose: () => void
 }) {
@@ -30,7 +34,11 @@ export function ItemDetailModal({
           <Icon name="close" size={19} />
         </button>
         <div className={`item-detail-art ${owned ? 'owned' : 'locked'}`}>
-          {owned ? <ItemPicture item={item} size="large" /> : <span>{item.symbol}</span>}
+          {owned ? (
+            <ItemPicture item={item} size="large" />
+          ) : (
+            <ItemShadow item={item} size="large" styleId={styleId} />
+          )}
           {!owned && (
             <i>
               <Icon name="lock" size={18} />
@@ -40,8 +48,8 @@ export function ItemDetailModal({
         <span className="item-rarity">
           {item.rarity} · {item.category}
         </span>
-        <h2>{owned ? item.name : '아직 획득하지 못한 아이템'}</h2>
-        <p>{owned ? item.description : `‘${place?.name ?? '관련 장소'}’ 학습을 완료하면 얻을 수 있어요.`}</p>
+        <h2>{owned ? item.name : '???'}</h2>
+        <p>{owned ? item.description : `${place?.name ?? '관련 장소'}에 가면 얻을 수 있어요.`}</p>
         <div className="item-stats">
           {(Object.entries(item.stats) as [keyof HistoryItem['stats'], number][]).map(([label, value]) => (
             <div key={label}>

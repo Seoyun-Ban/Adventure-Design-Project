@@ -2651,12 +2651,21 @@ button {
 .shadow-art .item-picture {
   width: 64px;
   transform: scale(0.35);
-  filter: brightness(0);
-  opacity: 0.8;
   flex: none;
 }
-.shadow-art .item-tag {
+/* 아직 못 얻은 아이템의 검은 실루엣 (ItemShadow): 그림을 통째로 검게. 이름표·깃발 흔들림은 뺀다 */
+.item-shadow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  filter: brightness(0);
+  opacity: 0.8;
+}
+.item-shadow .item-tag {
   display: none;
+}
+.item-shadow .flag-wave {
+  animation: none;
 }
 .place-items-done {
   padding: 2px 7px;

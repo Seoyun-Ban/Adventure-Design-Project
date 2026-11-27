@@ -3,10 +3,11 @@ import { Icon } from '../components/Icon'
 import { CharacterAvatar } from '../components/CharacterAvatar'
 import { ItemDetailModal } from '../components/ItemDetailModal'
 import { ItemPicture } from '../components/ItemPicture'
+import { ItemShadow } from '../components/ItemShadow'
 import { PowerInfoSheet } from '../components/PowerInfoSheet'
 import { BattleRecordCard } from '../components/BattleRecordCard'
 import { ChallengeShareButton } from '../components/ChallengeShareButton'
-import { historyItems, battleFriends, findItem, levelFor, powerOf } from '../data/avatar'
+import { historyItems, battleFriends, findItem, levelFor, powerOf, styleIdFor } from '../data/avatar'
 import { BattleScreen } from './BattleScreen'
 import { BossScreen } from './BossScreen'
 import { BOSS } from '../data/boss'
@@ -257,11 +258,16 @@ export function AvatarScreen({
               type="button"
               key={item.id}
               className={`${owned ? 'owned' : 'locked'} ${worn ? 'worn' : ''}`}
+              aria-label={owned ? undefined : '아직 얻지 못한 아이템'}
               onClick={() => setSelectedItem(item)}
             >
               <span className="item-art">
-                {/* 얻은 아이템은 그림으로, 아직 못 얻은 아이템은 기호로 */}
-                {owned ? <ItemPicture item={item} size="small" /> : <b>{item.symbol}</b>}
+                {/* 얻은 아이템은 그림으로, 아직 못 얻은 아이템은 검은 실루엣으로 */}
+                {owned ? (
+                  <ItemPicture item={item} size="small" />
+                ) : (
+                  <ItemShadow item={item} size="small" styleId={styleIdFor(look)} />
+                )}
                 {!owned && (
                   <i>
                     <Icon name="lock" size={14} />
@@ -270,7 +276,7 @@ export function AvatarScreen({
                 {worn && <em>착용 중</em>}
               </span>
               <small>{item.rarity}</small>
-              <strong>{owned ? item.shortName : '미획득 아이템'}</strong>
+              <strong>{owned ? item.shortName : '???'}</strong>
             </button>
           )
         })}
@@ -279,6 +285,7 @@ export function AvatarScreen({
         <ItemDetailModal
           item={selectedItem}
           owned={isOwned(selectedItem)}
+          styleId={styleIdFor(look)}
           worn={equipped[selectedItem.category] === selectedItem.id}
           onToggle={() => {
             const worn = equipped[selectedItem.category] === selectedItem.id
