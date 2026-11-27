@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { battleFriends, defaultLook, levelFor, migrateEquipped } from '../data/avatar'
 import { LEAGUE_START } from '../data/battle'
-import { addFriendResult, buildStandings, myRank, type Tally } from '../lib/league'
+import { addFriendResult, buildStandings, myRank, playFriendMatch, type Tally } from '../lib/league'
 import { DEMO_VISITED_IDS, findPlace } from '../data/places'
 import type { AvatarLook, Difficulty, Equipped, LearningRecord, SocialProvider } from '../types'
 
@@ -86,7 +86,11 @@ function withBattle(prev: Progress, opponent: string, won: boolean): Progress {
         RECENT_BATTLES,
       ),
     },
-    league: friend ? addFriendResult(prev.league, friend.id, won) : prev.league,
+    // 내 대결이 끝날 때마다 가상 친구들끼리도 한 판씩 겨룬 것으로 친다
+    league: playFriendMatch(
+      friend ? addFriendResult(prev.league, friend.id, won) : prev.league,
+      battleFriends,
+    ),
   }
 }
 

@@ -57,3 +57,38 @@ export function addFriendResult(
 export function rankUpMessage(before: number, after: number) {
   return after > 0 && after < before ? `랭킹 ${after}위로 올랐어요!` : null
 }
+
+/** 레벨이 1 높을 때마다 이길 확률이 더해지는 양, 그리고 확률의 아래·위 한계 (레벨 차이가 커도 한쪽만 이기지 않게) */
+const WIN_CHANCE_PER_LEVEL = 0.03
+const WIN_CHANCE_MIN = 0.35
+const WIN_CHANCE_MAX = 0.65
+
+/** 레벨이 a는 b보다 높을수록 a가 이길 확률이 조금 높다 (같으면 50%) */
+export function winChance(levelA: number, levelB: number) {
+  const chance = 0.5 + (levelA - levelB) * WIN_CHANCE_PER_LEVEL
+  return Math.min(WIN_CHANCE_MAX, Math.max(WIN_CHANCE_MIN, chance))
+}
+
+/**
+ * 내가 대결을 한 판 끝낼 때마다 가상 친구들끼리도 한 판 겨룬 것처럼 승패를 더한다.
+ * 친구 둘을 무작위로 뽑고, 레벨이 높은 쪽이 조금 더 자주 이긴다. random은 테스트에서 바꿔 끼울 수 있다.
+ */
+export function playFriendMatch(
+  league: Record<string, Tally>,
+  friends: LeagueFriend[],
+  random: () => number = Math.random,
+): Record<string, Tally> {
+  if (friends.length < 2) return league
+  const first = Math.floor(random() * friends.length)
+  let second = Math.floor(random() * (friends.length - 1))
+  if (second >= first) second += 1
+  const a = friends[first]
+  const b = friends[second]
+  const [winner, loser] = random() < winChance(a.level, b.level) ? [a, b] : [b, a]
+  const tally = (id: string) => league[id] ?? { wins: 0, losses: 0 }
+  return {
+    ...league,
+    [winner.id]: { ...tally(winner.id), wins: tally(winner.id).wins + 1 },
+    [loser.id]: { ...tally(loser.id), losses: tally(loser.id).losses + 1 },
+  }
+}
