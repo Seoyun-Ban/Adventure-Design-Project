@@ -1,4 +1,5 @@
 import { OUTFIT_IMAGES } from './generated/outfitImages'
+import { FACE_TUNING } from './faceTuning'
 import type { AvatarLook, CharacterStyleId, Difficulty, Equipped, HistoryItem, ItemCategory } from '../types'
 
 type Point = { x: number; y: number }
@@ -30,7 +31,7 @@ export type CharacterStyle = {
  * - squash: 세로를 줄이는 비율. 캐릭터 얼굴이 사진보다 둥글고 납작해서 살짝 눌러 맞춘다 (1이면 그대로)
  * - ovalWidth: 얼굴 그림 한 장 안에서 얼굴 윤곽이 차지하는 너비 비율 (faceCrop.ts의 크기 설정에서 나온 값, 바꾸지 않는다)
  */
-export const CUTOUT_FIT = { scale: 1.08, squash: 0.72, ovalWidth: 0.66 }
+export const CUTOUT_FIT = FACE_TUNING.fit
 
 /** 윤곽대로 자른 얼굴 그림을 놓을 자리와 크기(캐릭터 그림 너비 대비 %) */
 export function cutoutPlacement(face: Point & { size: number }, fit: CharacterStyle['cutout'] = {}) {
