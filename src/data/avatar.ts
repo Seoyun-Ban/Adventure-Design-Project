@@ -243,6 +243,7 @@ export const historyItems: HistoryItem[] = [
     rarity: '희귀',
     description: '경복궁 근정전에서 열린 나라의 큰 의식에 참석하던 관리들을 떠올리게 하는 관복.',
     stats: { 공격: 20, 방어: 55, 지혜: 80 },
+    art: { kind: 'image', src: '/images/characters/item-robe.png', anchor: { x: 50, y: 50 } },
   },
   {
     id: 'hwarang-robe',
@@ -254,6 +255,7 @@ export const historyItems: HistoryItem[] = [
     rarity: '전설',
     description: '신라 화랑들이 의식에서 갖춰 입던 예복을 떠올리게 하는 옷.',
     stats: { 공격: 45, 방어: 62, 지혜: 82 },
+    art: { kind: 'image', src: '/images/characters/item-hwarang.png', anchor: { x: 50, y: 50 } },
   },
   {
     id: 'armor',
@@ -265,6 +267,7 @@ export const historyItems: HistoryItem[] = [
     rarity: '영웅',
     description: '한산도 대첩을 이끈 이순신 장군의 굳센 마음을 떠올리게 하는 갑옷.',
     stats: { 공격: 68, 방어: 92, 지혜: 55 },
+    art: { kind: 'image', src: '/images/characters/item-armor.png', anchor: { x: 50, y: 50 } },
   },
 ]
 

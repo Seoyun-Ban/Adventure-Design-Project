@@ -7573,3 +7573,39 @@ button.settings-row {
     animation: gloss-fade 0.08s linear;
   }
 }
+
+/* 아이템 그림을 작은 칸(이름 칩, 착용 칸, 아바타 위 배지)에 넣는다 (ItemIcon). 한자 기호 대신 아이템 그림을 쓴다 */
+.item-icon {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.item-icon .character-item {
+  position: static;
+  width: auto;
+  height: 100%;
+  max-width: 100%;
+  transform: none;
+}
+.place-item-chip .item-icon {
+  flex: none;
+  width: 18px;
+  height: 18px;
+}
+.learn-items .place-item-chip .item-icon {
+  width: 20px;
+  height: 20px;
+}
+.slot-art .item-icon {
+  width: 26px;
+  height: 26px;
+}
+.item-badge {
+  background: var(--cream);
+}
+.item-badge .item-icon {
+  padding: 3px;
+  box-sizing: border-box;
+}

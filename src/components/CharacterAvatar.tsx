@@ -1,3 +1,4 @@
+import { ItemIcon } from './ItemIcon'
 import type { CSSProperties } from 'react'
 import { characterFor, findItem, type CharacterStyle } from '../data/avatar'
 import { ItemArtView } from './ItemArtView'
@@ -49,7 +50,7 @@ function ItemLayer({ item, character }: { item: HistoryItem; character: Characte
     const at = character.slots[item.category]
     return (
       <span className="item-badge" style={{ left: `${at.x}%`, top: `${at.y}%` }} title={item.name}>
-        {item.symbol}
+        <ItemIcon item={item} />
       </span>
     )
   }

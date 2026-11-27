@@ -3,21 +3,18 @@ import { ActionButton } from './ActionButton'
 import { ItemPicture } from './ItemPicture'
 import { ItemShadow } from './ItemShadow'
 import { findPlace } from '../data/places'
-import type { CharacterStyleId, HistoryItem } from '../types'
+import type { HistoryItem } from '../types'
 
 export function ItemDetailModal({
   item,
   owned,
   worn,
-  styleId,
   onToggle,
   onClose,
 }: {
   item: HistoryItem
   owned: boolean
   worn: boolean
-  /** 내 머리 모양 (못 얻은 옷 아이템의 실루엣을 내 모습에 맞춘다) */
-  styleId?: CharacterStyleId
   onToggle: () => void
   onClose: () => void
 }) {
@@ -34,11 +31,7 @@ export function ItemDetailModal({
           <Icon name="close" size={19} />
         </button>
         <div className={`item-detail-art ${owned ? 'owned' : 'locked'}`}>
-          {owned ? (
-            <ItemPicture item={item} size="large" />
-          ) : (
-            <ItemShadow item={item} size="large" styleId={styleId} />
-          )}
+          {owned ? <ItemPicture item={item} size="large" /> : <ItemShadow item={item} size="large" />}
           {!owned && (
             <i>
               <Icon name="lock" size={18} />

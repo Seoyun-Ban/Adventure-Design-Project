@@ -1,4 +1,5 @@
 import { itemsForPlace } from '../data/avatar'
+import { ItemIcon } from './ItemIcon'
 import { ItemShadow } from './ItemShadow'
 
 // 이 장소를 학습하면 얻는 아이템 (지도 장소 카드, 학습 화면 위쪽)
@@ -40,7 +41,7 @@ export function PlaceItems({
       <span className="place-items-names">
         {items.map((item) => (
           <span key={item.id} className="place-item-chip">
-            <b aria-hidden="true">{item.symbol}</b>
+            <ItemIcon item={item} />
             {item.shortName}
           </span>
         ))}
