@@ -33,6 +33,13 @@ test('다른 낱말의 일부에는 밑줄이 그어지지 않는다', () => {
   assert.deepEqual(marked(['국가 의식을 치렀어요.']), [['의식']])
   assert.deepEqual(marked(['도읍을 옮긴 뒤']), [['도읍']])
   assert.deepEqual(marked(['수원 화산으로 옮기고']), [['화산']])
+  // 말끝이 붙은 모양도 낱말 그대로
+  assert.deepEqual(marked(['감옥에서 순국했어요.']), [['순국']])
+  // 합쳐진 낱말·책 이름 속의 낱말은 긋지 않는다 (광복절, 삼도수군통제사, 화성성역의궤)
+  assert.deepEqual(marked(['광복절에 문을 열었어요.']), [[]])
+  assert.deepEqual(marked(['삼도수군통제사가 되었어요.']), [[]])
+  assert.deepEqual(marked(['『화성성역의궤』에 기록했어요.']), [[]])
+  assert.deepEqual(marked(['세계유산이 되었어요.']), [['세계유산']])
 })
 
 test('앞에 일부만 맞는 자리가 있어도 진짜 낱말 자리를 찾는다', () => {
