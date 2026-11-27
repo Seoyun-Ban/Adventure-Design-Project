@@ -196,7 +196,12 @@ export const BEATS: Beat[] = [
     spots: [{ selector: '.together' }],
     title: '함께하기와 랭킹',
     body: (facts) =>
-      `장소 ${TOGETHER_MIN_PLACES}곳을 학습하면 친구와 함께하는 보스전과 대결이 열려요. 지금은 ${Math.min(facts.learned, TOGETHER_MIN_PLACES)}곳이에요.\n대결에서는 친구들과 순위(랭킹)도 겨뤄요.`,
+      `장소 ${TOGETHER_MIN_PLACES}곳을 학습하면 친구와 함께하는 보스전과 대결이 열려요. ${
+        facts.learned >= TOGETHER_MIN_PLACES
+          ? '이제 함께하기가 열려 있어요!'
+          : `앞으로 ${TOGETHER_MIN_PLACES - facts.learned}곳만 더 배우면 열려요!`
+      }
+대결에서는 친구들과 순위(랭킹)도 겨뤄요. 이제 진짜 역사 장소로 떠나 볼까요?`,
     advance: { kind: 'next', label: '시작하기' },
   },
 ]

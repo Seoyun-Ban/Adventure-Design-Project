@@ -369,7 +369,7 @@ export function HistoryScene({
               <Icon name="bell" size={15} />
             </button>
           )}
-          {full === 'off' && (
+          {full === 'off' && !tutorial.active && (
             <button type="button" onClick={enterFullscreen} aria-label="전체 화면">
               <Icon name="expand" size={15} />
             </button>
