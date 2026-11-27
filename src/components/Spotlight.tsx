@@ -200,3 +200,45 @@ export function bubblePosition(view: SpotlightView, bubbleHeight = 250) {
   const left = Math.min(Math.max(16, main.cx - width / 2), size.width - width - 16)
   return { width, left, top: Math.max(56, Math.min(top, size.height - bubbleHeight - 12)) }
 }
+
+export type BubblePlace = { mode: 'full' | 'strip'; left: number; top: number }
+
+/**
+ * 튜토리얼 말풍선 자리: 비춘 곳(구멍)을 가리지 않는다.
+ * 1) 비춘 곳 아래에 말풍선이 다 들어가면 아래, 2) 아니면 위, 3) 둘 다 모자라면
+ * 화면 맨 위나 맨 아래(자리가 더 넓은 쪽)에 한 줄짜리 작은 띠. stripOnly면 처음부터 띠.
+ * 구멍은 보이는 타원 전체(모든 구멍의 위아래 끝)로 계산한다.
+ */
+export function placeBubble(
+  view: SpotlightView,
+  fullHeight: number,
+  stripHeight: number,
+  stripOnly = false,
+): BubblePlace {
+  const { holes, size } = view
+  const GAP = 10
+  const EDGE = 8
+  const fullWidth = Math.min(330, size.width - 32)
+  if (holes.length === 0) {
+    return stripOnly
+      ? { mode: 'strip', left: 12, top: size.height - EDGE - stripHeight }
+      : {
+          mode: 'full',
+          left: (size.width - fullWidth) / 2,
+          top: Math.max(EDGE, size.height / 2 - fullHeight / 2),
+        }
+  }
+  const top = Math.min(...holes.map((hole) => hole.cy - hole.ry))
+  const bottom = Math.max(...holes.map((hole) => hole.cy + hole.ry))
+  const left = Math.min(...holes.map((hole) => hole.cx - hole.rx))
+  const right = Math.max(...holes.map((hole) => hole.cx + hole.rx))
+  const roomBelow = size.height - bottom - GAP - EDGE
+  const roomAbove = top - GAP - EDGE
+  if (!stripOnly) {
+    const x = Math.min(Math.max(16, (left + right) / 2 - fullWidth / 2), size.width - fullWidth - 16)
+    if (roomBelow >= fullHeight) return { mode: 'full', left: x, top: bottom + GAP }
+    if (roomAbove >= fullHeight) return { mode: 'full', left: x, top: top - GAP - fullHeight }
+  }
+  const atBottom = roomBelow >= roomAbove
+  return { mode: 'strip', left: 12, top: atBottom ? size.height - EDGE - stripHeight : EDGE }
+}

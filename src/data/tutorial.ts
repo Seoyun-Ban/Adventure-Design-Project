@@ -55,10 +55,12 @@ export type Beat = {
   /** 화면 안으로 자동 스크롤하지 않기 (낱말 뜻 풍선처럼 스크롤하면 닫히는 곳) */
   noScroll?: boolean
   /**
-   * 말풍선 자리. 기본은 비춘 곳 옆.
-   * top: 화면 위쪽 / compact: 비춘 곳이 화면 거의 전체일 때 맨 위에 작은 띠로
+   * 말풍선은 비춘 곳을 가리지 않는 자리(위·아래)에 뜨고, 자리가 모자라면 화면 맨 위나 맨 아래에
+   * 한 줄짜리 작은 띠로 바뀐다. 띠에 쓰는 짧은 글 (한 줄에 들어가는 길이로, 없으면 제목)
    */
-  bubble?: 'top' | 'compact'
+  strip?: string
+  /** true: 처음부터 띠로만 보여준다 (비춘 곳이 커서 말풍선이 대사·인물을 가릴 수 있는 장면) */
+  stripOnly?: boolean
   /** 글에 \n이 있으면 줄이 바뀐다 */
   title: string
   body: string | ((facts: TutorialFacts) => string)
@@ -70,6 +72,7 @@ export const BEATS: Beat[] = [
   {
     id: 'arrive',
     group: 1,
+    strip: '경복궁 표시를 눌러 보세요',
     tab: 'map',
     spots: [{ selector: `.map-marker[data-place="${TUTORIAL_PLACE}"]` }],
     title: '경복궁에 도착했어요!',
@@ -79,6 +82,7 @@ export const BEATS: Beat[] = [
   {
     id: 'open-card',
     group: 1,
+    strip: '카드를 눌러 이야기를 시작해요',
     tab: 'map',
     spots: [{ selector: '.place-card' }],
     title: '이야기를 열어 볼까요?',
@@ -89,6 +93,7 @@ export const BEATS: Beat[] = [
   {
     id: 'word',
     group: 2,
+    strip: '밑줄 낱말을 눌러 보세요',
     spots: [{ selector: '.learn-article .gloss' }],
     title: '쉬운 글로 읽어요',
     body: '‘쉬움’ 단계의 글이에요. 천천히 읽어 보세요.\n점선 밑줄이 있는 낱말을 누르면 뜻이 나와요. 하나 눌러 볼까요?',
@@ -97,9 +102,9 @@ export const BEATS: Beat[] = [
   {
     id: 'word-meaning',
     group: 2,
-    spots: [{ selector: '.learn-article .gloss' }],
+    strip: '낱말 뜻을 확인했나요?',
+    spots: [{ selector: '.learn-article .gloss' }, { selector: '.gloss-bubble' }],
     noScroll: true,
-    bubble: 'top',
     title: '낱말 뜻이 나왔어요',
     body: '어려운 낱말은 이렇게 쉽게 풀어 줘요.\n이제 경복궁을 세운 분을 만나 볼까요?',
     advance: { kind: 'next', label: '다음' },
@@ -108,6 +113,8 @@ export const BEATS: Beat[] = [
   {
     id: 'scene',
     group: 3,
+    strip: '화면을 눌러 대화를 끝까지 넘겨 보세요',
+    stripOnly: true,
     spots: [{ selector: '.history-scene' }],
     title: '태조 이성계와 대화해요',
     body: '‘만나기’를 누르고, 화면을 눌러 대화를 끝까지 넘겨 보세요.',
@@ -117,6 +124,7 @@ export const BEATS: Beat[] = [
   {
     id: 'to-quiz',
     group: 4,
+    strip: '‘퀴즈 풀어보기’를 눌러 주세요',
     spots: [{ selector: '.learn-actions .action-button.primary' }],
     title: '퀴즈로 확인해요',
     body: '배운 내용을 퀴즈로 풀어 봐요.\n‘퀴즈 풀어보기’를 눌러 주세요.',
@@ -125,7 +133,7 @@ export const BEATS: Beat[] = [
   {
     id: 'quiz',
     group: 4,
-    bubble: 'compact',
+    strip: '답을 골라 퀴즈를 풀어요',
     spots: [{ selector: '.quiz-body, .quiz-action', all: true }],
     title: '퀴즈 2문제',
     body: '답을 골라 보세요. 틀려도 괜찮아요!\n다 풀면 결과가 나와요.',
@@ -134,6 +142,7 @@ export const BEATS: Beat[] = [
   {
     id: 'quiz-result',
     group: 4,
+    strip: '버튼을 눌러 기록을 남겨요',
     spots: [{ selector: '.result-screen .action-button.primary' }],
     title: '퀴즈를 마쳤어요',
     body: '버튼을 누르면 경복궁 학습이 내 기록에 남아요.',
@@ -143,7 +152,11 @@ export const BEATS: Beat[] = [
   {
     id: 'wear',
     group: 5,
-    spots: [{ selector: '.reward-modal .complete-actions .action-button.primary' }],
+    strip: '카드마다 ‘바로 입어보기’를 눌러요',
+    spots: [
+      { selector: '.reward-modal .reward-card' },
+      { selector: '.reward-modal .complete-actions .action-button.primary' },
+    ],
     title: '역사 아이템을 얻었어요!',
     body: '장소를 배우면 그곳의 아이템을 얻어요.\n‘바로 입어보기’를 눌러 내 캐릭터에게 입혀 봐요. 카드가 여러 장이면 모두 입어 보세요.',
     advance: { kind: 'signal', name: 'item-worn' },
@@ -152,6 +165,7 @@ export const BEATS: Beat[] = [
   {
     id: 'avatar-wear',
     group: 6,
+    strip: '입은 모습을 확인해요',
     tab: 'avatar',
     spots: [{ selector: '.avatar-stage' }],
     title: '입은 모습이에요!',
@@ -161,7 +175,7 @@ export const BEATS: Beat[] = [
   {
     id: 'dex',
     group: 6,
-    bubble: 'compact',
+    strip: '아이템 도감이에요',
     tab: 'avatar',
     spots: [{ selector: '.inventory-heading, .item-category-tabs, .history-item-grid', all: true }],
     title: '역사 아이템 도감',
@@ -173,7 +187,7 @@ export const BEATS: Beat[] = [
   {
     id: 'map-legend',
     group: 7,
-    bubble: 'compact',
+    strip: '장소 표시를 확인해요',
     tab: 'map',
     spots: [{ selector: '.map-marker', all: true }],
     title: '장소 표시를 읽어 봐요',
@@ -183,6 +197,7 @@ export const BEATS: Beat[] = [
   {
     id: 'book',
     group: 7,
+    strip: '이야기책이에요',
     tab: 'book',
     spots: [{ selector: '.bookshelf' }],
     title: '이야기책',
@@ -192,6 +207,7 @@ export const BEATS: Beat[] = [
   {
     id: 'together',
     group: 7,
+    strip: '함께하기와 랭킹',
     tab: 'avatar',
     spots: [{ selector: '.together' }],
     title: '함께하기와 랭킹',

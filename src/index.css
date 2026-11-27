@@ -7686,20 +7686,50 @@ button.settings-row {
   font-weight: 800;
   cursor: pointer;
 }
-/* 비춘 곳이 화면 거의 전체일 때: 맨 위의 작은 띠 (아바타 없이) */
-.tutorial-bubble.compact {
-  grid-template-columns: 1fr;
+
+/* 튜토리얼 말풍선 높이를 재기 위한 숨은 복사본 (보이지 않고 누를 수 없다) */
+.tour-layer.guard .tutorial-measure {
+  top: 0;
+  left: 0;
+  visibility: hidden;
+  pointer-events: none;
+  animation: none;
+  transition: none;
 }
-.tutorial-bubble.compact .tour-guide {
-  display: none;
+/* 자리가 모자랄 때의 한 줄짜리 작은 띠 */
+.tutorial-strip {
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  box-sizing: border-box;
+  padding: 0 8px 0 14px;
+  border-radius: 14px;
+  color: var(--ink);
+  background: var(--cream);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.28);
+  pointer-events: auto;
+  animation: tour-in 0.35s ease;
 }
-.tutorial-bubble.compact .tour-bubble::before {
-  display: none;
+.tutorial-strip-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 12.5px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.tutorial-bubble.compact .tour-bubble {
-  padding: 10px 14px 8px;
-}
-.tutorial-bubble.compact .tour-body {
+.tutorial-strip .tour-next,
+.tutorial-strip .tutorial-escape {
+  flex: none;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 10px;
   font-size: 12px;
-  line-height: 1.5;
+  border: 0;
+  color: white;
+  background: var(--green);
 }
