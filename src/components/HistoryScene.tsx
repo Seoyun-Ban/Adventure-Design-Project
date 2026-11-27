@@ -14,6 +14,7 @@ import {
   stopSpeaking,
 } from '../lib/speech'
 import { withJosa } from '../lib/korean'
+import { useTutorial } from '../hooks/useTutorial'
 import type { AvatarLook, Equipped } from '../types'
 
 /** 말풍선 글자가 한 글자 나타나는 간격 (밀리초) */
@@ -48,6 +49,8 @@ export function HistoryScene({
   equipped: Equipped
   faceImage?: string
 }) {
+  // 처음 시작 체험에서 '대화를 끝까지 넘겼어요'를 알린다
+  const tutorial = useTutorial()
   const figure = figures[placeId]
   const [index, setIndex] = useState(-1)
   /** 장면이 진행 중인지 (처음 '만나기'를 누른 뒤부터 마지막 대사 다음을 누를 때까지) */
@@ -164,7 +167,10 @@ export function HistoryScene({
       return
     }
     if (index + 1 < total) say(index + 1)
-    else finish()
+    else {
+      finish()
+      tutorial.signal('scene-end')
+    }
   }
 
   function finish() {

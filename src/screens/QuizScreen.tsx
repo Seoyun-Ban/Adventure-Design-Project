@@ -3,6 +3,7 @@ import { Icon } from '../components/Icon'
 import { ActionButton } from '../components/ActionButton'
 import { GlossaryProvider, GlossaryText } from '../components/GlossaryText'
 import { levelFor, XP_PER_CORRECT } from '../data/avatar'
+import { useTutorial } from '../hooks/useTutorial'
 import { annotate } from '../lib/glossary'
 import { passScore, type GeneratedQuiz } from '../lib/quizGenerator'
 
@@ -44,10 +45,15 @@ export function QuizScreen({
   const [selected, setSelected] = useState<number | null>(null)
   const [results, setResults] = useState<QuizResult[]>([])
   const [finished, setFinished] = useState(false)
+  // 처음 시작 체험에서 '퀴즈를 다 풀었어요'를 알린다
+  const tutorial = useTutorial()
 
   // 다 풀면 얻은 경험치를 한 번만 더한다
   useEffect(() => {
-    if (finished) onXp(results.reduce((sum, result) => sum + xpOf(result), 0))
+    if (finished) {
+      onXp(results.reduce((sum, result) => sum + xpOf(result), 0))
+      tutorial.signal('quiz-finished')
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [finished])
 
