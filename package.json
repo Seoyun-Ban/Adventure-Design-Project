@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "format": "prettier --write src",
     "images": "node scripts/optimize-images.mjs",
-    "test": "node --test scripts/photos.test.mjs scripts/glossary.test.mjs scripts/league.test.mjs"
+    "test": "node --test scripts/photos.test.mjs scripts/glossary.test.mjs scripts/league.test.mjs scripts/level.test.mjs"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "^1.2.3",

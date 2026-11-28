@@ -4542,24 +4542,29 @@ button {
   font-size: 11px;
 }
 .score-ring {
+  position: relative;
   width: 160px;
   height: 160px;
   margin: 33px 0 24px;
-  border: 13px solid var(--green-3);
-  border-top-color: var(--green-2);
-  border-right-color: var(--green-2);
   border-radius: 50%;
+  /* 맞힌 문제 비율(--fill)만큼 초록색으로 채운다. 0이면 빈 원, 100%면 꽉 찬 원 */
+  background: conic-gradient(from 0deg, var(--green-2) var(--fill, 0%), var(--green-3) 0);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  transform: rotate(8deg);
-  box-shadow:
-    inset 0 0 0 1px white,
-    var(--shadow);
+  box-shadow: var(--shadow);
+}
+.score-ring::before {
+  content: '';
+  position: absolute;
+  inset: 13px;
+  border-radius: 50%;
+  background: var(--paper, #fff);
+  box-shadow: inset 0 0 0 1px white;
 }
 .score-ring > * {
-  transform: rotate(-8deg);
+  position: relative;
 }
 .score-ring strong {
   color: var(--green);

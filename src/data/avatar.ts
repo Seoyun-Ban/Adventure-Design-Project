@@ -1,5 +1,6 @@
 import { OUTFIT_IMAGES } from './generated/outfitImages'
 import { FACE_TUNING } from './faceTuning'
+export { XP_FIRST_LEVEL, XP_LEVEL_STEP, xpNeededAt, xpForLevel, levelFor, xpToNextLevel } from '../lib/level'
 import type { AvatarLook, CharacterStyleId, Difficulty, Equipped, HistoryItem, ItemCategory } from '../types'
 
 type Point = { x: number; y: number }
@@ -342,21 +343,8 @@ export function itemsForPlace(placeId: string) {
 /** 레벨 1당 더해지는 전투력 */
 export const LEVEL_POWER = 60
 
-/** 레벨 하나에 필요한 경험치 */
-export const XP_PER_LEVEL = 100
-
 /** 퀴즈에서 맞힌 문제 하나마다 얻는 경험치 (쉬움 단계에서 힌트를 보고 맞히면 절반) */
 export const XP_PER_CORRECT: Record<Difficulty, number> = { 쉬움: 10, 보통: 20, 어려움: 30 }
-
-/** 레벨 = 1 + 경험치 100마다 1 */
-export function levelFor(xp: number) {
-  return 1 + Math.floor(Math.max(0, xp) / XP_PER_LEVEL)
-}
-
-/** 다음 레벨까지 남은 경험치 */
-export function xpToNextLevel(xp: number) {
-  return XP_PER_LEVEL - (Math.max(0, xp) % XP_PER_LEVEL)
-}
 
 /** 착용한 아이템 능력치(공격+방어+지혜) 합계 */
 export function itemPower(equipped: Equipped) {

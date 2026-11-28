@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { Icon } from '../components/Icon'
 import { ActionButton } from '../components/ActionButton'
 import { GlossaryProvider, GlossaryText } from '../components/GlossaryText'
@@ -139,7 +139,10 @@ export function QuizScreen({
             ? '배운 내용을 아주 잘 기억하고 있네요.'
             : '학습 내용을 다시 읽고 도전하면 퀴즈 완료로 기록돼요.'}
         </p>
-        <div className="score-ring">
+        <div
+          className="score-ring"
+          style={{ '--fill': `${quizItems.length ? (score / quizItems.length) * 100 : 0}%` } as CSSProperties}
+        >
           <div>
             <strong>{score}</strong>
             <span>/ {quizItems.length}</span>

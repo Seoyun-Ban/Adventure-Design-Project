@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { battleFriends, defaultLook, levelFor, migrateEquipped } from '../data/avatar'
+import { battleFriends, defaultLook, levelFor, migrateEquipped, xpForLevel } from '../data/avatar'
 import { LEAGUE_START } from '../data/battle'
 import { addFriendResult, buildStandings, myRank, playFriendMatch, type Tally } from '../lib/league'
 import { DEMO_VISITED_IDS, findPlace } from '../data/places'
@@ -121,8 +121,8 @@ function demoProgress(): Progress {
     equipped: {},
     records: [{ placeId: 'suwon', learnedAt: daysAgo(3) }],
     visitedIds: DEMO_VISITED_IDS,
-    // 처음 시작할 때 Lv.2 (경험치 100마다 레벨 1)
-    xp: 100,
+    // 처음 시작할 때 Lv.2 (1→2레벨에 필요한 100 XP를 채운 상태, 다음 레벨까지 120 XP)
+    xp: xpForLevel(2),
     defaultDifficulty: '보통',
     pushEnabled: true,
     favorites: ['bulguksa'],
@@ -166,7 +166,7 @@ function load(): Progress {
       ].filter((id) => findPlace(id))
       const favorites: string[] = (parsed.favorites ?? demo.favorites).filter((id: string) => findPlace(id))
       // 경험치가 없던 예전 기록은 예전 레벨(1 + 학습한 장소 수)과 같아지도록 채운다
-      const xp: number = typeof parsed.xp === 'number' ? parsed.xp : records.length * 100
+      const xp: number = typeof parsed.xp === 'number' ? parsed.xp : xpForLevel(1 + records.length)
       return {
         ...demo,
         ...parsed,

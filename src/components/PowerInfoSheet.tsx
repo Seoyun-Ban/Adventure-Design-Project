@@ -1,6 +1,6 @@
 import { BottomSheet } from './BottomSheet'
 import { Icon } from './Icon'
-import { LEVEL_POWER, XP_PER_LEVEL, type powerOf } from '../data/avatar'
+import { LEVEL_POWER, XP_FIRST_LEVEL, XP_LEVEL_STEP, type powerOf } from '../data/avatar'
 
 // 전투력 올리는 방법 + 지금 내 전투력 계산 내역 (아바타 탭의 ⓘ 버튼)
 export function PowerInfoSheet({
@@ -23,7 +23,9 @@ export function PowerInfoSheet({
           <p>
             퀴즈를 맞히면 경험치가 쌓여요.
             <br />
-            경험치 {XP_PER_LEVEL}마다 <b>레벨이 1 올라요.</b>
+            경험치가 차면 <b>레벨이 1 올라요.</b>
+            <br />
+            (1→2레벨 {XP_FIRST_LEVEL}, 다음부터 {XP_LEVEL_STEP}씩 더 필요해요)
           </p>
         </li>
         <li>
