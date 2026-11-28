@@ -47,7 +47,8 @@ export function ItemIcon({
   className?: string
   tilt?: boolean
 }) {
-  const tilted = tilt && item.art?.kind === 'image' && TILTED_SRC.includes(item.art.src)
+  const art = item.art
+  const tilted = tilt && art?.kind === 'image' && TILTED_SRC.includes(art.src ?? '')
   return (
     <span className={`item-icon ${tilted ? 'tilted' : ''} ${className}`} aria-hidden="true">
       {item.art ? (
