@@ -10,6 +10,82 @@ export const BATTLE_LEVELS: Record<Difficulty, { attack: number; heal: number; b
   어려움: { attack: 1.4, heal: 12, block: 0.9 },
 }
 
+// ---------- 가상 친구와의 대결 밸런스 (여기 숫자만 고치면 대결·랭킹·안내가 모두 따라 바뀐다) ----------
+// 진짜 친구의 도전장 대결은 이 규칙을 쓰지 않고 예전 규칙(체력 100·고정 피해) 그대로다.
+// 계산은 lib/battleBalance.ts, 승률은 scripts/battle.test.mjs가 같은 숫자로 검사한다.
+
+/** 내 대결 규칙. 공격·방어는 평균은 그대로, 매번 범위 안에서 무작위로 정해진다 */
+export const BATTLE_RULES = {
+  /** 내 체력 (레벨이 올라도 늘지 않는다) */
+  hp: 100,
+  /** 공격 피해 = (이 값 + 전투력÷45) × 난이도 배수 × attackSpread 안의 무작위 */
+  attackBase: 15,
+  attackSpread: [0.4, 1.6] as const,
+  /** 방어 회복량에 곱하는 무작위 범위 */
+  healSpread: [0.5, 1.5] as const,
+  /** 방어 막기 비율에 더하는 무작위 범위 (±15%p) */
+  blockSpread: [-0.15, 0.15] as const,
+  /** 막기 비율의 위쪽 한계 (100% 막기는 없다) */
+  blockMax: 0.95,
+}
+
+export type FriendBalance = {
+  /** 내 레벨에 더하는 값 (친구 레벨 = 내 레벨 + 이 값, 최소 1) */
+  levelOffset: number
+  /** 친구 전투력 = 내 전투력 × 이 값 */
+  powerRatio: number
+  /** 친구 체력 = 내 평균 공격 1번 × 이 값 (클수록 오래 버틴다) */
+  hitsToKill: number
+  /** 친구가 고르는 문제 난이도의 비중 (합 1) */
+  difficulty: Record<Difficulty, number>
+  /** 정답을 맞혔을 때 평소 방어를 고를 확률 */
+  defendChance: number
+}
+
+export const FRIEND_BALANCE = {
+  /** 친구 체력의 아래·위 한계 */
+  hpMin: 70,
+  hpMax: 260,
+  /** 내 레벨이 5보다 1 높을 때마다 친구 체력에 곱하는 값이 이만큼 줄어든다 (낮은 레벨은 조금 어렵게, 높은 레벨은 조금 쉽게 해서 승률을 고르게 맞춘다) */
+  hpLevelAdjust: 0.02,
+  /** 친구 공격 피해 = (이 값 + 전투력÷45 × attackPowerWeight) × 난이도 배수 × 무작위. 내 체력이 100으로 고정이라 전투력 영향은 작게 둔다 */
+  attackBase: 23,
+  attackPowerWeight: 0.045,
+  attackSpread: [0.4, 1.6] as const,
+  /** 친구 정답률 = 기본 + 레벨 × 레벨당, 최대 accuracyMax. 난이도별 보정을 곱한다 */
+  accuracyBase: 0.58,
+  accuracyPerLevel: 0.006,
+  accuracyMax: 0.8,
+  accuracyByDifficulty: { 쉬움: 1.1, 보통: 1, 어려움: 0.8 } as Record<Difficulty, number>,
+  /** 친구 체력이 이 비율보다 낮으면 방어를 고를 확률이 lowHpDefendChance로 올라간다 */
+  lowHpRatio: 0.42,
+  lowHpDefendChance: 0.39,
+  /** 친구별 성격 (키는 data/avatar.ts battleFriends의 id) */
+  friends: {
+    seoyeon: {
+      levelOffset: 1,
+      powerRatio: 1,
+      hitsToKill: 5.4,
+      difficulty: { 쉬움: 0.2, 보통: 0.6, 어려움: 0.2 },
+      defendChance: 0.25,
+    },
+    minjun: {
+      levelOffset: 0,
+      powerRatio: 1.05,
+      hitsToKill: 4.9,
+      difficulty: { 쉬움: 0.1, 보통: 0.4, 어려움: 0.5 },
+      defendChance: 0.14,
+    },
+    jiho: {
+      levelOffset: -1,
+      powerRatio: 0.95,
+      hitsToKill: 6,
+      difficulty: { 쉬움: 0.5, 보통: 0.4, 어려움: 0.1 },
+      defendChance: 0.14,
+    },
+  } as Record<string, FriendBalance>,
+}
+
 // 함께하기(대결·보스전)가 열리는 조건: 학습을 마친 장소가 이 수 이상이어야 한다 (여기만 고치면 안내 글도 같이 바뀐다)
 export const TOGETHER_MIN_PLACES = 3
 
