@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Icon } from '../components/Icon'
 import { ActionButton } from '../components/ActionButton'
 import { Avatar } from '../components/Avatar'
@@ -6,6 +6,7 @@ import { CharacterAvatar } from '../components/CharacterAvatar'
 import { FacePhotoField } from '../components/FacePhotoField'
 import { LookFields, OptionRow } from '../components/OptionRow'
 import { skinTones } from '../data/avatar'
+import { clearBoot, patchResume, peekBoot } from '../lib/resume'
 import type { AvatarLook, Difficulty, Equipped } from '../types'
 
 // 처음 이용할 때 한 번 거치는 설정 화면
@@ -32,11 +33,20 @@ export function OnboardingScreen({
     defaultDifficulty: Difficulty
   }) => void
 }) {
-  const [step, setStep] = useState(0)
-  const [nickname, setNickname] = useState(initial.nickname)
-  const [look, setLook] = useState<AvatarLook>(initial.look)
-  const [faceImage, setFaceImage] = useState<string | undefined>(initial.faceImage)
-  const [difficulty, setDifficulty] = useState<Difficulty>(initial.defaultDifficulty)
+  // 페이지가 새로 불러와진 직후에는 하던 단계와 고른 내용을 되살린다 (lib/resume.ts)
+  const [restored] = useState(() => peekBoot('onboarding'))
+  useEffect(() => clearBoot('onboarding'), [])
+  const [step, setStep] = useState(restored?.step ?? 0)
+  const [nickname, setNickname] = useState(restored?.nickname ?? initial.nickname)
+  const [look, setLook] = useState<AvatarLook>(restored?.look ?? initial.look)
+  const [faceImage, setFaceImage] = useState<string | undefined>(
+    restored ? restored.faceImage : initial.faceImage,
+  )
+  const [difficulty, setDifficulty] = useState<Difficulty>(restored?.difficulty ?? initial.defaultDifficulty)
+  // 하던 단계와 고른 내용을 적어 둔다
+  useEffect(() => {
+    patchResume({ onboarding: { step, nickname, look, faceImage, difficulty } })
+  }, [step, nickname, look, faceImage, difficulty])
 
   const titles = ['나만의 탐험가 만들기', '얼굴 등록하기', '학습 단계 고르기']
   const subtitles = [

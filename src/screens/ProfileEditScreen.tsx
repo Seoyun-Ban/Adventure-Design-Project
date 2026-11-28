@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { ActionButton } from '../components/ActionButton'
 import { FieldHint } from '../components/AuthHeader'
 import { CharacterAvatar } from '../components/CharacterAvatar'
@@ -8,6 +8,7 @@ import { LookFields, OptionRow } from '../components/OptionRow'
 import { getFaceStyle, isCutoutFace, setFaceStyle, type FaceStyle } from '../lib/faceCrop'
 import { SubpageHeader } from '../components/SubpageHeader'
 import { AccountSection, EmailChange, PasswordChange, type AccountView } from '../components/AccountSection'
+import { clearBoot, patchResume, peekBoot } from '../lib/resume'
 import type { AvatarLook, SocialProvider } from '../types'
 
 // 설정 > 개인정보 고치기: 닉네임, 성별, 머리 모양, 얼굴 사진 + 계정 관리(이메일·비밀번호 바꾸기, 회원 탈퇴)
@@ -37,12 +38,21 @@ export function ProfileEditScreen({
 }) {
   // 계정 관리의 이메일·비밀번호 바꾸기 화면 (위에서 고치던 내용은 그대로 남는다)
   const [view, setView] = useState<AccountView>('main')
-  const [name, setName] = useState(nickname)
-  const [nextLook, setNextLook] = useState(look)
-  const [nextFace, setNextFace] = useState(faceImage)
+  // 페이지가 새로 불러와진 직후에는 고치던 내용을 되살린다 (lib/resume.ts)
+  const [restored] = useState(() => peekBoot('edit'))
+  useEffect(() => clearBoot('edit'), [])
+  const [name, setName] = useState(restored?.nickname ?? nickname)
+  const [nextLook, setNextLook] = useState(restored?.look ?? look)
+  const [nextFace, setNextFace] = useState(restored ? restored.faceImage : faceImage)
   // 얼굴 표현 방식: 고르기만 해서는 바뀌지 않고, '저장'을 눌러야 이 기기에 저장된다 (다음에 얼굴을 등록할 때부터 적용)
   const savedFaceStyle = getFaceStyle()
-  const [faceStyle, setFaceStyleState] = useState<FaceStyle>(savedFaceStyle)
+  const [faceStyle, setFaceStyleState] = useState<FaceStyle>(
+    (restored?.faceStyle as FaceStyle) ?? savedFaceStyle,
+  )
+  // 고치는 내용을 적어 둔다
+  useEffect(() => {
+    patchResume({ edit: { nickname: name, look: nextLook, faceImage: nextFace, faceStyle } })
+  }, [name, nextLook, nextFace, faceStyle])
   const trimmed = name.trim()
   // 한글·이모지도 한 글자로 세도록 문자 단위로 센다
   const length = [...trimmed].length
@@ -124,7 +134,9 @@ export function ProfileEditScreen({
               labelOf={(style) => (style === 'photo' ? '사진 그대로' : '만화풍')}
               onChange={setFaceStyleState}
             />
-            <p className="face-guide">바꾼 표현은 다음에 얼굴을 등록할 때부터 적용돼요. 이미 등록한 얼굴은 그대로예요.</p>
+            <p className="face-guide">
+              바꾼 표현은 다음에 얼굴을 등록할 때부터 적용돼요. 이미 등록한 얼굴은 그대로예요.
+            </p>
             <FacePhotoField faceImage={nextFace} onChange={setNextFace} />
             {nextFace && !isCutoutFace(nextFace) && (
               <p className="face-guide face-notice">
@@ -133,10 +145,7 @@ export function ProfileEditScreen({
             )}
           </div>
         </div>
-        <ActionButton
-          onClick={save}
-          disabled={!canSave}
-        >
+        <ActionButton onClick={save} disabled={!canSave}>
           저장
         </ActionButton>
       </form>

@@ -20,6 +20,7 @@ import type { useProgress } from '../hooks/useProgress'
 import type { useLocation } from '../hooks/useLocation'
 import { rankUpMessage } from '../lib/league'
 import { useTutorial } from '../hooks/useTutorial'
+import { clearBoot, patchResume, peekBoot } from '../lib/resume'
 import { tutorialEnabled } from '../data/tutorial'
 import type { Place, SubPage, Tab } from '../types'
 
@@ -75,8 +76,17 @@ export function HomeScreen({
     recordBossWin,
     addInquiry,
   } = store
-  const [tab, setTab] = useState<Tab>(initialTab)
-  const [page, setPage] = useState<SubPage>('main')
+  // 페이지가 새로 불러와진 직후에는 보던 탭·화면으로 돌아온다 (lib/resume.ts)
+  const [tab, setTab] = useState<Tab>(() => peekBoot('tab') ?? initialTab)
+  const [page, setPage] = useState<SubPage>(() => peekBoot('page') ?? 'main')
+  useEffect(() => {
+    clearBoot('tab')
+    clearBoot('page')
+  }, [])
+  // 지금 보는 탭·화면을 적어 둔다. 개인정보 고치기를 나가면 고치던 내용도 지운다.
+  useEffect(() => {
+    patchResume({ tab, page, ...(page === 'profile-edit' ? {} : { edit: undefined }) })
+  }, [tab, page])
   const back = () => setPage('main')
   // 등록한 얼굴 사진은 학습 영상 장면에서만 쓰고, 홈 화면들의 아바타는 기본 얼굴로 보여준다.
   const avatar = {

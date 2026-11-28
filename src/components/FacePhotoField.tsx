@@ -8,13 +8,16 @@ import {
   FaceModelError,
   getFaceModelStatus,
   onFaceModelStatus,
-  preloadFaceModel,
+  releaseFaceModel,
 } from '../lib/faceDetect'
 import { alignFace, centerCropFace, isCutoutFace, loadPhoto } from '../lib/faceCrop'
 
 // 얼굴 사진 넣기 (온보딩 '얼굴 등록하기'와 설정 '개인정보 고치기'에서 함께 쓴다)
-// '촬영하기' → 카메라로 찍기 / 앨범에서 고르기. 얼굴을 찾아 눈 위치에 맞춰 자르고(설정에 따라 만화풍으로 바꿔) 이 기기에만 저장한다.
+// '촬영하기' → 카메라로 찍기(앱 화면 안 미리보기) / 앨범에서 고르기. 얼굴을 찾아 눈 위치에 맞춰 자르고(설정에 따라 만화풍으로 바꿔) 이 기기에만 저장한다.
 // 얼굴 찾기를 쓸 수 없으면 안내 문구를 띄우고 사진 가운데를 동그랗게 쓰는 기본 방식으로 넣는다.
+/** 사진을 처리하다 문제가 생겼을 때의 안내 (앱은 멈추지 않는다) */
+const SAVE_FAILED = '사진을 저장하지 못했어요. 다시 해주세요'
+
 export function FacePhotoField({
   faceImage,
   onChange,
@@ -22,11 +25,10 @@ export function FacePhotoField({
   faceImage?: string
   onChange: (faceImage: string | undefined) => void
 }) {
-  const cameraInput = useRef<HTMLInputElement>(null)
   const albumInput = useRef<HTMLInputElement>(null)
   /** '촬영하기'를 누르면 여는 "카메라로 찍기 / 앨범에서 고르기" 창 */
   const [photoMenu, setPhotoMenu] = useState(false)
-  /** 컴퓨터의 웹캠 촬영 창 */
+  /** 카메라 촬영 창 (컴퓨터·휴대폰 모두 앱 화면 안에서 앞면 카메라 미리보기) */
   const [webcam, setWebcam] = useState(false)
 
   /** 사진 처리 중인지 */
@@ -34,13 +36,11 @@ export function FacePhotoField({
   /** 처리 결과 안내 (얼굴을 못 찾음, 기본 방식으로 넣음 등) */
   const [notice, setNotice] = useState('')
 
-  // 얼굴 찾기 모델이 커서, 이 화면이 열리면 미리 받아 둔다
+  // 얼굴 찾기 모델이 커서(메모리를 많이 쓴다) 화면을 열 때 받지 않고, 사진을 찍거나 고른 뒤에만 받는다
   const [model, setModel] = useState(getFaceModelStatus())
-  useEffect(() => {
-    const stop = onFaceModelStatus(setModel)
-    preloadFaceModel()
-    return stop
-  }, [])
+  useEffect(() => onFaceModelStatus(setModel), [])
+  // 화면을 나가면 모델도 풀어 준다
+  useEffect(() => releaseFaceModel, [])
 
   /** 받은 사진에서 얼굴을 찾아 맞춰 얼굴로 쓴다 (사진 그대로 / 만화풍은 설정을 따름) (기기 안에서만 처리) */
   async function applyPhoto(photo: Blob) {
@@ -64,12 +64,14 @@ export function FacePhotoField({
           onChange(await centerCropFace(photo))
           setNotice('이 기기에서는 얼굴 자동 맞춤을 쓸 수 없어 기본 방식으로 넣었어요.')
         } catch {
-          setNotice('사진을 읽지 못했어요. 다른 사진으로 다시 해주세요.')
+          setNotice(SAVE_FAILED)
         }
       } else {
-        setNotice('사진을 읽지 못했어요. 다른 사진으로 다시 해주세요.')
+        setNotice(SAVE_FAILED)
       }
     } finally {
+      // 처리가 끝나면 얼굴 인식 모델을 메모리에서 풀어 준다
+      releaseFaceModel()
       setBusy(false)
     }
   }
@@ -81,11 +83,10 @@ export function FacePhotoField({
     if (file) await applyPhoto(file)
   }
 
-  /** 휴대폰(터치 화면)은 앞면 카메라 입력, 컴퓨터는 웹캠 화면 */
+  /** 휴대폰도 컴퓨터도 앱 화면 안에서 앞면 카메라 미리보기를 띄운다 (카메라 앱을 따로 열지 않는다) */
   function takeWithCamera() {
     setPhotoMenu(false)
-    if (window.matchMedia('(pointer: coarse)').matches) cameraInput.current?.click()
-    else setWebcam(true)
+    setWebcam(true)
   }
 
   function pickFromAlbum() {
@@ -109,8 +110,7 @@ export function FacePhotoField({
         <br />
         얼굴 모양대로 자동으로 맞춰져요. 사진은 이 기기에만 저장돼요.
       </p>
-      {/* 휴대폰: 앞면 카메라로 바로 찍기 / 사진 앨범에서 고르기 */}
-      <input ref={cameraInput} type="file" accept="image/*" capture="user" hidden onChange={handlePhoto} />
+      {/* 사진 앨범에서 고르기 */}
       <input ref={albumInput} type="file" accept="image/*" hidden onChange={handlePhoto} />
       {(busy || notice || model.state === 'loading') && (
         <p className="face-guide face-notice" role="status">

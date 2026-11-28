@@ -23,6 +23,7 @@ import { setFaceStyle } from './lib/faceCrop'
 import { generateQuiz, QUIZ_COUNT, type GeneratedQuiz } from './lib/quizGenerator'
 import { rankUpMessage } from './lib/league'
 import { Tutorial } from './components/Tutorial'
+import { acceptBoot, bootScreen, clearResume, patchResume } from './lib/resume'
 import { TutorialProvider, useTutorialController } from './hooks/useTutorial'
 import { TUTORIAL_PLACE, tutorialEnabled } from './data/tutorial'
 import type { Difficulty, HistoryItem, Place, Screen, SocialProvider, Tab } from './types'
@@ -55,7 +56,20 @@ export default function App() {
   } = store
   /** 친구가 보낸 도전장 링크로 들어왔으면 그 도전장 (망가진 링크면 ok: false) */
   const [challenge, setChallenge] = useState(() => readChallenge(window.location.hash))
-  const [screen, setScreen] = useState<Screen>(challenge ? 'challenge' : 'login')
+  const [screen, setScreen] = useState<Screen>(() => {
+    if (challenge) return 'challenge'
+    // 크롬이 페이지를 새로 불러왔으면 로그인 화면이 아니라 하던 곳으로 돌아온다 (lib/resume.ts)
+    const saved = bootScreen()
+    if (saved === 'home' && progress.onboarded) {
+      acceptBoot()
+      return 'home'
+    }
+    if (saved === 'onboarding' && !progress.onboarded) {
+      acceptBoot()
+      return 'onboarding'
+    }
+    return 'login'
+  })
   const [selectedPlace, setSelectedPlace] = useState<Place>(places[0])
   const [learnDifficulty, setLearnDifficulty] = useState<Difficulty>(progress.defaultDifficulty)
   const [quiz, setQuiz] = useState<QuizSession | null>(null)
@@ -120,6 +134,14 @@ export default function App() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [here, progress.visitedIds, progress.pushEnabled])
+
+  // 지금 어느 화면인지 기기에 적어 둔다 (페이지가 새로 불러와져도 이어가기 위해).
+  // 학습·퀴즈 중에는 그대로 두고, 로그인 화면 등으로 가면 지운다.
+  useEffect(() => {
+    if (screen === 'home' || screen === 'onboarding')
+      patchResume(screen === 'home' ? { screen, onboarding: undefined } : { screen })
+    else if (screen !== 'learn' && screen !== 'quiz') clearResume()
+  }, [screen])
 
   // 튜토리얼이 시작되면 떠 있던 근처 알림은 닫는다
   useEffect(() => {

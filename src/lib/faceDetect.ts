@@ -1,6 +1,6 @@
 // 사진에서 얼굴 윤곽과 눈 위치를 찾는다 (MediaPipe Face Landmarker).
 // 모델·실행 파일은 public/mediapipe/ 에 함께 두어 외부 서버를 쓰지 않고, 사진은 기기 밖으로 나가지 않는다.
-// 용량이 커서(약 18MB) 얼굴 등록 화면에서 처음 필요할 때만 불러온다 (동적 import).
+// 용량이 커서(약 18MB) 사진을 찍거나 고른 뒤 처음 필요할 때만 불러오고, 끝나면 풀어 준다 (동적 import).
 
 import type { FaceLandmarker } from '@mediapipe/tasks-vision'
 
@@ -120,9 +120,15 @@ async function load(): Promise<FaceLandmarker> {
   }
 }
 
-/** 모델 받기를 미리 시작한다 (얼굴 등록 화면이 열릴 때 부른다). 실패해도 조용히 넘어간다 */
-export function preloadFaceModel(): void {
-  void getLandmarker().catch(() => {})
+/**
+ * 얼굴 찾기가 끝나면 모델을 메모리에서 풀어 준다 (휴대폰 크롬이 메모리 부족으로 페이지를 다시 불러오는 일을 줄인다).
+ * 다음에 필요하면 다시 받는다 (브라우저 저장소에 있으면 빠르다).
+ */
+export function releaseFaceModel(): void {
+  const pending = landmarkerPromise
+  landmarkerPromise = null
+  setStatus({ state: 'idle', percent: 0 })
+  void pending?.then((landmarker) => landmarker.close()).catch(() => {})
 }
 
 function getLandmarker(): Promise<FaceLandmarker> {
