@@ -16,7 +16,7 @@ import { BOSS } from '../data/boss'
 import { TOGETHER_MIN_PLACES } from '../data/battle'
 import { learnedPlaceIds } from '../lib/quizGenerator'
 import type { Tally } from '../lib/league'
-import type { BattleRecord } from '../hooks/useProgress'
+import type { BattleRecord, BossLog } from '../hooks/useProgress'
 import type { AvatarLook, Equipped, HistoryItem, ItemCategory } from '../types'
 
 const SLOT_LABEL: Record<ItemCategory, string> = { 장비: '머리', 무기: '손', 의복: '몸' }
@@ -32,7 +32,8 @@ export function AvatarScreen({
   league,
   onEquip,
   onBattleEnd,
-  onBossWin,
+  bossLog,
+  onBossFinish,
   onNotice,
 }: {
   nickname: string
@@ -47,7 +48,8 @@ export function AvatarScreen({
   onEquip: (category: ItemCategory, itemId?: string) => void
   onBattleEnd: (opponent: string, won: boolean) => void
   /** 보스전에서 이겼을 때 (경험치를 받는다) */
-  onBossWin: (xp: number) => void
+  bossLog: BossLog
+  onBossFinish: (names: string[], won: boolean, xp: number) => void
   onNotice: (message: string) => void
 }) {
   const isOwned = (item: HistoryItem) => completedIds.includes(item.placeId)
@@ -79,7 +81,7 @@ export function AvatarScreen({
   }
 
   if (view === 'boss' && togetherOpen) {
-    return <BossScreen placeIds={learned} onWin={onBossWin} onExit={() => setView('inventory')} />
+    return <BossScreen placeIds={learned} log={bossLog} onFinish={onBossFinish} onExit={() => setView('inventory')} />
   }
 
   if (view === 'friends' && togetherOpen) {

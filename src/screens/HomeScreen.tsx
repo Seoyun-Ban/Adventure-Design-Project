@@ -73,7 +73,7 @@ export function HomeScreen({
     equip,
     toggleFavorite,
     recordBattle,
-    recordBossWin,
+    recordBossResult,
     addInquiry,
   } = store
   // 페이지가 새로 불러와진 직후에는 보던 탭·화면으로 돌아온다 (lib/resume.ts)
@@ -245,7 +245,8 @@ export function HomeScreen({
             const message = rankUpMessage(rank.before, rank.after)
             if (message) onNotice(message)
           }}
-          onBossWin={recordBossWin}
+          bossLog={progress.bossLog}
+          onBossFinish={recordBossResult}
           onNotice={onNotice}
         />
       )}

@@ -49,6 +49,8 @@ export type Progress = {
   league: Record<string, Tally>
   /** 보스전(협동)에서 괴물을 물리친 횟수 */
   bossWins: number
+  /** 보스전 기록 (팀 기록만. 개인별 기록은 남기지 않는다) */
+  bossLog: BossLog
   /** 내 문의 내역 (최신이 앞) */
   inquiries: Inquiry[]
 }
@@ -68,6 +70,14 @@ export type Inquiry = {
 export type BattleResult = { opponent: string; won: boolean; at: string }
 /** 대결 기록: 전체 판수·승리 수 + 최근 결과 (최신이 앞) */
 export type BattleRecord = { played: number; wins: number; recent: BattleResult[] }
+
+/** 보스전 한 판: 날짜, 함께한 사람 이름들, 이겼는지 */
+export type BossResult = { at: string; names: string[]; won: boolean }
+/** 보스전 기록: 전체 판수·승리 수 + 최근 결과 (최신이 앞) */
+export type BossLog = { played: number; wins: number; recent: BossResult[] }
+
+/** 최근 보스전 결과를 몇 개까지 보관할지 */
+const RECENT_BOSS = 20
 
 /** 최근 대결 결과를 몇 개까지 보관할지 */
 const RECENT_BATTLES = 20
@@ -129,6 +139,7 @@ function demoProgress(): Progress {
     battle: { played: 0, wins: 0, recent: [] },
     league: structuredClone(LEAGUE_START),
     bossWins: 0,
+    bossLog: { played: 0, wins: 0, recent: [] },
     // 시연용: 운영팀 답변이 달린 문의 한 건 (답변 내용은 학습 글의 사실과 맞춘다)
     inquiries: [
       {
@@ -177,6 +188,7 @@ function load(): Progress {
         xp,
         battle: { ...demo.battle, ...parsed.battle },
         league: { ...demo.league, ...parsed.league },
+        bossLog: { ...demo.bossLog, ...parsed.bossLog },
       }
     }
   } catch {
@@ -251,9 +263,18 @@ export function useProgress() {
       setProgress(next)
       return { before: myLeagueRank(prev), after: myLeagueRank(next) }
     },
-    /** 보스전에서 이기면: 물리친 횟수를 올리고 경험치를 준다 */
-    recordBossWin: (xp: number) =>
-      setProgress((prev) => ({ ...prev, bossWins: prev.bossWins + 1, xp: prev.xp + Math.max(0, xp) })),
+    /** 보스전이 끝나면: 날짜·함께한 이름·승패를 기록한다. 이겼으면 물리친 횟수를 올리고 경험치를 준다 */
+    recordBossResult: (names: string[], won: boolean, xp: number) =>
+      setProgress((prev) => ({
+        ...prev,
+        bossWins: prev.bossWins + (won ? 1 : 0),
+        xp: prev.xp + (won ? Math.max(0, xp) : 0),
+        bossLog: {
+          played: prev.bossLog.played + 1,
+          wins: prev.bossLog.wins + (won ? 1 : 0),
+          recent: [{ at: new Date().toISOString(), names, won }, ...prev.bossLog.recent].slice(0, RECENT_BOSS),
+        },
+      })),
     /** 문의 보내기: 내 문의 내역 맨 앞에 '답변 대기 중'으로 쌓는다 */
     addInquiry: (inquiry: Pick<Inquiry, 'kind' | 'title' | 'body'>) =>
       setProgress((prev) => ({

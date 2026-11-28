@@ -7145,6 +7145,33 @@ button.settings-row {
   font-size: 14px;
   font-weight: 800;
 }
+.boss-log {
+  width: 100%;
+  margin: 16px 0 0;
+  text-align: left;
+}
+.boss-log h4 {
+  margin: 0 0 6px;
+  color: var(--green);
+  font-size: 14px;
+}
+.boss-log-rate {
+  margin: 0;
+  color: var(--ink);
+  font-size: 13px;
+}
+.boss-log .battle-record-list li {
+  grid-template-columns: 46px 1fr auto;
+}
+.boss-log .battle-record-list .opponent {
+  overflow-wrap: anywhere;
+}
+.boss-log .battle-record-list .result {
+  width: auto;
+  height: auto;
+  padding: 3px 9px;
+  border-radius: 999px;
+}
 .boss-reward {
   margin: 0 0 12px;
   color: var(--gold);

@@ -14,6 +14,7 @@ import {
   bossMaxHp,
   comboBonus,
 } from '../data/boss'
+import type { BossLog } from '../hooks/useProgress'
 import { createQuestionDeck } from '../lib/quizGenerator'
 import type { Difficulty, QuizItem } from '../types'
 
@@ -32,14 +33,50 @@ const LEVELS: { level: Difficulty; hint: string }[] = [
   { level: '어려움', hint: '가장 큰 피해' },
 ]
 
+const formatDate = (iso: string) => {
+  const date = new Date(iso)
+  return `${date.getMonth() + 1}월 ${date.getDate()}일`
+}
+
+/** 시작 화면에 보여 주는 '지난 보스전 기록'. 팀 기록만 (개인별 승률·비교는 보여주지 않는다) */
+function BossLogCard({ log }: { log: BossLog }) {
+  return (
+    <section className="boss-log battle-record" aria-label="지난 보스전 기록">
+      <h4>지난 보스전 기록</h4>
+      {log.played > 0 ? (
+        <>
+          <p className="boss-log-rate">
+            전체 {log.played}번 중 <b>{log.wins}번</b> 이겼어요 ({Math.round((log.wins / log.played) * 100)}%)
+          </p>
+          <ul className="battle-record-list">
+            {log.recent.map((result, index) => (
+              <li key={`${result.at}-${index}`}>
+                <time dateTime={result.at}>{formatDate(result.at)}</time>
+                <span className="opponent">{result.names.join(', ')}</span>
+                <span className={`result ${result.won ? 'win' : 'lose'}`}>{result.won ? '승리' : '실패'}</span>
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : (
+        <p className="battle-record-empty">아직 보스전 기록이 없어요. 친구들과 함께 도전해 보세요!</p>
+      )}
+    </section>
+  )
+}
+
 export function BossScreen({
   placeIds,
-  onWin,
+  log,
+  onFinish,
   onExit,
 }: {
   /** 문제를 낼 장소 (학습을 마친 장소) */
   placeIds: string[]
-  onWin: (xp: number) => void
+  /** 지난 보스전 기록 (팀 기록만) */
+  log: BossLog
+  /** 한 판이 끝날 때 한 번 부른다 (기록 저장 + 이기면 경험치) */
+  onFinish: (names: string[], won: boolean, xp: number) => void
   onExit: () => void
 }) {
   const [phase, setPhase] = useState<Phase>('setup')
@@ -60,6 +97,8 @@ export function BossScreen({
   const [shakeKey, setShakeKey] = useState(0)
   const [hitKey, setHitKey] = useState(0)
   /** 문제 뽑기 (같은 판에서는 안 나온 문제부터, 판을 새로 시작하면 다시 만든다) */
+  /** 한 판의 결과를 한 번만 기록하기 위한 표시 */
+  const recorded = useRef(false)
   const deck = useRef<ReturnType<typeof createQuestionDeck> | null>(null)
 
   const maxHp = bossMaxHp(players.length || names.length)
@@ -77,6 +116,7 @@ export function BossScreen({
   function start() {
     if (!canStart) return
     deck.current = createQuestionDeck(placeIds)
+    recorded.current = false
     setPlayers(cleaned)
     setHp(bossMaxHp(cleaned.length))
     setHearts(BOSS_HEARTS)
@@ -136,18 +176,27 @@ export function BossScreen({
     }
   }
 
+  /** 끝난 판을 한 번만 기록한다 */
+  function finish(won: boolean) {
+    if (recorded.current) return
+    recorded.current = true
+    onFinish(players, won, won ? BOSS_WIN_XP : 0)
+  }
+
   function next() {
     if (hp <= 0) {
-      onWin(BOSS_WIN_XP)
+      finish(true)
       setPhase('win')
       return
     }
     if (hearts <= 0) {
+      finish(false)
       setPhase('lost')
       return
     }
     const nextTurn = turn + 1
     if (Math.floor(nextTurn / players.length) >= BOSS_ROUNDS) {
+      finish(false)
       setPhase('fled')
       return
     }
@@ -223,6 +272,7 @@ export function BossScreen({
           <button type="button" className="boss-primary" disabled={!canStart} onClick={start}>
             보스전 시작!
           </button>
+          <BossLogCard log={log} />
         </div>
       )}
 
