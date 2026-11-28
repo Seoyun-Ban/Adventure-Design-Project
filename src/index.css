@@ -7616,6 +7616,15 @@ button.settings-row {
   aspect-ratio: auto !important;
   transform: none;
 }
+/* 45도 눕힌 길쭉한 그림: 가로:세로 약 1:5.2 → 눕힌 뒤 정사각 칸에 딱 맞는 세로 길이는 칸의 약 118% */
+.item-icon.tilted .character-item {
+  flex: none;
+  width: auto;
+  height: 118%;
+  max-width: none;
+  max-height: none;
+  transform: rotate(45deg);
+}
 .place-item-chip .item-icon {
   flex: none;
   width: 38px;

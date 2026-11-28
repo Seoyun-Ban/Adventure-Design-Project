@@ -26,7 +26,7 @@ export function PlaceItems({
             <span key={item.id} className="place-item-shadow">
               <span className="shadow-art" aria-hidden="true">
                 <span className="item-shadow">
-                  <ItemIcon item={item} />
+                  <ItemIcon item={item} tilt />
                 </span>
               </span>
               ???
@@ -42,7 +42,7 @@ export function PlaceItems({
       <span className="place-items-names">
         {items.map((item) => (
           <span key={item.id} className="place-item-chip">
-            <ItemIcon item={item} />
+            <ItemIcon item={item} tilt />
             {item.shortName}
           </span>
         ))}

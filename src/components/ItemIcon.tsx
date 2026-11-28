@@ -35,9 +35,21 @@ export function ItemBundle({ className = '' }: { className?: string }) {
 
 // 아이템을 작은 칸(이름 칩, 착용 칸, 아바타 위 배지)에 넣는 그림. 칸 크기는 부르는 쪽 CSS가 정하고,
 // 그림은 칸 안에 비율 그대로 들어간다. 그림이 없는 아이템은 보따리 그림.
-export function ItemIcon({ item, className = '' }: { item: HistoryItem; className?: string }) {
+// tilt: 활·검처럼 아주 길쭉한 그림(가로:세로가 1:4보다 가늘다)을 45도 눕혀 칸 안에 더 크게 넣는다 (이름 칩, 착용 칸)
+const TILTED_SRC = ['/images/characters/item-bow.png', '/images/characters/item-sword.png']
+
+export function ItemIcon({
+  item,
+  className = '',
+  tilt = false,
+}: {
+  item: HistoryItem
+  className?: string
+  tilt?: boolean
+}) {
+  const tilted = tilt && item.art?.kind === 'image' && TILTED_SRC.includes(item.art.src)
   return (
-    <span className={`item-icon ${className}`} aria-hidden="true">
+    <span className={`item-icon ${tilted ? 'tilted' : ''} ${className}`} aria-hidden="true">
       {item.art ? (
         <ItemArtView art={item.art} label="" style={{}} />
       ) : (

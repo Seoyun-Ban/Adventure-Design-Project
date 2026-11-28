@@ -224,7 +224,7 @@ export function AvatarScreen({
               className={item ? 'filled' : ''}
               onClick={() => (item ? setSelectedItem(item) : setCategory(slot))}
             >
-              <span className="slot-art">{item ? <ItemIcon item={item} /> : '+'}</span>
+              <span className="slot-art">{item ? <ItemIcon item={item} tilt /> : '+'}</span>
               <span>
                 <small>
                   {SLOT_LABEL[slot]} · {slot}
