@@ -2631,19 +2631,19 @@ button {
   font-weight: 800;
 }
 .shadow-art {
-  width: 28px;
-  height: 28px;
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-}
-.shadow-art .item-picture {
-  width: 64px;
-  transform: scale(0.44);
   flex: none;
+  width: 38px;
+  height: 38px;
+  display: flex;
+}
+.shadow-art .item-shadow {
+  width: 100%;
+  height: 100%;
 }
 /* 아직 못 얻은 아이템의 검은 실루엣 (ItemShadow): 그림을 통째로 검게. 이름표·깃발 흔들림은 뺀다 */
 .item-shadow {
+  width: 100%;
+  height: 100%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -6717,9 +6717,11 @@ button.settings-row {
 }
 
 /* 아이템을 크게 보여주는 그림 + 세로 종이 이름표 (아이템 목록, 상세 창, 획득 카드) */
+/* 칸(너비·높이 고정) 안에 그림 전체가 비율 그대로 들어간다. 이름표가 있으면 그만큼 그림이 줄어든다 */
 .item-picture {
   position: relative;
   z-index: 2;
+  width: 100%;
   height: 100%;
   display: inline-flex;
   align-items: center;
@@ -6727,23 +6729,25 @@ button.settings-row {
 }
 .item-picture .character-item {
   position: static;
+  flex: 0 1 auto;
+  min-width: 0;
   width: auto;
+  height: 100%;
   max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
   transform: none;
 }
 .item-picture.small {
+  width: 100%;
   height: 64px;
 }
-.item-picture.small .character-item {
-  height: 60px;
-}
-.item-picture.large .character-item {
-  height: 100%;
-}
 .item-detail-art .item-picture {
-  height: 96px;
+  width: 94px;
+  height: 94px;
 }
 .reward-art .item-picture {
+  width: 100%;
   height: 120px;
 }
 /* 두루마리 옆에 세로로 붙은 작은 종이 띠 */
@@ -7594,24 +7598,28 @@ button.settings-row {
 }
 
 /* 아이템 그림을 작은 칸(이름 칩, 착용 칸, 아바타 위 배지)에 넣는다 (ItemIcon). 한자 기호 대신 아이템 그림을 쓴다 */
+/* 칸(너비·높이가 정해진 상자) 안에 그림 전체가 비율 그대로 들어가고, 남는 곳은 비운 채 가운데 정렬 */
 .item-icon {
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
   height: 100%;
-  overflow: hidden;
 }
 .item-icon .character-item {
   position: static;
-  width: auto;
+  width: 100%;
   height: 100%;
   max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  aspect-ratio: auto !important;
   transform: none;
 }
 .place-item-chip .item-icon {
   flex: none;
-  width: 28px;
-  height: 28px;
+  width: 38px;
+  height: 38px;
 }
 .slot-art .item-icon {
   width: 36px;

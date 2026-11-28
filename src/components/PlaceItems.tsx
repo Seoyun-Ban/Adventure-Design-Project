@@ -1,6 +1,5 @@
 import { itemsForPlace } from '../data/avatar'
 import { ItemIcon } from './ItemIcon'
-import { ItemShadow } from './ItemShadow'
 
 // 이 장소를 학습하면 얻는 아이템 (지도 장소 카드, 학습 화면 위쪽)
 // 아이템은 장소 학습을 마치면 얻으므로, 학습을 마친 장소면 '획득 완료'로 보여준다.
@@ -26,7 +25,9 @@ export function PlaceItems({
           {items.map((item) => (
             <span key={item.id} className="place-item-shadow">
               <span className="shadow-art" aria-hidden="true">
-                <ItemShadow item={item} size="small" />
+                <span className="item-shadow">
+                  <ItemIcon item={item} />
+                </span>
               </span>
               ???
             </span>
