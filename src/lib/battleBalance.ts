@@ -102,3 +102,7 @@ export function friendTurn(
   const raw = base * BATTLE_LEVELS[difficulty].attack * between(FRIEND_BALANCE.attackSpread, random)
   return { kind: 'attack', difficulty, damage: Math.max(1, Math.round(raw * (1 - myBlock))) }
 }
+
+/** 가상 친구 목록의 레벨을 내 레벨에 맞춘 것으로 바꾼다 (랭킹·순위 계산용) */
+export const withFriendLevels = <T extends { id: string; level: number }>(friends: T[], myLevel: number): T[] =>
+  friends.map((friend) => ({ ...friend, level: friendLevel(friend.id, myLevel) }))

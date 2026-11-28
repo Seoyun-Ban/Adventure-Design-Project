@@ -312,7 +312,7 @@ export function BattleScreen({
         <p className="battle-log" role="status">
           {log}
         </p>
-        {scaled && <p className="battle-friend-note">가상 친구는 전투력이 높을수록 체력이 많아져요.</p>}
+        {scaled && <p className="battle-friend-note">내 전투력이 높을수록 가상 친구의 체력도 많아져요.</p>}
         {phase === 'pick' && (
           <>
             <span className="battle-question-label">내 차례 · 난이도 고르기</span>

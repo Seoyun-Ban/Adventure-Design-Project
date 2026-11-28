@@ -66,6 +66,7 @@ export function PowerInfoSheet({
           <b>{power.total.toLocaleString()}점</b>
         </div>
       </div>
+      <p className="power-friend-note">내 전투력이 높을수록 가상 친구의 체력도 많아져요.</p>
     </BottomSheet>
   )
 }

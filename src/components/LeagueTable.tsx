@@ -1,4 +1,5 @@
 import { battleFriends, levelFor } from '../data/avatar'
+import { withFriendLevels } from '../lib/battleBalance'
 import { buildStandings, type Tally } from '../lib/league'
 import type { BattleRecord } from '../hooks/useProgress'
 
@@ -16,7 +17,7 @@ export function LeagueTable({
 }) {
   const rows = buildStandings(
     { name: nickname, level: levelFor(xp), played: battle.played, wins: battle.wins },
-    battleFriends,
+    withFriendLevels(battleFriends, levelFor(xp)),
     league,
   )
   return (

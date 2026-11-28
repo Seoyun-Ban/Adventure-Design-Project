@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { battleFriends, defaultLook, levelFor, migrateEquipped, xpForLevel } from '../data/avatar'
 import { LEAGUE_START } from '../data/battle'
+import { withFriendLevels } from '../lib/battleBalance'
 import { addFriendResult, buildStandings, myRank, playFriendMatch, type Tally } from '../lib/league'
 import { DEMO_VISITED_IDS, findPlace } from '../data/places'
 import type { ArchiveEntry, AvatarLook, Difficulty, Equipped, LearningRecord, SocialProvider } from '../types'
@@ -104,7 +105,7 @@ const RECENT_BATTLES = 20
 /** 지금 내 대결 랭킹 (1위부터) */
 export function myLeagueRank(progress: Progress) {
   const me = { name: progress.nickname, level: levelFor(progress.xp), ...progress.battle }
-  return myRank(buildStandings(me, battleFriends, progress.league))
+  return myRank(buildStandings(me, withFriendLevels(battleFriends, me.level), progress.league))
 }
 
 /** 대결 결과를 반영한 새 기록: 내 기록·최근 결과, 가상 친구와 한 대결이면 그 친구의 기록도 함께 */
@@ -123,7 +124,7 @@ function withBattle(prev: Progress, opponent: string, won: boolean): Progress {
     // 내 대결이 끝날 때마다 가상 친구들끼리도 한 판씩 겨룬 것으로 친다
     league: playFriendMatch(
       friend ? addFriendResult(prev.league, friend.id, won) : prev.league,
-      battleFriends,
+      withFriendLevels(battleFriends, levelFor(prev.xp)),
     ),
   }
 }

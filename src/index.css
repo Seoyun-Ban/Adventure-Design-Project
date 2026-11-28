@@ -7808,3 +7808,12 @@ button.settings-row {
   font-size: 10px;
   line-height: 1.5;
 }
+
+/* 전투력 설명 창 맨 아래 한 줄 */
+.power-friend-note {
+  margin: 12px 0 0;
+  color: var(--ink-soft);
+  font-size: 11px;
+  line-height: 1.5;
+  text-align: center;
+}
