@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { Icon } from '../components/Icon'
 import { LevelPicker } from '../components/LevelPicker'
+import { LeaveConfirm } from '../components/LeaveConfirm'
+import { useLeaveGuard } from '../lib/leaveGuard'
 import {
   BOSS,
   BOSS_DAMAGE,
@@ -205,6 +207,31 @@ export function BossScreen({
     setPhase('pick')
   }
 
+  // 이미 승패가 정해진 차례(괴물 체력 0·하트 0)는 바로 기록해서, 결과 보기를 누르기 전에 나가도 기록이 남게 한다
+  useEffect(() => {
+    if (phase !== 'feedback') return
+    if (hp <= 0) finish(true)
+    else if (hearts <= 0) finish(false)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, hp, hearts])
+
+  // 진행 중에 나가려 하면(왼쪽 위 화살표·탭 메뉴·뒤로가기) 확인 창. 나가면 이번 판은 기록하지 않는다
+  const decided = hp <= 0 || hearts <= 0
+  const inProgress = (phase === 'pick' || phase === 'question' || phase === 'feedback') && !decided
+  const [askLeave, setAskLeave] = useState(false)
+  const afterLeave = useRef<(() => void) | undefined>(undefined)
+  useLeaveGuard(inProgress, (proceed) => {
+    afterLeave.current = proceed
+    setAskLeave(true)
+  })
+  function leaveNow() {
+    const proceed = afterLeave.current
+    afterLeave.current = undefined
+    setAskLeave(false)
+    onExit()
+    proceed?.()
+  }
+
   function retry() {
     setPhase('setup')
   }
@@ -217,7 +244,8 @@ export function BossScreen({
       className={`content-screen tab-screen avatar-screen boss-screen ${shakeKey > 0 ? `shake-${shakeKey % 2}` : ''}`}
     >
       <header className="avatar-subhead">
-        <button className="icon-button plain" type="button" onClick={onExit} aria-label="보스전 나가기">
+        <button className="icon-button plain" type="button" onClick={() => (inProgress ? setAskLeave(true) : onExit())}
+          aria-label="보스전 나가기">
           <Icon name="arrow" />
         </button>
         <div>
@@ -436,6 +464,17 @@ export function BossScreen({
             )}
           </div>
         </>
+      )}
+      {askLeave && (
+        <LeaveConfirm
+          title="보스전을 그만둘까요?"
+          text="지금 나가면 이번 판은 기록되지 않아요."
+          onStay={() => {
+            afterLeave.current = undefined
+            setAskLeave(false)
+          }}
+          onLeave={leaveNow}
+        />
       )}
     </section>
   )

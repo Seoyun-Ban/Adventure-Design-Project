@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { Icon } from '../components/Icon'
+import { LeaveConfirm } from '../components/LeaveConfirm'
+import { useLeaveGuard } from '../lib/leaveGuard'
 import { LevelPicker } from '../components/LevelPicker'
 import { CharacterAvatar } from '../components/CharacterAvatar'
 import { powerOf } from '../data/avatar'
@@ -83,6 +85,22 @@ export function BattleScreen({
   const later = (fn: () => void, ms: number) => timers.current.push(window.setTimeout(fn, ms))
 
   const over = phase === 'over'
+
+  // 진행 중에 나가려 하면(왼쪽 위 화살표·탭 메뉴·뒤로가기) 확인 창. 나가면 패배로 기록한다
+  const [askLeave, setAskLeave] = useState(false)
+  const afterLeave = useRef<(() => void) | undefined>(undefined)
+  useLeaveGuard(!over, (proceed) => {
+    afterLeave.current = proceed
+    setAskLeave(true)
+  })
+  function leaveNow() {
+    const proceed = afterLeave.current
+    afterLeave.current = undefined
+    setAskLeave(false)
+    finish(false)
+    onExit()
+    proceed?.()
+  }
 
   function setHp(side: 'me' | 'enemy', value: number) {
     hpRef.current[side] = value
@@ -182,7 +200,8 @@ export function BattleScreen({
   return (
     <section className="content-screen tab-screen avatar-screen battle-screen">
       <header className="battle-header">
-        <button className="icon-button plain" type="button" onClick={onExit} aria-label="대결 나가기">
+        <button className="icon-button plain" type="button" onClick={() => (over ? onExit() : setAskLeave(true))}
+          aria-label="대결 나가기">
           <Icon name="arrow" />
         </button>
         <div>
@@ -315,6 +334,17 @@ export function BattleScreen({
         )}
         {over && overExtra}
       </div>
+      {askLeave && (
+        <LeaveConfirm
+          title="대결을 그만둘까요?"
+          text="지금 나가면 패배로 기록돼요."
+          onStay={() => {
+            afterLeave.current = undefined
+            setAskLeave(false)
+          }}
+          onLeave={leaveNow}
+        />
+      )}
     </section>
   )
 }

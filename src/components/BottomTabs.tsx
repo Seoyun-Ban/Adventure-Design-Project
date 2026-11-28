@@ -1,4 +1,5 @@
 import { Icon } from './Icon'
+import { requestLeave } from '../lib/leaveGuard'
 import type { IconName, Tab } from '../types'
 
 export function BottomTabs({ active, onChange }: { active: Tab; onChange: (tab: Tab) => void }) {
@@ -15,7 +16,10 @@ export function BottomTabs({ active, onChange }: { active: Tab; onChange: (tab: 
           key={tab.id}
           data-tab={tab.id}
           className={active === tab.id ? 'active' : ''}
-          onClick={() => onChange(tab.id)}
+          // 대결·보스전 진행 중이면 이동하지 않고 확인 창이 먼저 뜬다
+          onClick={() => {
+            if (!requestLeave(() => onChange(tab.id))) onChange(tab.id)
+          }}
           type="button"
         >
           <span className="tab-icon">
