@@ -11,6 +11,7 @@ import { CompleteModal } from './components/CompleteModal'
 import { ItemRewardModal } from './components/ItemRewardModal'
 import { findPlace, isInsideUnlockArea, isPlaceOpen, places, pretendSpot } from './data/places'
 import { NearbyBanner } from './components/NearbyBanner'
+import { useIsGameBusy } from './lib/gameBusy'
 import { UNLOCK_ACCURACY_M } from './lib/location'
 import { useProgress } from './hooks/useProgress'
 import { TOGETHER_MIN_PLACES } from './data/battle'
@@ -33,6 +34,7 @@ type QuizSession = {
   title: string
   load: () => Promise<GeneratedQuiz[]>
   place: Place
+  difficulty: Difficulty
   /** 퀴즈를 연 곳: 학습 화면 또는 지도의 '퀴즈' */
   from: 'learn' | 'home'
 }
@@ -45,6 +47,7 @@ export default function App() {
     completedIds,
     update,
     completeLearning,
+    addHistory,
     completeQuiz,
     toggleFavorite,
     recordBattle,
@@ -121,6 +124,8 @@ export default function App() {
   )
   /** 방금 반경 안에 들어와 열린 장소 (근처 알림) */
   const [nearby, setNearby] = useState<Place | null>(null)
+  /** 대결·보스전 진행 중이면 근처 알림을 띄우지 않고 끝난 뒤에 보여준다 (방문 기록은 그대로 남는다) */
+  const gameBusy = useIsGameBusy()
 
   // 장소 반경(기본 500m) 안에 들어오면 그 장소를 연다. 위치 오차가 크면 판단하지 않는다.
   // 방문한 장소 id만 저장하고, 설정의 알림이 켜져 있으면 '근처에 ○○이 있어요' 알림을 띄운다.
@@ -253,6 +258,7 @@ export default function App() {
       title: `${place.name} 퀴즈 · ${difficulty}`,
       load: () => generateQuiz(place.id, difficulty, QUIZ_COUNT[difficulty]),
       place,
+      difficulty,
       from,
     })
   }
@@ -426,6 +432,7 @@ export default function App() {
                 setLearnDifficulty(difficulty)
                 const items = newItemsFor(selectedPlace)
                 completeLearning(selectedPlace.id)
+                addHistory({ kind: 'learn', placeId: selectedPlace.id, difficulty })
                 // 처음 학습을 마쳤으면 아이템 카드 → 발자국 획득 창, 아니면 바로 발자국 획득 창
                 if (items.length > 0) setReward({ items, index: 0, then: 'complete' })
                 else setShowComplete(true)
@@ -442,6 +449,21 @@ export default function App() {
               onXp={addXp}
               onBack={() => setScreen(quiz.from === 'learn' && findPlace(quiz.place.id) ? 'learn' : 'home')}
               onDone={finishQuiz}
+              onRound={(passed, score, total) => {
+                // 퀴즈를 통과할 때마다 한 줄 (학습 줄이 없는 장소면 학습 줄도 함께)
+                if (!passed) return
+                if (
+                  !progress.history.some((entry) => entry.kind === 'learn' && entry.placeId === quiz.place.id)
+                )
+                  addHistory({ kind: 'learn', placeId: quiz.place.id })
+                addHistory({
+                  kind: 'quiz',
+                  placeId: quiz.place.id,
+                  difficulty: quiz.difficulty,
+                  score,
+                  total,
+                })
+              }}
             />
           )}
         </div>
@@ -479,7 +501,7 @@ export default function App() {
             {toast}
           </div>
         )}
-        {nearby && (
+        {nearby && !gameBusy && (
           <NearbyBanner
             key={nearby.id}
             place={nearby}

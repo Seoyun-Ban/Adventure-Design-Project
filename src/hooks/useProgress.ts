@@ -3,7 +3,7 @@ import { battleFriends, defaultLook, levelFor, migrateEquipped, xpForLevel } fro
 import { LEAGUE_START } from '../data/battle'
 import { addFriendResult, buildStandings, myRank, playFriendMatch, type Tally } from '../lib/league'
 import { DEMO_VISITED_IDS, findPlace } from '../data/places'
-import type { AvatarLook, Difficulty, Equipped, LearningRecord, SocialProvider } from '../types'
+import type { ArchiveEntry, AvatarLook, Difficulty, Equipped, LearningRecord, SocialProvider } from '../types'
 
 // 사용자 진행 상황 (학습 기록, 아바타, 설정)
 // '먼저 둘러보기' 사용자를 위해 브라우저(localStorage)에 저장한다.
@@ -21,6 +21,8 @@ export type Progress = {
   faceImage?: string
   equipped: Equipped
   records: LearningRecord[]
+  /** 학습 아카이브: 학습 완료·퀴즈 통과를 할 때마다 한 줄씩 (최신이 앞) */
+  history: ArchiveEntry[]
   /** 직접 가서 열린 장소 id (위치는 저장하지 않고, 방문한 장소만 기억한다) */
   visitedIds: string[]
   /** 퀴즈로 모은 경험치. 레벨은 이 값으로 계산한다 (levelFor) */
@@ -76,6 +78,23 @@ export type BossResult = { at: string; names: string[]; won: boolean }
 /** 보스전 기록: 전체 판수·승리 수 + 최근 결과 (최신이 앞) */
 export type BossLog = { played: number; wins: number; recent: BossResult[] }
 
+/** 학습 아카이브에 최대 몇 줄까지 보관할지 */
+const MAX_HISTORY = 500
+
+let entrySeq = 0
+const newEntryId = () => `${Date.now().toString(36)}-${(entrySeq++).toString(36)}`
+
+/** 장소별 기록(records)만 있던 예전 기록을 아카이브 줄로 바꾼다 (난이도·맞힌 수는 모르므로 비워 둔다) */
+function historyFromRecords(records: LearningRecord[]): ArchiveEntry[] {
+  const entries: ArchiveEntry[] = []
+  for (const record of records) {
+    entries.push({ id: newEntryId(), kind: 'learn', placeId: record.placeId, at: record.learnedAt })
+    if (record.quizAt)
+      entries.push({ id: newEntryId(), kind: 'quiz', placeId: record.placeId, at: record.quizAt })
+  }
+  return entries.sort((a, b) => b.at.localeCompare(a.at))
+}
+
 /** 최근 보스전 결과를 몇 개까지 보관할지 */
 const RECENT_BOSS = 20
 
@@ -130,6 +149,7 @@ function demoProgress(): Progress {
     look: defaultLook,
     equipped: {},
     records: [{ placeId: 'suwon', learnedAt: daysAgo(3) }],
+    history: historyFromRecords([{ placeId: 'suwon', learnedAt: daysAgo(3) }]),
     visitedIds: DEMO_VISITED_IDS,
     // 처음 시작할 때 Lv.2 (1→2레벨에 필요한 100 XP를 채운 상태, 다음 레벨까지 120 XP)
     xp: xpForLevel(2),
@@ -172,6 +192,10 @@ function load(): Progress {
       const records: LearningRecord[] = (parsed.records ?? demo.records)
         .filter((record: LearningRecord) => findPlace(record.placeId))
         .map(({ placeId, learnedAt, quizAt }: LearningRecord) => ({ placeId, learnedAt, quizAt }))
+      // 아카이브 줄이 없던 예전 기록은 장소별 기록으로 최대한 채운다
+      const history: ArchiveEntry[] = (parsed.history ?? historyFromRecords(records)).filter(
+        (entry: ArchiveEntry) => findPlace(entry.placeId),
+      )
       const visitedIds = [
         ...new Set([...(parsed.visitedIds ?? demo.visitedIds), ...records.map((record) => record.placeId)]),
       ].filter((id) => findPlace(id))
@@ -183,6 +207,7 @@ function load(): Progress {
         ...parsed,
         equipped,
         records,
+        history,
         visitedIds,
         favorites,
         xp,
@@ -235,6 +260,15 @@ export function useProgress() {
     update,
     /** 학습 완료: 기록 추가 */
     completeLearning: (placeId: string) => upsertRecord(placeId, {}),
+    /** 학습 아카이브에 한 줄 더하기 (학습을 마칠 때, 퀴즈를 통과할 때마다) */
+    addHistory: (entry: Omit<ArchiveEntry, 'id' | 'at'>) =>
+      setProgress((prev) => ({
+        ...prev,
+        history: [{ ...entry, id: newEntryId(), at: new Date().toISOString() }, ...prev.history].slice(
+          0,
+          MAX_HISTORY,
+        ),
+      })),
     completeQuiz: (placeId: string) => upsertRecord(placeId, { quizAt: new Date().toISOString() }),
     /** 퀴즈에서 얻은 경험치를 더한다 */
     addXp: (amount: number) => setProgress((prev) => ({ ...prev, xp: prev.xp + Math.max(0, amount) })),
@@ -272,7 +306,10 @@ export function useProgress() {
         bossLog: {
           played: prev.bossLog.played + 1,
           wins: prev.bossLog.wins + (won ? 1 : 0),
-          recent: [{ at: new Date().toISOString(), names, won }, ...prev.bossLog.recent].slice(0, RECENT_BOSS),
+          recent: [{ at: new Date().toISOString(), names, won }, ...prev.bossLog.recent].slice(
+            0,
+            RECENT_BOSS,
+          ),
         },
       })),
     /** 문의 보내기: 내 문의 내역 맨 앞에 '답변 대기 중'으로 쌓는다 */
@@ -292,6 +329,7 @@ export function useProgress() {
         ...demoProgress(),
         equipped: {},
         records: [],
+        history: [],
         visitedIds: [],
         xp: 0,
         favorites: [],

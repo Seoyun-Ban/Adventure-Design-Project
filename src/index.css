@@ -3679,6 +3679,14 @@ button {
   color: #6e5632;
   background: #efe2c8;
 }
+.record-badges i.level,
+.record-badges i.score {
+  color: var(--ink-soft);
+  background: rgba(49, 56, 43, 0.08);
+}
+.archive-filter {
+  margin: 0 0 12px;
+}
 .archive-records article > svg {
   color: #9ca29c;
 }

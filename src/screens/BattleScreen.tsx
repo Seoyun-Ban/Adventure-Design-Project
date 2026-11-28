@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 
 import { Icon } from '../components/Icon'
 import { LeaveConfirm } from '../components/LeaveConfirm'
 import { useLeaveGuard } from '../lib/leaveGuard'
+import { useGameBusy } from '../lib/gameBusy'
 import { LevelPicker } from '../components/LevelPicker'
 import { CharacterAvatar } from '../components/CharacterAvatar'
 import { powerOf } from '../data/avatar'
@@ -91,6 +92,7 @@ export function BattleScreen({
   const [answered, setAnswered] = useState(false)
   const [askLeave, setAskLeave] = useState(false)
   const afterLeave = useRef<(() => void) | undefined>(undefined)
+  useGameBusy(!over)
   useLeaveGuard(!over && answered, (proceed) => {
     afterLeave.current = proceed
     setAskLeave(true)

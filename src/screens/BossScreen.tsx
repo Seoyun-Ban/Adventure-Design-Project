@@ -3,6 +3,7 @@ import { Icon } from '../components/Icon'
 import { LevelPicker } from '../components/LevelPicker'
 import { LeaveConfirm } from '../components/LeaveConfirm'
 import { useLeaveGuard } from '../lib/leaveGuard'
+import { useGameBusy } from '../lib/gameBusy'
 import {
   BOSS,
   BOSS_DAMAGE,
@@ -225,6 +226,7 @@ export function BossScreen({
   const inProgress = (phase === 'pick' || phase === 'question' || phase === 'feedback') && !decided && answered
   const [askLeave, setAskLeave] = useState(false)
   const afterLeave = useRef<(() => void) | undefined>(undefined)
+  useGameBusy(phase === 'pick' || phase === 'question' || phase === 'feedback')
   useLeaveGuard(inProgress, (proceed) => {
     afterLeave.current = proceed
     setAskLeave(true)

@@ -24,6 +24,7 @@ export function QuizScreen({
   onXp,
   onBack,
   onDone,
+  onRound,
 }: {
   title: string
   load: () => Promise<GeneratedQuiz[]>
@@ -34,6 +35,8 @@ export function QuizScreen({
   onBack: () => void
   /** passed: 기준 이상 맞혔는지 여부 */
   onDone: (passed: boolean) => void
+  /** 한 번 푼 결과를 마칠 때마다 부른다 (다시 풀기·끝내기 모두). 학습 아카이브에 남기는 데 쓴다 */
+  onRound?: (passed: boolean, score: number, total: number) => void
 }) {
   /** 이번 판을 시작할 때의 경험치 */
   const startXp = useRef(xp)
@@ -164,12 +167,18 @@ export function QuizScreen({
             ? `레벨이 올랐어요! Lv. ${levelBefore} → Lv. ${levelAfter}`
             : `지금 Lv. ${levelAfter} · 맞힌 문제마다 ${XP_PER_CORRECT[quizItems[0].level]} XP`}
         </p>
-        <ActionButton onClick={() => onDone(passed)}>
+        <ActionButton
+          onClick={() => {
+            onRound?.(passed, score, quizItems.length)
+            onDone(passed)
+          }}
+        >
           {passed ? '퀴즈 완료하고 지도 보기' : '지도로 돌아가기'}
         </ActionButton>
         <ActionButton
           variant="ghost"
           onClick={() => {
+            onRound?.(passed, score, quizItems.length)
             startXp.current = startXp.current + gained
             setResults([])
             setIndex(0)

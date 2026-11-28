@@ -120,7 +120,7 @@ export function HomeScreen({
   if (page === 'archive') {
     return (
       <main className="screen home-shell">
-        <ArchiveScreen records={progress.records} onBack={back} />
+        <ArchiveScreen history={progress.history} onBack={back} />
       </main>
     )
   }

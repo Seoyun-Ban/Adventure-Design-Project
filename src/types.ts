@@ -100,6 +100,19 @@ export type PlaceContent = {
 }
 
 /** 학습 기록 한 건 (학습 아카이브에 표시) */
+/** 학습 아카이브의 한 줄: 학습을 마치거나 퀴즈를 통과할 때마다 하나씩 쌓인다 (같은 장소도 매번) */
+export type ArchiveEntry = {
+  id: string
+  kind: 'learn' | 'quiz'
+  placeId: string
+  at: string
+  /** 학습 난이도 또는 퀴즈 난이도 (난이도를 모르는 예전 기록은 없음) */
+  difficulty?: Difficulty
+  /** 퀴즈에서 맞힌 수와 전체 문제 수 (모르는 예전 기록은 없음) */
+  score?: number
+  total?: number
+}
+
 export type LearningRecord = {
   placeId: string
   learnedAt: string
