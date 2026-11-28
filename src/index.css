@@ -6300,6 +6300,121 @@ button.settings-row {
 .fighter.shielded .fighter-avatar {
   filter: drop-shadow(0 0 10px rgba(80, 150, 230, 0.85));
 }
+/* 맞았을 때 피해 숫자·막았을 때 방패 (BattleScreen의 HitFx). 맞은 캐릭터 위에 겹친다 */
+.hit-fx {
+  position: absolute;
+  z-index: 5;
+  left: 0;
+  right: 0;
+  display: grid;
+  justify-items: center;
+  gap: 1px;
+  pointer-events: none;
+}
+.hit-fx.enemy {
+  top: 56px;
+}
+.hit-fx.me {
+  top: 18px;
+}
+.hit-fx strong {
+  color: #d83a2e;
+  font-size: 24px;
+  font-weight: 900;
+  -webkit-text-stroke: 3px white;
+  paint-order: stroke fill;
+  animation: fx-rise 1.1s ease-out both;
+}
+.hit-fx.blocked strong {
+  color: #2f6fb0;
+  font-size: 16px;
+}
+.hit-fx em {
+  padding: 2px 8px;
+  border-radius: 99px;
+  color: white;
+  background: #2f6fb0;
+  box-shadow: 0 3px 8px rgba(20, 40, 80, 0.3);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 900;
+  animation: fx-rise 1.1s ease-out both;
+}
+.hit-fx-shield {
+  width: 38px;
+  height: 44px;
+  filter: drop-shadow(0 0 8px rgba(80, 150, 230, 0.9));
+  animation: fx-shield 0.9s ease-out both;
+}
+.hit-fx-shield path {
+  fill: #7fb6ec;
+  stroke: white;
+  stroke-width: 3;
+  stroke-linejoin: round;
+}
+.hit-fx-shield .mark {
+  fill: none;
+  stroke: white;
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+@keyframes fx-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.7);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(0) scale(1.15);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-34px) scale(1);
+  }
+}
+@keyframes fx-shield {
+  0% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  25% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+/* 움직임 줄이기: 흔들림은 아주 작게, 숫자는 떠오르지 않고 제자리에서 나타났다 사라진다 */
+@media (prefers-reduced-motion: reduce) {
+  .fighter.hit .fighter-avatar {
+    animation: hit-nudge 0.4s ease;
+  }
+  .hit-fx strong,
+  .hit-fx em,
+  .hit-fx-shield {
+    animation: fx-fade 1.1s ease-out both;
+  }
+}
+@keyframes hit-nudge {
+  50% {
+    transform: translateX(2px);
+  }
+}
+@keyframes fx-fade {
+  0%,
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
 @keyframes hit-shake {
   20% {
     transform: translateX(-6px) rotate(-3deg);

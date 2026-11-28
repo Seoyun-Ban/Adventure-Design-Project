@@ -28,6 +28,8 @@ const MAX_HP = 100
 const percentRange = ([low, high]: readonly [number, number]) => `${Math.round(low * 100)}~${Math.round(high * 100)}%`
 /** 마지막 공격 흔들림이 끝난 뒤 승패 모션을 시작할 때까지 (ms) */
 const RESULT_DELAY = 500
+/** 때린 효과: 맞은 쪽 캐릭터 위에 피해 숫자가 떠오르고, 막았으면 방패와 '막았다!'가 함께 나온다 */
+type Fx = { id: number; side: 'me' | 'enemy'; damage: number; blocked: boolean }
 /** 꽃가루 조각 수 */
 const CONFETTI = 18
 
@@ -81,6 +83,13 @@ export function BattleScreen({
   }
   const [log, setLog] = useState('난이도를 골라 도전하세요!')
   const [hit, setHit] = useState<'me' | 'enemy' | null>(null)
+  const [fx, setFx] = useState<Fx | null>(null)
+  const fxId = useRef(0)
+  /** 맞은 효과를 보여준다. 막았으면 흔들리지 않고 방패 효과만 */
+  function showHit(side: 'me' | 'enemy', damage: number, blocked: boolean) {
+    setHit(blocked ? null : side)
+    setFx({ id: ++fxId.current, side, damage, blocked })
+  }
   /** 승패 모션 (마지막 공격 뒤 잠깐 있다가 시작) */
   const [result, setResult] = useState<'win' | 'lose' | null>(null)
   // 체력은 화면용 state와 판단용 ref를 함께 둔다 (끝났는지 판단·기록이 한 번만 일어나게)
@@ -156,7 +165,7 @@ export function BattleScreen({
         : attackDamage(myPower, BATTLE_LEVELS[level].attack)
       const next = Math.max(0, hpRef.current.enemy - damage)
       setHp('enemy', next)
-      setHit('enemy')
+      showHit('enemy', damage, enemyGuardRef.current > 0)
       setLog(
         enemyGuardRef.current > 0
           ? `공격! ${withJosa(opponent.name, '이')} 막아서 ${damage}의 피해만 주었어요.`
@@ -174,6 +183,7 @@ export function BattleScreen({
 
   function enemyTurn() {
     setHit(null)
+    setFx(null)
     setPhase('enemy')
     setLog(`${opponent.name}의 차례…`)
     // 내 차례가 끝났으니 가상 친구의 방어는 풀린다
@@ -185,7 +195,7 @@ export function BattleScreen({
         if (action.kind === 'attack') {
           const next = Math.max(0, hpRef.current.me - action.damage)
           setHp('me', next)
-          setHit('me')
+          showHit('me', action.damage, guardRef.current > 0)
           setLog(
             guardRef.current > 0
               ? `방어 성공! ${action.damage}의 피해만 받았어요.`
@@ -207,7 +217,7 @@ export function BattleScreen({
         const damage = Math.round(raw * (1 - guardRef.current))
         const next = Math.max(0, hpRef.current.me - damage)
         setHp('me', next)
-        setHit('me')
+        showHit('me', damage, guardRef.current > 0)
         setLog(
           guardRef.current > 0
             ? `방어 성공! ${damage}의 피해만 받았어요.`
@@ -220,6 +230,7 @@ export function BattleScreen({
       setGuard(0)
       later(() => {
         setHit(null)
+        setFx(null)
         setTurn((value) => value + 1)
         setPicked(null)
         setLog('난이도를 골라 도전하세요!')
@@ -240,6 +251,7 @@ export function BattleScreen({
     onFinish(meWon)
     later(() => {
       setHit(null)
+      setFx(null)
       setResult(meWon ? 'win' : 'lose')
     }, RESULT_DELAY)
   }
@@ -288,6 +300,7 @@ export function BattleScreen({
             equipped={opponent.equipped}
             label={`${opponent.name}의 아바타`}
           />
+          {fx?.side === 'enemy' && <HitFx key={fx.id} fx={fx} />}
         </div>
         <div className="versus">VS</div>
         <div className={`fighter player ${hit === 'me' ? 'hit' : ''} ${shield ? 'shielded' : ''}`}>
@@ -297,6 +310,7 @@ export function BattleScreen({
             equipped={me.equipped}
             label="나의 아바타"
           />
+          {fx?.side === 'me' && <HitFx key={fx.id} fx={fx} />}
           <div className="fighter-name">
             <span>{me.nickname}</span>
             <strong>전투력 {myPower.toLocaleString()}</strong>
@@ -403,5 +417,21 @@ export function BattleScreen({
         />
       )}
     </section>
+  )
+}
+
+/** 맞은 캐릭터 위로 피해 숫자가 떠오른다. 막았으면 방패 효과와 '막았다!'도 보인다 (같은 내용이 아래 안내 글에도 있어 화면 읽기에서는 뺀다) */
+function HitFx({ fx }: { fx: Fx }) {
+  return (
+    <div className={`hit-fx ${fx.side} ${fx.blocked ? 'blocked' : ''}`} aria-hidden="true">
+      {fx.blocked && (
+        <svg className="hit-fx-shield" viewBox="0 0 48 56">
+          <path d="M24 3 43 10v17c0 13-8 22-19 26C13 49 5 40 5 27V10z" />
+          <path className="mark" d="M24 12v33M14 22h20" />
+        </svg>
+      )}
+      {fx.blocked && <em>막았다!</em>}
+      <strong>-{fx.damage}</strong>
+    </div>
   )
 }
