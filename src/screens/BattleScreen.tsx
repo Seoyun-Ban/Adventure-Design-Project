@@ -87,9 +87,11 @@ export function BattleScreen({
   const over = phase === 'over'
 
   // 진행 중에 나가려 하면(왼쪽 위 화살표·탭 메뉴·뒤로가기) 확인 창. 나가면 패배로 기록한다
+  // 아직 답을 하나도 고르지 않았으면(첫 차례) 확인 없이 바로 나가고 기록도 남기지 않는다
+  const [answered, setAnswered] = useState(false)
   const [askLeave, setAskLeave] = useState(false)
   const afterLeave = useRef<(() => void) | undefined>(undefined)
-  useLeaveGuard(!over, (proceed) => {
+  useLeaveGuard(!over && answered, (proceed) => {
     afterLeave.current = proceed
     setAskLeave(true)
   })
@@ -119,6 +121,7 @@ export function BattleScreen({
 
   function answer(option: number) {
     if (phase !== 'question' || picked !== null || !question) return
+    setAnswered(true)
     setPicked(option)
     if (option === question.answer) {
       setLog('정답! 공격할까요, 방어할까요?')
@@ -200,7 +203,7 @@ export function BattleScreen({
   return (
     <section className="content-screen tab-screen avatar-screen battle-screen">
       <header className="battle-header">
-        <button className="icon-button plain" type="button" onClick={() => (over ? onExit() : setAskLeave(true))}
+        <button className="icon-button plain" type="button" onClick={() => (over || !answered ? onExit() : setAskLeave(true))}
           aria-label="대결 나가기">
           <Icon name="arrow" />
         </button>

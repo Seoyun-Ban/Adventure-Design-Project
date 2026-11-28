@@ -101,6 +101,8 @@ export function BossScreen({
   /** 문제 뽑기 (같은 판에서는 안 나온 문제부터, 판을 새로 시작하면 다시 만든다) */
   /** 한 판의 결과를 한 번만 기록하기 위한 표시 */
   const recorded = useRef(false)
+  // 아직 아무도 답을 하지 않았으면(첫 차례) 확인 없이 바로 나가고 기록도 남기지 않는다
+  const [answered, setAnswered] = useState(false)
   const deck = useRef<ReturnType<typeof createQuestionDeck> | null>(null)
 
   const maxHp = bossMaxHp(players.length || names.length)
@@ -119,6 +121,7 @@ export function BossScreen({
     if (!canStart) return
     deck.current = createQuestionDeck(placeIds)
     recorded.current = false
+    setAnswered(false)
     setPlayers(cleaned)
     setHp(bossMaxHp(cleaned.length))
     setHearts(BOSS_HEARTS)
@@ -155,6 +158,7 @@ export function BossScreen({
 
   /** 틀렸거나 시간이 다 됐을 때: 콤보가 끊기고 괴물이 반격한다 */
   function counterAttack() {
+    setAnswered(true)
     setStreak(0)
     setDamage(0)
     setHearts((value) => Math.max(0, value - 1))
@@ -164,6 +168,7 @@ export function BossScreen({
 
   function answer(option: number) {
     if (phase !== 'question' || picked !== null || !question) return
+    setAnswered(true)
     setPicked(option)
     if (option === question.answer) {
       const nextStreak = streak + 1
@@ -217,7 +222,7 @@ export function BossScreen({
 
   // 진행 중에 나가려 하면(왼쪽 위 화살표·탭 메뉴·뒤로가기) 확인 창. 나가면 이번 판은 기록하지 않는다
   const decided = hp <= 0 || hearts <= 0
-  const inProgress = (phase === 'pick' || phase === 'question' || phase === 'feedback') && !decided
+  const inProgress = (phase === 'pick' || phase === 'question' || phase === 'feedback') && !decided && answered
   const [askLeave, setAskLeave] = useState(false)
   const afterLeave = useRef<(() => void) | undefined>(undefined)
   useLeaveGuard(inProgress, (proceed) => {
