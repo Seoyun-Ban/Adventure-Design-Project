@@ -14,19 +14,28 @@ export const BATTLE_LEVELS: Record<Difficulty, { attack: number; heal: number; b
 // 진짜 친구의 도전장 대결은 이 규칙을 쓰지 않고 예전 규칙(체력 100·고정 피해) 그대로다.
 // 계산은 lib/battleBalance.ts, 승률은 scripts/battle.test.mjs가 같은 숫자로 검사한다.
 
-/** 내 대결 규칙. 공격·방어는 평균은 그대로, 매번 범위 안에서 무작위로 정해진다 */
+/** 내 대결 규칙 */
 export const BATTLE_RULES = {
   /** 내 체력 (레벨이 올라도 늘지 않는다) */
   hp: 100,
-  /** 공격 피해 = (이 값 + 전투력÷45) × 난이도 배수 × attackSpread 안의 무작위 */
+  /** 기본 피해 = 이 값 + 전투력÷45. 난이도별 피해는 이 기본 피해에 BATTLE_RANGES의 attack 배수를 곱한 값 */
   attackBase: 15,
-  attackSpread: [0.4, 1.6] as const,
-  /** 방어 회복량에 곱하는 무작위 범위 */
-  healSpread: [0.5, 1.5] as const,
-  /** 방어 막기 비율에 더하는 무작위 범위 (±15%p) */
-  blockSpread: [-0.15, 0.15] as const,
-  /** 막기 비율의 위쪽 한계 (100% 막기는 없다) */
-  blockMax: 0.95,
+}
+
+/**
+ * 난이도별 무작위 범위 (가상 친구와의 대결). 난이도끼리 범위가 겹치지 않아서
+ * 어려움은 항상 보통보다, 보통은 항상 쉬움보다 세게 들어간다 (scripts/battle.test.mjs가 검사한다).
+ * - attack: 기본 피해에 곱하는 배수 [최소, 최대] (공격은 내 것·가상 친구 것 모두 이 범위)
+ * - heal: 방어로 회복하는 체력 [최소, 최대] (가상 친구는 체력에 비례해 늘린다)
+ * - block: 방어한 다음 상대 공격을 막는 비율 [최소, 최대]
+ */
+export const BATTLE_RANGES: Record<
+  Difficulty,
+  { attack: readonly [number, number]; heal: readonly [number, number]; block: readonly [number, number] }
+> = {
+  쉬움: { attack: [0.6, 0.86], heal: [2, 5], block: [0.35, 0.58] },
+  보통: { attack: [0.94, 1.18], heal: [6, 10], block: [0.62, 0.8] },
+  어려움: { attack: [1.26, 1.6], heal: [11, 14], block: [0.84, 0.95] },
 }
 
 export type FriendBalance = {
@@ -47,41 +56,40 @@ export const FRIEND_BALANCE = {
   hpMin: 70,
   hpMax: 260,
   /** 내 레벨이 5보다 1 높을 때마다 친구 체력에 곱하는 값이 이만큼 줄어든다 (낮은 레벨은 조금 어렵게, 높은 레벨은 조금 쉽게 해서 승률을 고르게 맞춘다) */
-  hpLevelAdjust: 0.02,
-  /** 친구 공격 피해 = (이 값 + 전투력÷45 × attackPowerWeight) × 난이도 배수 × 무작위. 내 체력이 100으로 고정이라 전투력 영향은 작게 둔다 */
-  attackBase: 23,
-  attackPowerWeight: 0.045,
-  attackSpread: [0.4, 1.6] as const,
+  hpLevelAdjust: 0.018,
+  /** 친구 공격 피해 = (이 값 + 전투력÷45 × attackPowerWeight) × 난이도별 배수 범위(BATTLE_RANGES) 안의 무작위. 내 체력이 100으로 고정이라 전투력 영향은 작게 둔다 */
+  attackBase: 24,
+  attackPowerWeight: 0.1,
   /** 친구 정답률 = 기본 + 레벨 × 레벨당, 최대 accuracyMax. 난이도별 보정을 곱한다 */
   accuracyBase: 0.58,
-  accuracyPerLevel: 0.006,
+  accuracyPerLevel: 0.005,
   accuracyMax: 0.8,
   accuracyByDifficulty: { 쉬움: 1.1, 보통: 1, 어려움: 0.8 } as Record<Difficulty, number>,
   /** 친구 체력이 이 비율보다 낮으면 방어를 고를 확률이 lowHpDefendChance로 올라간다 */
-  lowHpRatio: 0.42,
-  lowHpDefendChance: 0.39,
+  lowHpRatio: 0.47,
+  lowHpDefendChance: 0.36,
   /** 친구별 성격 (키는 data/avatar.ts battleFriends의 id) */
   friends: {
     seoyeon: {
       levelOffset: 1,
       powerRatio: 1,
-      hitsToKill: 5.4,
+      hitsToKill: 5.2,
       difficulty: { 쉬움: 0.2, 보통: 0.6, 어려움: 0.2 },
-      defendChance: 0.25,
+      defendChance: 0.23,
     },
     minjun: {
       levelOffset: 0,
       powerRatio: 1.05,
       hitsToKill: 4.9,
       difficulty: { 쉬움: 0.1, 보통: 0.4, 어려움: 0.5 },
-      defendChance: 0.14,
+      defendChance: 0.25,
     },
     jiho: {
       levelOffset: -1,
       powerRatio: 0.95,
-      hitsToKill: 6,
+      hitsToKill: 6.1,
       difficulty: { 쉬움: 0.5, 보통: 0.4, 어려움: 0.1 },
-      defendChance: 0.14,
+      defendChance: 0.16,
     },
   } as Record<string, FriendBalance>,
 }

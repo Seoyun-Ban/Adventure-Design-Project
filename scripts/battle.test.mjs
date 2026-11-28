@@ -3,9 +3,9 @@
 // 목표 승률: 보통 학생 50~70%, 초보 35~55%, 잘하는 학생 85% 이하 (내 레벨 2·5·10, 친구 셋 모두)
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { BATTLE_RULES, FRIEND_BALANCE } from '../src/data/battle.ts'
+import { BATTLE_RANGES, BATTLE_RULES, FRIEND_BALANCE } from '../src/data/battle.ts'
 import {
-  averageMyAttack,
+  attackRange,
   friendLevel,
   friendTurn,
   rollDefend,
@@ -73,7 +73,7 @@ test('가상 친구 승률이 목표 범위 안에 있다 (시드 고정)', () =
   for (const [name, player] of Object.entries(PLAYERS)) {
     for (const level of LEVELS) {
       const rates = FRIENDS.map((friendId) => winPercent(player, level, friendId, seed++))
-      rows.push(`${name.padEnd(8)} Lv${String(level).padEnd(3)} ${rates.map((r, i) => `${FRIENDS[i]} ${r.toFixed(0)}%`).join(' / ')}`)
+      rows.push(`${name.padEnd(8)} Lv${String(level).padEnd(3)} ${rates.map((r, i) => `${FRIENDS[i]} ${r.toFixed(1)}%`).join(' / ')}`)
       rates.forEach((rate, index) => {
         const [low, high] = player.range
         if (rate < low || rate > high) failures.push(`${name} Lv${level} ${FRIENDS[index]}: ${rate.toFixed(1)}% (목표 ${low}~${high}%)`)
@@ -108,17 +108,46 @@ test('친구 레벨은 내 레벨을 따라가고 1 아래로 내려가지 않�
   assert.equal(friendLevel('jiho', 1), 1)
 })
 
-test('공격·방어는 범위 안에서 정해지고 평균은 표와 비슷하다', () => {
-  const random = seededRandom(7)
-  let sum = 0
-  for (let i = 0; i < 5000; i++) {
-    const damage = rollMyAttack(650, '보통', random)
-    const base = 15 + 650 / 45
-    assert.ok(damage >= Math.floor(base * BATTLE_RULES.attackSpread[0]) && damage <= Math.ceil(base * BATTLE_RULES.attackSpread[1]))
-    sum += damage
-    const { heal, block } = rollDefend('보통', random)
-    assert.ok(heal >= 4 && heal <= 12)
-    assert.ok(block >= 0.55 && block <= 0.85)
+test('난이도별 피해·회복·막기 구간이 겹치지 않고 어려울수록 세다', () => {
+  const order = ['쉬움', '보통', '어려움']
+  for (const key of ['attack', 'heal', 'block']) {
+    for (let i = 0; i < 2; i++) {
+      const [, easyMax] = BATTLE_RANGES[order[i]][key]
+      const [hardMin] = BATTLE_RANGES[order[i + 1]][key]
+      assert.ok(hardMin > easyMax, `${key}: ${order[i + 1]} 최소 ${hardMin}가 ${order[i]} 최대 ${easyMax}보다 커야 해요`)
+    }
   }
-  assert.ok(Math.abs(sum / 5000 - averageMyAttack(650, '보통')) < 0.6)
+})
+
+test('실제로 굴린 공격 피해도 어려움 최소값이 쉬움 최대값보다 크다 (여러 전투력)', () => {
+  for (const power of [120, 260, 650, 1120, 2000, 4000]) {
+    const random = seededRandom(power)
+    const seen = { 쉬움: [Infinity, 0], 보통: [Infinity, 0], 어려움: [Infinity, 0] }
+    for (let i = 0; i < 4000; i++) {
+      for (const level of Object.keys(seen)) {
+        const damage = rollMyAttack(power, level, random)
+        seen[level][0] = Math.min(seen[level][0], damage)
+        seen[level][1] = Math.max(seen[level][1], damage)
+      }
+    }
+    assert.ok(seen.어려움[0] > seen.보통[1], `전투력 ${power}: 어려움 최소 ${seen.어려움[0]} ≤ 보통 최대 ${seen.보통[1]}`)
+    assert.ok(seen.보통[0] > seen.쉬움[1], `전투력 ${power}: 보통 최소 ${seen.보통[0]} ≤ 쉬움 최대 ${seen.쉬움[1]}`)
+    // 화면에 보여주는 범위와 실제 피해가 맞는다
+    for (const level of Object.keys(seen)) {
+      const [low, high] = attackRange(power, level)
+      assert.ok(seen[level][0] >= low && seen[level][1] <= high)
+    }
+  }
+})
+
+test('방어 회복·막기도 난이도 구간 안에서 정해진다', () => {
+  const random = seededRandom(7)
+  for (let i = 0; i < 3000; i++) {
+    for (const level of ['쉬움', '보통', '어려움']) {
+      const { heal, block } = rollDefend(level, random)
+      const range = BATTLE_RANGES[level]
+      assert.ok(heal >= Math.round(range.heal[0]) && heal <= Math.round(range.heal[1]))
+      assert.ok(block >= range.block[0] && block <= range.block[1])
+    }
+  }
 })

@@ -6,8 +6,8 @@ import { useGameBusy } from '../lib/gameBusy'
 import { LevelPicker } from '../components/LevelPicker'
 import { CharacterAvatar } from '../components/CharacterAvatar'
 import { powerOf } from '../data/avatar'
-import { BATTLE_LEVELS } from '../data/battle'
-import { averageMyAttack, friendTurn, rollDefend, rollMyAttack, type ScaledFriend } from '../lib/battleBalance'
+import { BATTLE_LEVELS, BATTLE_RANGES } from '../data/battle'
+import { attackRange, friendTurn, rollDefend, rollMyAttack, type ScaledFriend } from '../lib/battleBalance'
 import { createQuestionDeck } from '../lib/quizGenerator'
 import { withJosa } from '../lib/korean'
 import type { AvatarLook, Difficulty, Equipped, QuizItem } from '../types'
@@ -24,6 +24,8 @@ type Opponent = { name: string; level: number; look: AvatarLook; equipped: Equip
 type Phase = 'pick' | 'question' | 'choose' | 'resolve' | 'enemy' | 'over'
 
 const MAX_HP = 100
+/** 막기 비율 범위를 '35~58%'처럼 보여준다 */
+const percentRange = ([low, high]: readonly [number, number]) => `${Math.round(low * 100)}~${Math.round(high * 100)}%`
 /** 마지막 공격 흔들림이 끝난 뒤 승패 모션을 시작할 때까지 (ms) */
 const RESULT_DELAY = 500
 /** 꽃가루 조각 수 */
@@ -321,8 +323,10 @@ export function BattleScreen({
               onPick={chooseLevel}
               items={(['쉬움', '보통', '어려움'] as Difficulty[]).map((l) => ({
                 level: l,
-                hint: `체력 +${BATTLE_LEVELS[l].heal} · ${Math.round(BATTLE_LEVELS[l].block * 100)}% 막기`,
-                tag: `공격 ×${BATTLE_LEVELS[l].attack}`,
+                hint: scaled
+                  ? `체력 +${BATTLE_RANGES[l].heal.join('~')} · ${percentRange(BATTLE_RANGES[l].block)} 막기`
+                  : `체력 +${BATTLE_LEVELS[l].heal} · ${Math.round(BATTLE_LEVELS[l].block * 100)}% 막기`,
+                tag: scaled ? `공격 ×${BATTLE_RANGES[l].attack.join('~')}` : `공격 ×${BATTLE_LEVELS[l].attack}`,
               }))}
             />
           </>
@@ -359,12 +363,18 @@ export function BattleScreen({
           <div className="battle-choice">
             <button type="button" className="attack" onClick={() => act('attack')}>
               <strong>공격</strong>
-              <span>약 {averageMyAttack(myPower, level)} 피해</span>
+              <span>
+                {scaled
+                  ? `${attackRange(myPower, level).join('~')} 피해`
+                  : `약 ${Math.round((15 + myPower / 45) * BATTLE_LEVELS[level].attack)} 피해`}
+              </span>
             </button>
             <button type="button" className="defend" onClick={() => act('defend')}>
               <strong>방어</strong>
               <span>
-                체력 +{BATTLE_LEVELS[level].heal}, 다음 공격 {Math.round(BATTLE_LEVELS[level].block * 100)}% 막기
+                {scaled
+                  ? `체력 +${BATTLE_RANGES[level].heal.join('~')}, 다음 공격 ${percentRange(BATTLE_RANGES[level].block)} 막기`
+                  : `체력 +${BATTLE_LEVELS[level].heal}, 다음 공격 ${Math.round(BATTLE_LEVELS[level].block * 100)}% 막기`}
               </span>
             </button>
           </div>

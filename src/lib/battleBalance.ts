@@ -1,7 +1,7 @@
 // 가상 친구와의 대결 계산 (순수 함수). 숫자는 data/battle.ts에만 있고, 화면(BattleScreen)과
 // 승률 테스트(scripts/battle.test.mjs)가 같은 함수를 쓴다. random은 테스트에서 시드 난수로 바꿔 끼운다.
 // node 테스트가 읽을 수 있게 data 가져오기에 .ts를 붙였다.
-import { BATTLE_LEVELS, BATTLE_RULES, FRIEND_BALANCE } from '../data/battle.ts'
+import { BATTLE_RANGES, BATTLE_RULES, FRIEND_BALANCE } from '../data/battle.ts'
 import type { Difficulty } from '../types'
 
 export type Random = () => number
@@ -20,22 +20,26 @@ export function seededRandom(seed: number): Random {
   }
 }
 
-/** 내 공격 한 번의 피해 (범위 안에서 무작위) */
+/** 내 기본 피해 (난이도 배수를 곱하기 전) */
+export const baseAttack = (power: number) => BATTLE_RULES.attackBase + power / 45
+
+/** 내 공격 한 번의 피해 (난이도별 범위 안에서 무작위) */
 export function rollMyAttack(power: number, level: Difficulty, random: Random = Math.random) {
-  const base = BATTLE_RULES.attackBase + power / 45
-  return Math.max(1, Math.round(base * BATTLE_LEVELS[level].attack * between(BATTLE_RULES.attackSpread, random)))
+  return Math.max(1, Math.round(baseAttack(power) * between(BATTLE_RANGES[level].attack, random)))
 }
 
-/** 화면에 보여줄 내 평균 공격 피해 */
-export const averageMyAttack = (power: number, level: Difficulty) =>
-  Math.round((BATTLE_RULES.attackBase + power / 45) * BATTLE_LEVELS[level].attack)
+/** 화면에 보여줄 내 공격 피해의 최소·최대 */
+export const attackRange = (power: number, level: Difficulty): [number, number] => {
+  const [low, high] = BATTLE_RANGES[level].attack
+  return [Math.round(baseAttack(power) * low), Math.round(baseAttack(power) * high)]
+}
 
-/** 방어 한 번의 회복량과 막기 비율 (평균은 난이도 표와 같고, 범위 안에서 무작위). healScale은 가상 친구의 체력 비례용 */
+/** 방어 한 번의 회복량과 막기 비율 (난이도별 범위 안에서 무작위). healScale은 가상 친구의 체력 비례용 */
 export function rollDefend(level: Difficulty, random: Random = Math.random, healScale = 1) {
-  const { heal, block } = BATTLE_LEVELS[level]
+  const { heal, block } = BATTLE_RANGES[level]
   return {
-    heal: Math.max(1, Math.round(heal * healScale * between(BATTLE_RULES.healSpread, random))),
-    block: Math.min(BATTLE_RULES.blockMax, Math.max(0.05, block + between(BATTLE_RULES.blockSpread, random))),
+    heal: Math.max(1, Math.round(between(heal, random) * healScale)),
+    block: between(block, random),
   }
 }
 
@@ -49,7 +53,7 @@ export type ScaledFriend = {
 /** 내 레벨·전투력에 맞춘 가상 친구의 레벨·전투력·체력 */
 export function scaleFriend(friendId: string, myLevel: number, myPower: number): ScaledFriend {
   const balance = FRIEND_BALANCE.friends[friendId]
-  const myHit = BATTLE_RULES.attackBase + myPower / 45
+  const myHit = baseAttack(myPower)
   const levelFactor = 1 - FRIEND_BALANCE.hpLevelAdjust * (myLevel - 5)
   const raw = myHit * balance.hitsToKill * levelFactor
   const maxHp = Math.round(Math.min(FRIEND_BALANCE.hpMax, Math.max(FRIEND_BALANCE.hpMin, raw)))
@@ -99,7 +103,7 @@ export function friendTurn(
     return { kind: 'defend', difficulty, ...rollDefend(difficulty, random, friend.maxHp / BATTLE_RULES.hp) }
   }
   const base = FRIEND_BALANCE.attackBase + (friend.power / 45) * FRIEND_BALANCE.attackPowerWeight
-  const raw = base * BATTLE_LEVELS[difficulty].attack * between(FRIEND_BALANCE.attackSpread, random)
+  const raw = base * between(BATTLE_RANGES[difficulty].attack, random)
   return { kind: 'attack', difficulty, damage: Math.max(1, Math.round(raw * (1 - myBlock))) }
 }
 
