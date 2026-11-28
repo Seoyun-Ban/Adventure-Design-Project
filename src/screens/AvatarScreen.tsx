@@ -10,6 +10,7 @@ import { LeagueTable } from '../components/LeagueTable'
 import { BattleRecordCard } from '../components/BattleRecordCard'
 import { ChallengeShareButton } from '../components/ChallengeShareButton'
 import { historyItems, battleFriends, findItem, levelFor, powerOf } from '../data/avatar'
+import { scaleFriend } from '../lib/battleBalance'
 import { BattleScreen } from './BattleScreen'
 import { BossScreen } from './BossScreen'
 import { BOSS } from '../data/boss'
@@ -59,7 +60,13 @@ export function AvatarScreen({
   const [category, setCategory] = useState<ItemCategory>('장비')
   const [selectedItem, setSelectedItem] = useState<HistoryItem | null>(null)
   const [view, setView] = useState<'inventory' | 'friends' | 'battle' | 'boss'>('inventory')
-  const [opponent, setOpponent] = useState(battleFriends[0])
+  const [opponentId, setOpponentId] = useState(battleFriends[0].id)
+  // 가상 친구는 내 레벨·전투력에 맞춰 레벨·전투력·체력이 정해진다 (lib/battleBalance.ts)
+  const friends = battleFriends.map((friend) => {
+    const scaled = scaleFriend(friend.id, level, power.total)
+    return { ...friend, level: scaled.level, scaled }
+  })
+  const opponent = friends.find((friend) => friend.id === opponentId) ?? friends[0]
   const [competitionTab, setCompetitionTab] = useState<'battle' | 'ranking'>('battle')
   const [powerInfo, setPowerInfo] = useState(false)
   // 함께하기(대결·보스전)는 학습을 마친 장소가 TOGETHER_MIN_PLACES곳 이상이어야 열린다. 문제도 그 장소에서만 낸다.
@@ -74,8 +81,8 @@ export function AvatarScreen({
   const [battleRound, setBattleRound] = useState(0)
   const filteredItems = historyItems.filter((item) => item.category === category)
 
-  function startBattle(friend: (typeof battleFriends)[number]) {
-    setOpponent(friend)
+  function startBattle(friend: (typeof friends)[number]) {
+    setOpponentId(friend.id)
     setBattleRound((round) => round + 1)
     setView('battle')
   }
@@ -143,15 +150,15 @@ export function AvatarScreen({
             <BattleRecordCard battle={battle} />
             <h3 className="section-title">대결 상대</h3>
             <div className="friend-list">
-              {battleFriends.map((friend) => (
+              {friends.map((friend) => (
                 <button type="button" key={friend.id} onClick={() => startBattle(friend)}>
                   <span className={`friend-avatar ${friend.color}`}>{friend.name.slice(0, 1)}</span>
                   <span>
                     <small>{friend.title}</small>
                     <strong>{friend.name}</strong>
                     <i>
-                      Lv. {friend.level} · 전투력{' '}
-                      {powerOf(friend.equipped, friend.level).total.toLocaleString()}
+                      Lv. {friend.level} · 전투력 {friend.scaled.power.toLocaleString()} · 체력{' '}
+                      {friend.scaled.maxHp}
                     </i>
                   </span>
                   <span className="challenge-label">대결</span>

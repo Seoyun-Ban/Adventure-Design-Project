@@ -7,6 +7,7 @@ import { LevelPicker } from '../components/LevelPicker'
 import { CharacterAvatar } from '../components/CharacterAvatar'
 import { powerOf } from '../data/avatar'
 import { BATTLE_LEVELS } from '../data/battle'
+import { averageMyAttack, friendTurn, rollDefend, rollMyAttack, type ScaledFriend } from '../lib/battleBalance'
 import { createQuestionDeck } from '../lib/quizGenerator'
 import { withJosa } from '../lib/korean'
 import type { AvatarLook, Difficulty, Equipped, QuizItem } from '../types'
@@ -17,7 +18,8 @@ import type { AvatarLook, Difficulty, Equipped, QuizItem } from '../types'
 // 3) 먼저 체력이 0이 되는 쪽이 진다. 끝나면 승패 모션을 보여주고 결과를 한 번만 기록한다.
 
 type Fighter = { nickname: string; look: AvatarLook; equipped: Equipped; level: number }
-type Opponent = { name: string; level: number; look: AvatarLook; equipped: Equipped }
+/** scaled가 있으면 가상 친구(내 레벨·전투력에 맞춘 체력과 방어, lib/battleBalance.ts). 없으면 진짜 친구의 도전장이라 예전 규칙 그대로 */
+type Opponent = { name: string; level: number; look: AvatarLook; equipped: Equipped; scaled?: ScaledFriend }
 /** resolve: 내 공격·방어 결과를 보여주는 중 (버튼을 숨겨 두 번 누르지 못하게 한다) */
 type Phase = 'pick' | 'question' | 'choose' | 'resolve' | 'enemy' | 'over'
 
@@ -55,9 +57,11 @@ export function BattleScreen({
   onExit: () => void
 }) {
   const myPower = powerOf(me.equipped, me.level).total
-  const enemyPower = powerOf(opponent.equipped, opponent.level).total
+  const scaled = opponent.scaled
+  const enemyPower = scaled ? scaled.power : powerOf(opponent.equipped, opponent.level).total
+  const enemyMax = scaled ? scaled.maxHp : MAX_HP
   const [myHp, setMyHp] = useState(MAX_HP)
-  const [enemyHp, setEnemyHp] = useState(MAX_HP)
+  const [enemyHp, setEnemyHp] = useState(enemyMax)
   const [turn, setTurn] = useState(1)
   const [phase, setPhase] = useState<Phase>('pick')
   const [level, setLevel] = useState<Difficulty>('보통')
@@ -78,7 +82,14 @@ export function BattleScreen({
   /** 승패 모션 (마지막 공격 뒤 잠깐 있다가 시작) */
   const [result, setResult] = useState<'win' | 'lose' | null>(null)
   // 체력은 화면용 state와 판단용 ref를 함께 둔다 (끝났는지 판단·기록이 한 번만 일어나게)
-  const hpRef = useRef({ me: MAX_HP, enemy: MAX_HP })
+  const hpRef = useRef({ me: MAX_HP, enemy: enemyMax })
+  // 가상 친구가 방어 중이면 내 다음 공격을 막는 비율 (내 차례가 끝나면 0으로 돌아간다)
+  const enemyGuardRef = useRef(0)
+  const [enemyShield, setEnemyShield] = useState(false)
+  function setEnemyGuard(value: number) {
+    enemyGuardRef.current = value
+    setEnemyShield(value > 0)
+  }
   const timers = useRef<number[]>([])
   const finished = useRef(false)
 
@@ -138,14 +149,20 @@ export function BattleScreen({
     if (phase !== 'choose') return
     setPhase('resolve')
     if (kind === 'attack') {
-      const damage = attackDamage(myPower, BATTLE_LEVELS[level].attack)
+      const damage = scaled
+        ? Math.max(1, Math.round(rollMyAttack(myPower, level) * (1 - enemyGuardRef.current)))
+        : attackDamage(myPower, BATTLE_LEVELS[level].attack)
       const next = Math.max(0, hpRef.current.enemy - damage)
       setHp('enemy', next)
       setHit('enemy')
-      setLog(`공격 성공! ${opponent.name}에게 ${damage}의 피해를 주었어요.`)
+      setLog(
+        enemyGuardRef.current > 0
+          ? `공격! ${withJosa(opponent.name, '이')} 막아서 ${damage}의 피해만 주었어요.`
+          : `공격 성공! ${opponent.name}에게 ${damage}의 피해를 주었어요.`,
+      )
       if (next <= 0) return finish(true)
     } else {
-      const { heal, block } = BATTLE_LEVELS[level]
+      const { heal, block } = scaled ? rollDefend(level) : BATTLE_LEVELS[level]
       setGuard(block)
       setHp('me', Math.min(MAX_HP, hpRef.current.me + heal))
       setLog(`방어 자세! 체력을 ${heal} 회복하고 다음 공격의 ${Math.round(block * 100)}%를 막아요.`)
@@ -157,10 +174,33 @@ export function BattleScreen({
     setHit(null)
     setPhase('enemy')
     setLog(`${opponent.name}의 차례…`)
+    // 내 차례가 끝났으니 가상 친구의 방어는 풀린다
+    setEnemyGuard(0)
     later(() => {
-      // 상대 정답률: 레벨이 높을수록 잘 맞힌다
-      const accuracy = Math.min(0.9, 0.5 + opponent.level * 0.06)
-      if (Math.random() < accuracy) {
+      if (scaled) {
+        // 가상 친구: 문제를 풀고 맞히면 공격 또는 방어를 고른다 (lib/battleBalance.ts)
+        const action = friendTurn(scaled, hpRef.current.enemy, guardRef.current)
+        if (action.kind === 'attack') {
+          const next = Math.max(0, hpRef.current.me - action.damage)
+          setHp('me', next)
+          setHit('me')
+          setLog(
+            guardRef.current > 0
+              ? `방어 성공! ${action.damage}의 피해만 받았어요.`
+              : `${opponent.name}의 공격! ${action.damage}의 피해를 받았어요.`,
+          )
+          if (next <= 0) return finish(false)
+        } else if (action.kind === 'defend') {
+          setHp('enemy', Math.min(enemyMax, hpRef.current.enemy + action.heal))
+          setEnemyGuard(action.block)
+          setLog(
+            `${withJosa(opponent.name, '이')} 방어 자세! 체력을 ${action.heal} 회복하고 내 다음 공격의 ${Math.round(action.block * 100)}%를 막아요.`,
+          )
+        } else {
+          setLog(`${withJosa(opponent.name, '이')} 문제를 틀려 아무것도 하지 못했어요.`)
+        }
+      } else if (Math.random() < Math.min(0.9, 0.5 + opponent.level * 0.06)) {
+        // 도전장 상대(진짜 친구): 예전 규칙 — 정답률은 레벨이 높을수록 높고, 공격만 한다
         const raw = attackDamage(enemyPower)
         const damage = Math.round(raw * (1 - guardRef.current))
         const next = Math.max(0, hpRef.current.me - damage)
@@ -228,16 +268,17 @@ export function BattleScreen({
             {result === 'win' ? '승리!' : '다음엔 이길 수 있어요!'}
           </p>
         )}
-        <div className={`fighter enemy ${hit === 'enemy' ? 'hit' : ''}`}>
+        <div className={`fighter enemy ${hit === 'enemy' ? 'hit' : ''} ${enemyShield ? 'shielded' : ''}`}>
           <div className="fighter-name">
             <span>{opponent.name}</span>
             <strong>전투력 {enemyPower.toLocaleString()}</strong>
           </div>
           <div className="hp-track">
-            <i style={{ width: `${enemyHp}%` }} />
+            <i style={{ width: `${Math.max(0, Math.min(100, (enemyHp / enemyMax) * 100))}%` }} />
           </div>
           <small>
-            HP {enemyHp}/{MAX_HP}
+            HP {enemyHp}/{enemyMax}
+            {enemyShield ? ' · 방어 중' : ''}
           </small>
           <CharacterAvatar
             className="fighter-avatar enemy-avatar"
@@ -271,6 +312,7 @@ export function BattleScreen({
         <p className="battle-log" role="status">
           {log}
         </p>
+        {scaled && <p className="battle-friend-note">가상 친구는 전투력이 높을수록 체력이 많아져요.</p>}
         {phase === 'pick' && (
           <>
             <span className="battle-question-label">내 차례 · 난이도 고르기</span>
@@ -317,7 +359,7 @@ export function BattleScreen({
           <div className="battle-choice">
             <button type="button" className="attack" onClick={() => act('attack')}>
               <strong>공격</strong>
-              <span>약 {Math.round((15 + myPower / 45) * BATTLE_LEVELS[level].attack)} 피해</span>
+              <span>약 {averageMyAttack(myPower, level)} 피해</span>
             </button>
             <button type="button" className="defend" onClick={() => act('defend')}>
               <strong>방어</strong>

@@ -7800,3 +7800,11 @@ button.settings-row {
   color: white;
   background: var(--green);
 }
+
+/* 가상 친구 대결 안내 한 줄 (대결 화면 카드 위) */
+.battle-friend-note {
+  margin: -4px 0 8px;
+  color: var(--ink-soft);
+  font-size: 10px;
+  line-height: 1.5;
+}
