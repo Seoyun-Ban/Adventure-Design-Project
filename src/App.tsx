@@ -445,6 +445,7 @@ export default function App() {
               key={quizRun}
               title={quiz.title}
               load={quiz.load}
+              avatar={{ ...progress.look, equipped: progress.equipped }}
               xp={progress.xp}
               onXp={addXp}
               onBack={() => setScreen(quiz.from === 'learn' && findPlace(quiz.place.id) ? 'learn' : 'home')}

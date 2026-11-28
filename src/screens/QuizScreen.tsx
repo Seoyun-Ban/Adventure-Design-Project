@@ -6,6 +6,37 @@ import { levelFor, XP_PER_CORRECT } from '../data/avatar'
 import { useTutorial } from '../hooks/useTutorial'
 import { annotate } from '../lib/glossary'
 import { passScore, type GeneratedQuiz } from '../lib/quizGenerator'
+import { CharacterAvatar } from '../components/CharacterAvatar'
+import type { AvatarLook, Equipped } from '../types'
+
+/** 퀴즈 속 내 캐릭터의 기분: 기본 · 기뻐함(맞힘) · 아쉬워함(틀림) */
+type Mood = 'idle' | 'happy' | 'sad'
+const MOOD_TEXT: Record<Mood, string> = {
+  idle: '천천히 생각해 봐요!',
+  happy: '맞았어요! 야호!',
+  sad: '아쉬워요, 괜찮아요!',
+}
+
+/** 작은 내 캐릭터. 맞히면 폴짝·반짝, 틀리면 고개를 숙인다 (움직임 줄이기에서는 문구만 바뀐다) */
+function QuizMate({ mood, avatar }: { mood: Mood; avatar: Pick<AvatarLook, 'gender' | 'style'> & { equipped: Equipped } }) {
+  return (
+    <div className={`quiz-mate ${mood}`}>
+      <p className="quiz-mate-bubble" role="status">
+        {MOOD_TEXT[mood]}
+      </p>
+      <div className="quiz-mate-figure">
+        <CharacterAvatar className="quiz-mate-avatar" look={avatar} equipped={avatar.equipped} label="나의 캐릭터" />
+        {mood === 'happy' && (
+          <>
+            <i className="mate-spark" aria-hidden="true">✦</i>
+            <i className="mate-spark" aria-hidden="true">✦</i>
+            <i className="mate-spark" aria-hidden="true">✦</i>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
 
 /** retried: 쉬움 단계에서 힌트를 보고 다시 골라 맞혔는지 (경험치 절반) */
 type QuizResult = { placeId: string; item: GeneratedQuiz; correct: boolean; retried: boolean }
@@ -25,7 +56,10 @@ export function QuizScreen({
   onBack,
   onDone,
   onRound,
+  avatar,
 }: {
+  /** 퀴즈 화면에 작게 보여 줄 내 캐릭터 */
+  avatar: Pick<AvatarLook, 'gender' | 'style'> & { equipped: Equipped }
   title: string
   load: () => Promise<GeneratedQuiz[]>
   /** 지금 경험치 (결과 화면에서 레벨이 올랐는지 보여준다) */
@@ -96,7 +130,11 @@ export function QuizScreen({
   const current = items[index]
   const score = results.filter((result) => result.correct).length
 
-  const canRetry = current.level === '쉬움' && Boolean(current.hint) && current.options.length > 2
+  // 고르기 전 처음 틀려 힌트를 본 상태도 아쉬워하는 모습
+  const mood: Mood =
+    selected !== null ? (selected === current.answer ? 'happy' : 'sad') : wrongPick !== null ? 'sad' : 'idle'
+
+  const canRetry =current.level === '쉬움' && Boolean(current.hint) && current.options.length > 2
 
   function choose(option: number) {
     if (selected !== null || option === wrongPick) return
@@ -216,7 +254,14 @@ export function QuizScreen({
       {/* 낱말 풀이는 문제 글에만 (보기·정답 설명은 답을 알려줄 수 있어서 제외) */}
       <GlossaryProvider>
         <section className="quiz-body">
-          <div className="question-badge">문제 {String(index + 1).padStart(2, '0')}</div>
+          <div className="quiz-top">
+            <div className="question-badge">문제 {String(index + 1).padStart(2, '0')}</div>
+            <QuizMate
+              key={`${index}-${mood}`}
+              mood={mood}
+              avatar={avatar}
+            />
+          </div>
           <h1>
             <GlossaryText segments={annotate([current.question])[0]} />
           </h1>

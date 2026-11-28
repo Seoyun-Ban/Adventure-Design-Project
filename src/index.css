@@ -4318,6 +4318,134 @@ button {
 }
 
 /* Quiz */
+/* 퀴즈 화면 속 내 캐릭터 (QuizMate): 맞히면 폴짝·반짝, 틀리면 고개 숙임. 새 그림 없이 지금 그림을 움직인다 */
+.quiz-top {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px;
+}
+.quiz-mate {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  min-width: 0;
+}
+.quiz-mate-bubble {
+  margin: 0 0 30px;
+  padding: 5px 9px;
+  border-radius: 12px 12px 3px 12px;
+  color: var(--green);
+  background: white;
+  box-shadow: 0 2px 6px rgba(40, 50, 40, 0.12);
+  font-size: 10px;
+  font-weight: 800;
+  word-break: keep-all;
+}
+.quiz-body .quiz-mate-bubble {
+  color: var(--green);
+  font-size: 10px;
+}
+.quiz-mate.happy .quiz-mate-bubble {
+  color: #7a4b00;
+  background: #fff2c2;
+}
+.quiz-mate.sad .quiz-mate-bubble {
+  color: #4b5b66;
+  background: #e8edf0;
+}
+.quiz-mate-figure {
+  position: relative;
+  flex: none;
+  transform-origin: center bottom;
+}
+.quiz-mate-avatar.character-avatar {
+  width: fit-content;
+  height: 76px;
+}
+.quiz-mate .item-badge {
+  width: 15px;
+  height: 15px;
+  border-width: 1px;
+  font-size: 8px;
+}
+.quiz-mate.happy .quiz-mate-figure {
+  animation: mate-jump 0.6s ease-in-out 2;
+}
+.quiz-mate.sad .quiz-mate-figure {
+  animation: mate-droop 0.6s ease-out forwards;
+}
+.quiz-mate.sad .character-base {
+  filter: saturate(0.75);
+}
+.mate-spark {
+  position: absolute;
+  z-index: 4;
+  color: #f0b429;
+  font-size: 13px;
+  font-style: normal;
+  line-height: 1;
+  animation: mate-spark 0.9s ease-out both;
+}
+.mate-spark:nth-of-type(1) {
+  top: -2px;
+  left: -8px;
+}
+.mate-spark:nth-of-type(2) {
+  top: 8px;
+  right: -9px;
+  animation-delay: 0.15s;
+}
+.mate-spark:nth-of-type(3) {
+  top: -10px;
+  right: 6px;
+  font-size: 10px;
+  animation-delay: 0.3s;
+}
+@keyframes mate-jump {
+  0%,
+  100% {
+    transform: translateY(0) scale(1, 1);
+  }
+  15% {
+    transform: translateY(0) scale(1.06, 0.92);
+  }
+  45% {
+    transform: translateY(-16px) scale(0.97, 1.04);
+  }
+  80% {
+    transform: translateY(0) scale(1.04, 0.95);
+  }
+}
+@keyframes mate-droop {
+  to {
+    transform: translateY(3px) rotate(7deg) scale(1, 0.94);
+  }
+}
+@keyframes mate-spark {
+  0% {
+    opacity: 0;
+    transform: scale(0.3) rotate(0deg);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1.2) rotate(40deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.8) rotate(90deg);
+  }
+}
+/* 움직임 줄이기: 움직이지 않고 표정 문구만 바뀐다 */
+@media (prefers-reduced-motion: reduce) {
+  .quiz-mate.happy .quiz-mate-figure,
+  .quiz-mate.sad .quiz-mate-figure {
+    animation: none;
+  }
+  .mate-spark {
+    display: none;
+  }
+}
 .quiz-screen {
   padding-bottom: 92px;
   background: linear-gradient(165deg, #f9f3e6, #f4ead5);
